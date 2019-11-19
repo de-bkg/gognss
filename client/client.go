@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+// yml config: https://github.com/valasek/timesheet/tree/master/server
+
 // HTTPConfig provides information for connecting to a Ntripcaster
 type HTTPConfig struct {
 	//Caster *url.URL
@@ -58,6 +60,7 @@ type HTTPConfig struct {
 	//ErrorChan chan error //  errorChan := make(chan error)
 }
 
+// The http.Client's Transport typically has internal state (cached TCP connections), so Clients should be reused instead of created as needed. Clients are safe for concurrent use by multiple goroutines.
 type client struct {
 	// N.B - if url.UserInfo is accessed in future modifications to the
 	// methods on client, you will need to synchronize access to url.
@@ -66,7 +69,6 @@ type client struct {
 	password   string
 	useragent  string
 	httpClient *http.Client
-	transport  *http.Transport
 	// Quit chan struct{}
 	//errorChan chan error
 	//dataChan  chan []byte
@@ -76,7 +78,7 @@ type client struct {
 // Client is safe for concurrent use by multiple goroutines.
 func NewNtripClient(conf HTTPConfig) (Client, error) {
 	if conf.UserAgent == "" {
-		conf.UserAgent = "NTRIP BKGGoClient" // Must start with NTRIP !!!!!!!!!!!!
+		conf.UserAgent = "NTRIP Go Client" // Must start with NTRIP !!!!!!!!!!!!
 	}
 
 	u, err := url.Parse(conf.Addr)
@@ -128,13 +130,7 @@ func NewNtripClient(conf HTTPConfig) (Client, error) {
 			//Timeout:   conf.Timeout,
 			Transport: tr,
 		},
-		transport: tr, // for Close
 	}, nil
-}
-
-// Close releases the client's resources.
-func (c *client) Close() {
-	c.transport.CloseIdleConnections()
 }
 
 // DownloadSourcetable downloads the sourcetable named by st and returns the contents.
