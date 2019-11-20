@@ -1,10 +1,28 @@
+// Package client provides functions for the Ntrip protocol
+//
+// The HTTP-based NtripClient to NtripCaster communication is fully compatible to
+// HTTP 1.1, but in this context Ntrip uses only non-persistent connections.
+//
+// A loss of the TCP connection between communicating system-components (NtripClient to
+// NtripCaster, NtripServer to NtripCaster) will be automatically recognized by the TCPsockets.
+// This effect can be used to trigger software events such as an automated reconnection.
+//
+// The chunked transfer encoding is used to transfer a series of chunks, each with its own
+// size information. This allows the transfer of streaming data together with information to
+// verify the completeness of transfer. Every NTRIP 2.0 component must be able to handle
+// this transfer encoding. The basic idea is to send the size of the following data block before
+// the block itself as hexadecimal number.
+//
+// The net/http package automatically uses chunked encoding for request bodies when the content
+// length is not known and the application did not explicitly set the transfer encoding to "identity".
 package client
 
 import (
 	"bufio"
 	"crypto/tls"
-	"errors"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -16,38 +34,30 @@ import (
 
 // yml config: https://github.com/valasek/timesheet/tree/master/server
 
-// HTTPConfig provides information for connecting to a Ntripcaster
-type HTTPConfig struct {
-	//Caster *url.URL
-
-	// Addr should be of the form "http://host:port"
-	Addr string
-
-	MP string
-
+// Options provides additional information for connecting to a Ntripcaster.
+type Options struct {
 	// Username is the Caster username
 	Username string
 
 	// Password is the Caster password
 	Password string
 
-	Proxy string
-
 	// Proxy configures the Proxy function on the HTTP client.
 	//Proxy func(req *http.Request) (*url.URL, error)
+	Proxy string
 
 	//request *http.Request
 
 	// UserAgent is the http User Agent, defaults to "InfluxDBClient".
-	// For accessing the casters websites, it must not contain "NTRIP"
-	// For accesing a stream, it MUST contain "NTRIP"
+	// For accessing the (BKG) casters websites (not sourcetable), it must not contain "NTRIP",
+	// for accesing a stream, it MUST contain "NTRIP"
 	UserAgent string
 
 	// Timeout for influxdb writes, defaults to no timeout.
 	//Timeout time.Duration
 
-	// UnsafeSSL gets passed to the http client, if true, it will
-	// skip https certificate verification. Defaults to false.
+	// UnsafeSSL gets passed to the http client, if true, it will skip https certificate verification.
+	// Defaults to false.
 	UnsafeSSL bool
 
 	// TLSConfig allows the user to set their own TLS config for the HTTP
@@ -56,42 +66,37 @@ type HTTPConfig struct {
 
 	// Transfered
 	//DataChan chan []byte
-
 	//ErrorChan chan error //  errorChan := make(chan error)
 }
 
-// The http.Client's Transport typically has internal state (cached TCP connections), so Clients should be reused instead of created as needed. Clients are safe for concurrent use by multiple goroutines.
-type client struct {
-	// N.B - if url.UserInfo is accessed in future modifications to the
-	// methods on client, you will need to synchronize access to url.
-	url        url.URL
-	username   string
-	password   string
-	useragent  string
-	httpClient *http.Client
+// Client is a caster client for http connections.
+// The http.Client's Transport typically has internal state (cached TCP connections), so Clients should be reused
+// instead of created as needed. Clients are safe for concurrent use by multiple goroutines.
+type Client struct {
+	*http.Client
+	url       url.URL
+	username  string
+	password  string
+	useragent string
+
 	// Quit chan struct{}
 	//errorChan chan error
 	//dataChan  chan []byte
 }
 
-// NewNtripClient returns a new Client from the provided config.
-// Client is safe for concurrent use by multiple goroutines.
-func NewNtripClient(conf HTTPConfig) (Client, error) {
-	if conf.UserAgent == "" {
-		conf.UserAgent = "NTRIP Go Client" // Must start with NTRIP !!!!!!!!!!!!
-	}
-
-	u, err := url.Parse(conf.Addr)
+// New returns a new Ntrip Client with the given caster address and additional options.
+// The caster addr should have the form "http://host:port".
+func New(addr string, opts Options) (*Client, error) {
+	u, err := url.Parse(addr)
 	if err != nil {
 		return nil, err
-	} else if u.Scheme != "http" && u.Scheme != "https" {
-		m := fmt.Sprintf("Unsupported protocol scheme: %s, your address"+
-			" must start with http:// or https://", u.Scheme)
-		return nil, errors.New(m)
 	}
-	// Set mountpoint
-	if conf.MP != "" {
-		u.Path = conf.MP
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, fmt.Errorf("Unsupported protocol scheme: %s: your address must start with http:// or https://", u.Scheme)
+	}
+
+	if opts.UserAgent == "" {
+		opts.UserAgent = "NTRIP Go Client" // Must start with NTRIP !!!!!!!!!!!!
 	}
 
 	// Transport see http DefaultTransport settings
@@ -101,7 +106,7 @@ func NewNtripClient(conf HTTPConfig) (Client, error) {
 			KeepAlive: 30 * time.Second,
 		}).Dial,
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: conf.UnsafeSSL,
+			InsecureSkipVerify: opts.UnsafeSSL,
 		},
 		Proxy:                 http.ProxyFromEnvironment, // default
 		IdleConnTimeout:       30 * time.Second,
@@ -109,61 +114,86 @@ func NewNtripClient(conf HTTPConfig) (Client, error) {
 		ResponseHeaderTimeout: 10 * time.Second, // e.g. for using the wrong proxy!
 	}
 
-	if conf.Proxy != "" {
-		proxyURL, err := url.Parse(conf.Proxy)
+	if opts.Proxy != "" {
+		proxyURL, err := url.Parse(opts.Proxy)
 		if err != nil {
-			return nil, fmt.Errorf("Could not parse proxy %s", conf.Proxy)
+			return nil, fmt.Errorf("Could not parse proxy %s", opts.Proxy)
 		}
 		tr.Proxy = http.ProxyURL(proxyURL)
 	}
 
-	// if conf.TLSConfig != nil {
-	// 	tr.TLSClientConfig = conf.TLSConfig
+	// if opts.TLSConfig != nil {
+	// 	tr.TLSClientConfig = opts.TLSConfig
 	// }
 
-	return &client{
-		url:       *u,
-		username:  conf.Username,
-		password:  conf.Password,
-		useragent: conf.UserAgent,
-		httpClient: &http.Client{
-			//Timeout:   conf.Timeout,
+	return &Client{
+		Client: &http.Client{
+			//Timeout:   opts.Timeout,
 			Transport: tr,
 		},
+		url:       *u,
+		username:  opts.Username,
+		password:  opts.Password,
+		useragent: opts.UserAgent,
 	}, nil
 }
 
-// DownloadSourcetable downloads the sourcetable named by st and returns the contents.
-func (c *client) DownloadSourcetable() ([]byte, error) {
+// IsCasterAlive checks whether the caster is alive.
+// This is done by checking if the caster responds with its sourcetable.
+func (c *Client) IsCasterAlive() bool {
+	if _, err := c.GetSourcetable(); err != nil {
+		return false
+	}
+	return true
+}
+
+// GetSourcetable downloads the sourcetable and returns the contents.
+func (c *Client) GetSourcetable() (*http.Response, error) {
 	req, err := http.NewRequest("GET", c.url.String(), nil)
-	checkError(err)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Set("User-Agent", c.useragent)
 	req.Header.Set("Connection", "close")
 	req.Header.Add("Ntrip-Version", "Ntrip/2.0")
-
-	resp, err := c.httpClient.Do(req)
-	checkError(err)
-	if resp.StatusCode != 200 {
-		fmt.Println(resp.Status)
-		os.Exit(2)
+	resp, err := c.Do(req)
+	if err != nil {
+		return nil, err
 	}
-	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK { // / if resp.Status != "200 OK"
+		resp.Body.Close()
+		return nil, fmt.Errorf("GET failed: %d (%s)", resp.StatusCode, resp.Status)
+	}
 
 	if resp.Header.Get("Content-Type") != "gnss/sourcetable" {
+		resp.Body.Close()
 		return nil, fmt.Errorf("sourcetable %s with content-type %s", c.url.String(), resp.Header.Get("Content-Type"))
 	}
 
-	ntripcaster := resp.Header.Get("Server")
-	fmt.Printf("Server: %s\n", ntripcaster)
+	return resp, nil
+}
 
-	fmt.Println("The request header is:")
-	re, _ := httputil.DumpRequest(req, false)
-	fmt.Println(string(re))
+// ParseSourcetable downloads the sourcetable and parses its contents.
+func (c *Client) ParseSourcetable() ([]byte, error) {
+	resp, err := c.GetSourcetable()
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
-	fmt.Println("The response header is:")
-	respi, _ := httputil.DumpResponse(resp, false)
-	fmt.Print(string(respi))
+	servername := resp.Header.Get("Server")
+	fmt.Printf("Server: %s\n", servername)
+
+	// Debug
+	/* 	fmt.Println("The request header is:")
+	   	re, _ := httputil.DumpRequest(req, false)
+	   	fmt.Println(string(re))
+
+	   	fmt.Println("The response header is:")
+	   	respi, _ := httputil.DumpResponse(resp, false)
+	   	fmt.Print(string(respi)) */
 
 	scanner := bufio.NewScanner(resp.Body)
 	ln := ""
@@ -184,21 +214,65 @@ func (c *client) DownloadSourcetable() ([]byte, error) {
 	return nil, nil
 }
 
-/*
-func TestDownloadSourcetable(t *testing.T) {
-	addr := "http://www.igs-ip.net:2101"
-	proxy := "http://"
+// ConnectStream requests GNSS data from the NtripCaster.
+func (c *Client) ConnectStream(mp string) (io.ReadCloser, error) {
 
-	config := HTTPConfig{Addr: addr, Proxy: proxy}
-	c, err := NewNtripClient(config)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	defer c.Close()
+	// // Transport see http DefaultTransport settings
+	// tr := &http.Transport{
+	// 	Dial: (&net.Dialer{ // -> establishment of the connection
+	// 		Timeout:   30 * time.Second,
+	// 		KeepAlive: 30 * time.Second,
+	// 	}).Dial,
+	// 	Proxy:                 http.ProxyFromEnvironment,
+	// 	IdleConnTimeout:       30 * time.Second,
+	// 	TLSHandshakeTimeout:   10 * time.Second,
+	// 	ResponseHeaderTimeout: 10 * time.Second, // e.g. for using the wrong proxy!
+	// 	//TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	// }
+	// if cl.Proxy != nil {
+	// 	tr.Proxy = http.ProxyURL(cl.Proxy)
+	// }
+	// httpClient := &http.Client{Transport: tr}
 
-	_, err = c.DownloadSourcetable()
-	if err != nil {
-		t.Fatalf("%v", err)
+	c.url.Path = mp // Set mountpoint
+	req, err := http.NewRequest("GET", c.url.String(), nil)
+	checkError(err)
+
+	req.Header.Set("User-Agent", c.useragent)
+	req.Header.Add("Ntrip-Version", "Ntrip/2.0")
+	req.SetBasicAuth(c.username, c.password)
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Connection", "close")
+
+	//cl.request = req
+
+	fmt.Println("The request header is:")
+	re, _ := httputil.DumpRequest(req, false)
+	fmt.Print(string(re))
+
+	// Send request
+	log.Printf("Pull stream %s", c.url.String())
+	resp, err := c.Do(req)
+	checkError(err)
+
+	fmt.Println("The response header is:")
+	respi, _ := httputil.DumpResponse(resp, false)
+	fmt.Print(string(respi))
+
+	if resp.StatusCode != http.StatusOK { // / if resp.Status != "200 OK"
+		return nil, fmt.Errorf("GET failed: %d (%s)", resp.StatusCode, resp.Status)
 	}
-	//t.Logf("sourcetable: \n%s", st)
-} */
+
+	if resp.Header.Get("Content-Type") != "gnss/data" { // Ntrip 2.0
+		return nil, fmt.Errorf("sourcetable %s has content-type %s", c.url.String(), resp.Header.Get("Content-Type"))
+	}
+
+	return resp.Body, nil
+}
+
+func checkError(err error) {
+	if err != nil {
+		fmt.Println("Fatal error ", err.Error())
+		os.Exit(1)
+	}
+}
