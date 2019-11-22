@@ -18,28 +18,42 @@ import (
 	"time"
 )
 
+var (
+	// Pattern for connection duration string, e.g. '12 days, 12 hours, 56 minutes and 5 seconds'
+	connectionTimePattern = regexp.MustCompile(`((\d+) days,)?(\s(\d+) hours,)?(\s(\d+) minutes and )?((\d+) seconds)?`)
+)
+
 // CasterStats contains general statistics like number of clients, sources etc.
 type CasterStats struct {
-	Admins, Sources, Listeners int
-	Uptime                     string // TODO -> time.Duration
-	LastResync                 time.Time
+	Admins     int       `json:"admins"`
+	Sources    int       `json:"sources"`
+	Listeners  int       `json:"listeners"`
+	Uptime     string    `json:"uptime"` // TODO -> time.Duration
+	LastResync time.Time `json:"last_resync"`
 
 	// Following fields since last resync
-	KBytesRead, KBytesWritten int // since last resync
+	KBytesRead    int `json:"KBytes_recv"`
+	KBytesWritten int `json:"KBytes_sent"`
+}
 
+// String is a CasterStats Sringer.
+func (stats CasterStats) String() string {
+	return fmt.Sprintf("Admins: \t%d\nSources: \t%d\nListeners: \t%d\nUptime: \t%s\nLastResync: \t%s\n\tKBytesRead: \t%d\n\tKBytesWritten: \t%d\n",
+		stats.Admins, stats.Sources, stats.Listeners, stats.Uptime, stats.LastResync, stats.KBytesRead, stats.KBytesWritten)
 }
 
 // CasterListener contains the information about an connected listener/client like IP, user agent etc.
 type CasterListener struct {
-	Host, IP     string
-	User         string
-	MP           string
-	ID           int
-	ConnectedFor string // -> time.Duration
-	BytesWritten int
-	Errors       int
-	UserAgent    string
-	ListenerType string
+	Host         string        `json:"host"`
+	IP           string        `json:"ip"`
+	User         string        `json:"username"`
+	MP           string        `json:"mountpoint"`
+	ID           int           `json:"id"`
+	ConnectedFor time.Duration `json:"connected_for"` // -> time.Duration
+	BytesWritten int           `json:"bytes_written"`
+	Errors       int           `json:"errors"`
+	UserAgent    string        `json:"user_agent"`
+	Type         string        `json:"type"`
 }
 
 // CasterSource contains information about an active data stream.
@@ -122,8 +136,8 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 	for scanner.Scan() {
 		ln = scanner.Text()
 		if strings.HasPrefix(ln, "<li>") {
-			ln = strings.TrimPrefix(ln, "<li>")
-			ln = strings.TrimSuffix(ln, "<br>")
+			ln = strings.TrimPrefix(ln, "<li>[")
+			ln = strings.TrimSuffix(ln, "]<br>")
 
 			li = CasterListener{}
 
@@ -141,7 +155,7 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 
 				key, val := hlp[0], strings.TrimSpace(hlp[1])
 				switch key {
-				case "[Host":
+				case "Host":
 					li.Host = val
 				case "IP":
 					li.IP = val
@@ -156,7 +170,25 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 						log.Printf("%v", err)
 					}
 				case "Connected for":
-					li.ConnectedFor = val
+					// TODOOOOOOOOOOOOOOO
+					res := connectionTimePattern.FindStringSubmatch(val)
+					for k, v := range res {
+						//fmt.Printf("%d. %s\n", k, v)
+						if v == "" {
+							res[k] = "0"
+						}
+					}
+					if len(res) == 9 {
+						days, _ := strconv.Atoi(res[2])
+						hours, _ := strconv.Atoi(res[4])
+						min, _ := strconv.Atoi(res[6])
+						secs, _ := strconv.Atoi(res[8])
+						dur := time.Duration(days)*time.Hour*24 + time.Duration(hours)*time.Hour + time.Duration(min)*time.Minute + time.Duration(secs)*time.Second
+						li.ConnectedFor = dur
+					} else {
+						fmt.Printf("%s\n", val)
+						li.ConnectedFor = 0
+					}
 				case "Bytes written":
 					if i, err := strconv.Atoi(val); err == nil {
 						li.BytesWritten = i
@@ -172,7 +204,7 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 				case "User agent":
 					li.UserAgent = val
 				case "Type":
-					li.ListenerType = strings.TrimSuffix(val, "]")
+					li.Type = val // strings.TrimSuffix(val, "]")
 				default:
 					log.Printf("unknown key: %s", key)
 				}
@@ -220,6 +252,7 @@ line:
 
 			fields = strings.Split(ln, "</td><td>")
 			for i, val := range fields {
+				val = strings.TrimSpace(val)
 				if val == "Mountpoint" { // Headline
 					headline = fields
 					continue line
