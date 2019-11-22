@@ -73,10 +73,10 @@ Examples:
 			lisJSON, _ := json.Marshal(listeners)
 			fmt.Println(string(lisJSON))
 		} else {
-			fmt.Printf("%-17s %-20s %-12s %-10s %-20s %-14s %-30s %-12s %s\n",
+			fmt.Printf("%-17s %-20s %-12s %-10s %-13s %-14s %-30s %-12s %s\n",
 				"IP", "Username", "MP", "ID", "ConnectedFor", "BytesWritten", "UserAgent", "Type", "Errors")
 			for _, li := range listeners[:30] {
-				fmt.Printf("%-17s %-20s %-12s %-10d %-20s %-14d %-30s %-12s %d\n",
+				fmt.Printf("%-17s %-20s %-12s %-10d %-13s %-14d %-30s %-12s %d\n",
 					li.IP, li.User, li.MP, li.ID, li.ConnectedFor, li.BytesWritten, li.UserAgent, li.Type, li.Errors)
 			}
 

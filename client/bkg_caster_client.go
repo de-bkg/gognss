@@ -20,7 +20,7 @@ import (
 
 var (
 	// Pattern for connection duration string, e.g. '12 days, 12 hours, 56 minutes and 5 seconds'
-	connectionTimePattern = regexp.MustCompile(`((\d+) days,)?(\s(\d+) hours,)?(\s(\d+) minutes and )?((\d+) seconds)?`)
+	connectionTimePattern = regexp.MustCompile(`((\d+) days, )?((\d+) hours, )?((\d+) minutes)?( and )?((\d+) seconds)?`)
 )
 
 // CasterStats contains general statistics like number of clients, sources etc.
@@ -138,13 +138,10 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 		if strings.HasPrefix(ln, "<li>") {
 			ln = strings.TrimPrefix(ln, "<li>[")
 			ln = strings.TrimSuffix(ln, "]<br>")
-
 			li = CasterListener{}
-
 			fields = strings.Split(ln, "] [")
 			for _, v := range fields {
 				hlp := strings.Split(v, ":")
-
 				// fixed in caster version 2.0.3?
 				if len(hlp) == 1 {
 					if strings.HasPrefix(hlp[0], "Mountpoint") {
@@ -170,23 +167,10 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 						log.Printf("%v", err)
 					}
 				case "Connected for":
-					// TODOOOOOOOOOOOOOOO
-					res := connectionTimePattern.FindStringSubmatch(val)
-					for k, v := range res {
-						//fmt.Printf("%d. %s\n", k, v)
-						if v == "" {
-							res[k] = "0"
-						}
-					}
-					if len(res) == 9 {
-						days, _ := strconv.Atoi(res[2])
-						hours, _ := strconv.Atoi(res[4])
-						min, _ := strconv.Atoi(res[6])
-						secs, _ := strconv.Atoi(res[8])
-						dur := time.Duration(days)*time.Hour*24 + time.Duration(hours)*time.Hour + time.Duration(min)*time.Minute + time.Duration(secs)*time.Second
-						li.ConnectedFor = dur
+					if d, err := parseDuration(val); err == nil {
+						li.ConnectedFor = d
 					} else {
-						fmt.Printf("%s\n", val)
+						log.Printf("%v", err)
 						li.ConnectedFor = 0
 					}
 				case "Bytes written":
@@ -500,4 +484,24 @@ func (c *Client) GetStats() (*CasterStats, error) {
 	}
 
 	return stats, nil
+}
+
+func parseDuration(dur string) (time.Duration, error) {
+	res := connectionTimePattern.FindStringSubmatch(dur)
+	for k, v := range res {
+		//fmt.Printf("%d. %s\n", k, v)
+		if v == "" {
+			res[k] = "0"
+		}
+	}
+	if len(res) == 10 {
+		days, _ := strconv.Atoi(res[2])
+		hours, _ := strconv.Atoi(res[4])
+		min, _ := strconv.Atoi(res[6])
+		secs, _ := strconv.Atoi(res[9])
+		return time.Duration(days)*time.Hour*24 + time.Duration(hours)*time.Hour +
+			time.Duration(min)*time.Minute + time.Duration(secs)*time.Second, nil
+	}
+
+	return 0, fmt.Errorf("Could not parse duration from: %s (%+v)", dur, res)
 }

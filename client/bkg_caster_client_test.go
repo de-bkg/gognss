@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var exAddr string = "http://www.igs-ip.net:2101"
 var user, pass string = "", ""
 
 func TestGetStats(t *testing.T) {
@@ -95,4 +96,24 @@ func TestGetConnections(t *testing.T) {
 	assert.NotZero(t, conn.Type, "conn type")
 
 	fmt.Printf("%+v\n", conn)
+}
+
+func TestParseDuration(t *testing.T) {
+	assert := assert.New(t)
+	tests := map[string]string{
+		"2 days, 11 hours, 48 minutes":               "59h48m0s",
+		"2 days, 11 hours, 47 minutes and 1 seconds": "59h47m1s",
+		"1 days, 23 hours, 8 minutes and 54 seconds": "47h8m54s",
+		"10 hours, 32 minutes and 24 seconds":        "10h32m24s",
+		"5 hours, 28 minutes":                        "5h28m0s",
+		"27 minutes and 39 seconds":                  "27m39s",
+		"56 seconds":                                 "56s",
+	}
+
+	for str, durStr := range tests {
+		dur, err := parseDuration(str)
+		assert.NoError(err)
+		assert.Equal(durStr, dur.String())
+		//fmt.Printf("dur: %s\n", dur.String())
+	}
 }
