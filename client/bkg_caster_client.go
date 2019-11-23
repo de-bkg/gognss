@@ -25,11 +25,11 @@ var (
 
 // CasterStats contains general statistics like number of clients, sources etc.
 type CasterStats struct {
-	Admins     int       `json:"admins"`
-	Sources    int       `json:"sources"`
-	Listeners  int       `json:"listeners"`
-	Uptime     string    `json:"uptime"` // TODO -> time.Duration
-	LastResync time.Time `json:"last_resync"`
+	Admins     int           `json:"admins"`
+	Sources    int           `json:"sources"`
+	Listeners  int           `json:"listeners"`
+	Uptime     time.Duration `json:"uptime"`
+	LastResync time.Time     `json:"last_resync"`
 
 	// Following fields since last resync
 	KBytesRead    int `json:"KBytes_recv"`
@@ -49,7 +49,7 @@ type CasterListener struct {
 	User         string        `json:"username"`
 	MP           string        `json:"mountpoint"`
 	ID           int           `json:"id"`
-	ConnectedFor time.Duration `json:"connected_for"` // -> time.Duration
+	ConnectedFor time.Duration `json:"connected_for"`
 	BytesWritten int           `json:"bytes_written"`
 	Errors       int           `json:"errors"`
 	UserAgent    string        `json:"user_agent"`
@@ -62,8 +62,8 @@ type CasterSource struct {
 	MP                        string
 	ID                        int
 	Agent                     string
-	ConnectedFor              string // -> time.Duration
-	ConnectionTime            string // -> time.Time
+	ConnectedFor              time.Duration
+	ConnectionTime            time.Time
 	Clients                   int
 	ClientConnections         int
 	KBytesRead, KBytesWritten int
@@ -77,7 +77,7 @@ type CasterConn struct {
 	UserAgent    string
 	IP           string
 	User         string
-	ConnectedFor string // -> time.Duration
+	ConnectedFor time.Duration
 }
 
 func (c *Client) sendRequest() (io.ReadCloser, error) {
@@ -171,7 +171,6 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 						li.ConnectedFor = d
 					} else {
 						log.Printf("%v", err)
-						li.ConnectedFor = 0
 					}
 				case "Bytes written":
 					if i, err := strconv.Atoi(val); err == nil {
@@ -256,9 +255,17 @@ line:
 						log.Printf("%v", err)
 					}
 				case "Connected for":
-					src.ConnectedFor = val
+					if d, err := parseDuration(val); err == nil {
+						src.ConnectedFor = d
+					} else {
+						log.Printf("%v", err)
+					}
 				case "Time of connect":
-					src.ConnectionTime = val
+					if t, err := time.Parse("02/Jan/2006:15:04:05", val); err == nil {
+						src.ConnectionTime = t
+					} else {
+						log.Printf("could not parse time of connect: %v", err)
+					}
 				case "KBytes read":
 					if i, err := strconv.Atoi(val); err == nil {
 						src.KBytesRead = i
@@ -360,15 +367,17 @@ line:
 						log.Printf("RegEx for \"Id\" did not match")
 					}
 				case "Connected for":
-					conn.ConnectedFor = val
+					if d, err := parseDuration(val); err == nil {
+						conn.ConnectedFor = d
+					} else {
+						log.Printf("%v", err)
+					}
 				case "Agent":
 					conn.UserAgent = val
 				default:
 					log.Printf("Unknown key \"%s\"", header[i])
 				}
-
 			}
-
 			conns = append(conns, conn)
 		}
 	}
@@ -460,12 +469,16 @@ func (c *Client) GetStats() (*CasterStats, error) {
 			}
 			stats.Listeners = i
 		} else if strings.Contains(key, "uptime") {
-			stats.Uptime = val
-		} else if strings.Contains(key, "last resync") {
-			if t, err := time.Parse("02/Jan/2006 150405", val+" "+fields[2]+fields[3]+fields[4]); err == nil {
-				stats.LastResync = t
+			if d, err := parseDuration(val); err == nil {
+				stats.Uptime = d
 			} else {
 				log.Printf("%v", err)
+			}
+		} else if strings.Contains(key, "last resync") {
+			if t, err := time.Parse("02/Jan/2006:150405", val+":"+fields[2]+fields[3]+fields[4]); err == nil {
+				stats.LastResync = t
+			} else {
+				log.Printf("could not parse time of last resync: %v", err)
 			}
 		} else if strings.Contains(key, "KBytes read") {
 			if i, err := strconv.Atoi(val); err == nil {
