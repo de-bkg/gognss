@@ -52,8 +52,8 @@ type Options struct {
 	// for accesing a stream, it MUST contain "NTRIP"
 	UserAgent string
 
-	// Timeout for GET requests as duration (e.g. "1h10m10s"), defaults to 5 seconds.
-	Timeout string
+	// Timeout for GET requests in seconds. Defaults to 5 seconds.
+	Timeout int
 
 	// UnsafeSSL gets passed to the http client, if true, it will skip https certificate verification.
 	// Defaults to false.
@@ -176,11 +176,8 @@ func New(addr string, opts Options) (*Client, error) {
 	// 	tr.TLSClientConfig = opts.TLSConfig
 	// }
 	var timeout time.Duration = 5 * time.Second // default
-	if opts.Timeout != "" {
-		timeout, err = time.ParseDuration(opts.Timeout)
-		if err != nil {
-			return nil, fmt.Errorf("Could not parse timeout: %s: %v", opts.Timeout, err)
-		}
+	if opts.Timeout != 0 {
+		timeout = time.Duration(opts.Timeout) * time.Second
 	}
 
 	return &Client{

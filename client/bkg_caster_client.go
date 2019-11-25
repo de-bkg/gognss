@@ -36,12 +36,6 @@ type CasterStats struct {
 	KBytesWritten int `json:"KBytes_sent"`
 }
 
-// String is a CasterStats Sringer.
-func (stats CasterStats) String() string {
-	return fmt.Sprintf("Admins: \t%d\nSources: \t%d\nListeners: \t%d\nUptime: \t%s\nLastResync: \t%s\n\tKBytesRead: \t%d\n\tKBytesWritten: \t%d\n",
-		stats.Admins, stats.Sources, stats.Listeners, stats.Uptime, stats.LastResync, stats.KBytesRead, stats.KBytesWritten)
-}
-
 // CasterListener contains the information about an connected listener/client like IP, user agent etc.
 type CasterListener struct {
 	Host         string        `json:"host"`

@@ -7,7 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var exAddr string = "http://www.euref-ip.net:2101"
 var user, pass string = "", ""
 
 func TestGetStats(t *testing.T) {

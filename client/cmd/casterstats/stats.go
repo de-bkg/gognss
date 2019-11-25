@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"time"
 
 	cli "github.com/erwiese/ntrip/client"
 )
@@ -25,8 +26,10 @@ func main() {
 	fs.StringVar(&opts.Username, "username", "", "Operator username to connect to the caster.")
 	fs.StringVar(&opts.Password, "pw", "", "Operator Password.")
 	fs.BoolVar(&opts.UnsafeSSL, "unsafeSSL", false, "If true, it will skip https certificate verification. Defaults to false.")
-	printListeners := fs.Bool("li", false, "Print the currently connected listeners.")
+	printListeners := fs.Bool("listeners", false, "Print the currently connected listeners.")
+	printSources := fs.Bool("sources", false, "Print the currently available Ntrip sources.")
 	outpFormat := fs.String("format", "column", "Format specifies the format of the output: column, json.")
+	printHeader := fs.Bool("H", false, "Print the header line. Defaults to false.")
 	//fs.StringVar(&conf.Proxy, "proxy", "", "the http proxy to use. Default: read the proxy settings from your environment.")
 
 	fs.Usage = func() {
@@ -39,8 +42,11 @@ Flags:`)
 		fs.PrintDefaults()
 		fmt.Println(`
 Examples:
-	# Get general statistics
-	$ casterstats -username=xxx -pw=xxx http://www.igs-ip.net:2101`)
+    # Get general statistics
+    $ casterstats -username=xxx -pw=xxx http://www.igs-ip.net:2101
+	
+    # Get sources in JSON format
+    $ casterstats -username=xxx -pw=xxx -sources -format=json http://www.igs-ip.net:2101`)
 		fmt.Printf("\nVersion: casterstats %s\n", version)
 		fmt.Printf("Author : %s\n", "Erwin Wiesensarter, BKG Frankfurt")
 	}
@@ -73,13 +79,14 @@ Examples:
 			lisJSON, _ := json.Marshal(listeners)
 			fmt.Println(string(lisJSON))
 		} else {
-			fmt.Printf("%-17s %-20s %-12s %-10s %-13s %-14s %-30s %-12s %s\n",
-				"IP", "Username", "MP", "ID", "ConnectedFor", "BytesWritten", "UserAgent", "Type", "Errors")
-			for _, li := range listeners[:30] {
+			if *printHeader {
+				fmt.Printf("%-17s %-20s %-12s %-10s %-13s %-14s %-30s %-12s %s\n",
+					"# IP", "Username", "MP", "ID", "ConnectedFor", "BytesWritten", "UserAgent", "Type", "Errors")
+			}
+			for _, li := range listeners {
 				fmt.Printf("%-17s %-20s %-12s %-10d %-13s %-14d %-30s %-12s %d\n",
 					li.IP, li.User, li.MP, li.ID, li.ConnectedFor, li.BytesWritten, li.UserAgent, li.Type, li.Errors)
 			}
-
 		}
 
 		/*  connsPerUser := make(map[string]int)
@@ -95,6 +102,27 @@ Examples:
 		os.Exit(0)
 	}
 
+	if *printSources {
+		sources, err := c.GetSources()
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		if *outpFormat == "json" {
+			sourcesJSON, _ := json.Marshal(sources)
+			fmt.Println(string(sourcesJSON))
+		} else {
+			if *printHeader {
+				fmt.Printf("%-17s %-12s %-9s %-45s %-13s %-21s %-8s %-12s %-14s %-14s\n",
+					"# IP", "MP", "ID", "Agent", "ConnectedFor", "ConnectTime", "Clients", "ClientConns", "KBytesRead", "KBytesWritten")
+			}
+			for _, s := range sources {
+				fmt.Printf("%-17s %-12s %-9d %-45s %-13s %-21s %-8d %-12d %-14d %-14d\n",
+					s.IP, s.MP, s.ID, s.Agent, s.ConnectedFor, s.ConnectionTime.Format(time.RFC3339), s.Clients, s.ClientConnections, s.KBytesRead, s.KBytesWritten)
+			}
+		}
+		os.Exit(0)
+	}
+
 	// default action
 	stats, err := c.GetStats()
 	if err != nil {
@@ -105,7 +133,12 @@ Examples:
 		statsJSON, _ := json.Marshal(stats)
 		fmt.Println(string(statsJSON))
 	} else {
-		fmt.Printf("%v", stats)
+		if *printHeader {
+			fmt.Printf("%-8s %-8s %-10s %-14s %-21s %-15s %-15s\n",
+				"# Admins", "Sources", "Listeners", "Uptime", "LastResync", "KBytesRead", "KBytesWritten")
+		}
+		fmt.Printf("%-8d %-8d %-10d %-14s %-21s %-15d %-15d\n",
+			stats.Admins, stats.Sources, stats.Listeners, stats.Uptime, stats.LastResync.Format(time.RFC3339), stats.KBytesRead, stats.KBytesWritten)
 	}
 
 }
