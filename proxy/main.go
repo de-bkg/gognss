@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -13,6 +12,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	ntripCli "github.com/erwiese/ntrip/client"
 )
 
 const (
@@ -21,48 +22,49 @@ const (
 	Retry
 )
 
-// Caster holds the data about a NtripCaster
-type Caster struct {
-	URL          *url.URL
-	Alive        bool
-	mux          sync.RWMutex
-	ReverseProxy *httputil.ReverseProxy
+// Backend holds the data about a NtripCaster.
+type Backend struct {
+	*ntripCli.Client // Caster client
+	URL              *url.URL
+	Alive            bool
+	mux              sync.RWMutex
+	ReverseProxy     *httputil.ReverseProxy
 }
 
-// SetAlive for this caster
-func (ca *Caster) SetAlive(alive bool) {
-	ca.mux.Lock()
-	ca.Alive = alive
-	ca.mux.Unlock()
+// SetAlive for this backend.
+func (b *Backend) SetAlive(alive bool) {
+	b.mux.Lock()
+	b.Alive = alive
+	b.mux.Unlock()
 }
 
 // IsAlive returns true when caster is alive
-func (ca *Caster) IsAlive() (alive bool) {
-	ca.mux.RLock()
-	alive = ca.Alive
-	ca.mux.RUnlock()
+func (b *Backend) IsAlive() (alive bool) {
+	b.mux.RLock()
+	alive = b.Alive
+	b.mux.RUnlock()
 	return
 }
 
-// CasterPool holds information about reachable casters
-type CasterPool struct {
-	casters []*Caster
-	current uint64
+// BackendPool holds information about reachable backends.
+type BackendPool struct {
+	backends []*Backend
+	current  uint64
 }
 
-// AddCaster to the server pool
-func (s *CasterPool) AddCaster(caster *Caster) {
-	s.casters = append(s.casters, caster)
+// AddBackend to the server pool
+func (bp *BackendPool) AddBackend(caster *Backend) {
+	bp.backends = append(bp.backends, caster)
 }
 
 // NextIndex atomically increase the counter and return an index
-func (s *CasterPool) NextIndex() int {
-	return int(atomic.AddUint64(&s.current, uint64(1)) % uint64(len(s.casters)))
+func (bp *BackendPool) NextIndex() int {
+	return int(atomic.AddUint64(&bp.current, uint64(1)) % uint64(len(bp.backends)))
 }
 
-// MarkCasterStatus changes a status of a caster
-func (s *CasterPool) MarkCasterStatus(casterURL *url.URL, alive bool) {
-	for _, b := range s.casters {
+// MarkBackendStatus changes a status of a caster
+func (bp *BackendPool) MarkBackendStatus(casterURL *url.URL, alive bool) {
+	for _, b := range bp.backends {
 		if b.URL.String() == casterURL.String() {
 			b.SetAlive(alive)
 			break
@@ -71,27 +73,28 @@ func (s *CasterPool) MarkCasterStatus(casterURL *url.URL, alive bool) {
 }
 
 // GetNextPeer returns next active peer to take a connection
-func (s *CasterPool) GetNextPeer() *Caster {
-	// loop entire casters to find out an Alive caster
-	next := s.NextIndex()
-	l := len(s.casters) + next // start from next and move a full cycle
+func (bp *BackendPool) GetNextPeer() *Backend {
+	// loop entire backends to find out an Alive caster
+	next := bp.NextIndex()
+	l := len(bp.backends) + next // start from next and move a full cycle
 	for i := next; i < l; i++ {
-		idx := i % len(s.casters)     // take an index by modding
-		if s.casters[idx].IsAlive() { // if we have an alive caster, use it and store if its not the original one
+		idx := i % len(bp.backends)     // take an index by modding
+		if bp.backends[idx].IsAlive() { // if we have an alive caster, use it and store if its not the original one
 			if i != next {
-				atomic.StoreUint64(&s.current, uint64(idx))
+				atomic.StoreUint64(&bp.current, uint64(idx))
 			}
-			return s.casters[idx]
+			return bp.backends[idx]
 		}
 	}
 	return nil
 }
 
-// HealthCheck pings the casters and update the status
-func (s *CasterPool) HealthCheck() {
-	for _, b := range s.casters {
+// HealthCheck pings the backends and update the status
+func (bp *BackendPool) HealthCheck() {
+	for _, b := range bp.backends {
 		status := "up"
-		alive := isCasterAlive(b.URL)
+		//alive := isCasterAlive(b.URL)
+		alive := b.IsCasterAlive()
 		b.SetAlive(alive)
 		if !alive {
 			status = "down"
@@ -125,7 +128,7 @@ func lb(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	peer := casterPool.GetNextPeer()
+	peer := backendPool.GetNextPeer()
 	if peer != nil {
 		peer.ReverseProxy.ServeHTTP(w, r)
 		return
@@ -134,41 +137,41 @@ func lb(w http.ResponseWriter, r *http.Request) {
 }
 
 // isAlive checks whether a caster is Alive by establishing a TCP connection
-func isCasterAlive(u *url.URL) bool {
+/* func isCasterAlive(u *url.URL) bool {
 	timeout := 2 * time.Second
 	conn, err := net.DialTimeout("tcp", u.Host, timeout)
 	if err != nil {
-		log.Println("Caster unreachable, error: ", err)
+		log.Println("Backend unreachable, error: ", err)
 		return false
 	}
 	defer conn.Close()
 	return true
-}
+} */
 
-// healthCheck runs a routine for check status of the casters every 2 mins
+// healthCheck runs a routine for check status of the backends every 2 mins
 func healthCheck() {
 	t := time.NewTicker(time.Second * 20)
 	for {
 		select {
 		case <-t.C:
 			log.Println("Starting health check...")
-			casterPool.HealthCheck()
+			backendPool.HealthCheck()
 			log.Println("Health check completed")
 		}
 	}
 }
 
-var casterPool CasterPool
+var backendPool BackendPool
 
 func main() {
 	var serverList string
 	var port int
-	flag.StringVar(&serverList, "casters", "", "Load balanced casters, use commas to separate")
+	flag.StringVar(&serverList, "backends", "", "Load balanced backends, use commas to separate")
 	flag.IntVar(&port, "port", 3030, "Port to serve")
 	flag.Parse()
 
 	if len(serverList) == 0 {
-		log.Fatal("Please provide one or more casters to load balance")
+		log.Fatal("Please provide one or more backends to load balance")
 	}
 
 	// parse servers
@@ -193,16 +196,19 @@ func main() {
 			}
 
 			// after 3 retries, mark this caster as down
-			casterPool.MarkCasterStatus(serverURL, false)
+			backendPool.MarkBackendStatus(serverURL, false)
 
-			// if the same request routing for few attempts with different casters, increase the count
+			// if the same request routing for few attempts with different backends, increase the count
 			attempts := GetAttemptsFromContext(request)
 			log.Printf("%s(%s) Attempting retry %d\n", request.RemoteAddr, request.URL.Path, attempts)
 			ctx := context.WithValue(request.Context(), Attempts, attempts+1)
 			lb(writer, request.WithContext(ctx))
 		}
 
-		casterPool.AddCaster(&Caster{
+		cli, err := ntripCli.New(serverURL.String(), ntripCli.Options{})
+
+		backendPool.AddBackend(&Backend{
+			Client:       cli,
 			URL:          serverURL,
 			Alive:        true,
 			ReverseProxy: proxy,
