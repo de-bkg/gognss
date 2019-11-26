@@ -223,10 +223,12 @@ func (c *Client) GetSourcetable() (io.ReadCloser, error) {
 	   	fmt.Println(string(re))
 
 	   	fmt.Println("The response header is:")
-	   	respi, _ := httputil.DumpResponse(resp, false)
-		   fmt.Print(string(respi)) */
-	servername := resp.Header.Get("Server")
-	fmt.Printf("Server: %s\n", servername)
+		   dump, _ := httputil.DumpResponse(resp, false)
+		   fmt.Printf("%q", dump)
+		   //fmt.Print(string(dump)) */
+
+	// servername := resp.Header.Get("Server")
+	// log.Printf("Server: %s\n", servername)
 
 	if resp.StatusCode != http.StatusOK { // / if resp.Status != "200 OK"
 		resp.Body.Close()
