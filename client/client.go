@@ -73,21 +73,14 @@ type Options struct {
 // instead of created as needed. Clients are safe for concurrent use by multiple goroutines.
 type Client struct {
 	*http.Client
-	url       url.URL
-	username  string
-	password  string
-	useragent string
+	URL       *url.URL // // URL specifies the URL to access, for client requests.
+	Username  string
+	Password  string
+	Useragent string
 
 	// Quit chan struct{}
 	//errorChan chan error
 	//dataChan  chan []byte
-}
-
-// Sourcetable holds the streams from an NtripCasters' sourcetable.
-type Sourcetable struct {
-	Casters  []Caster
-	Networks []Network
-	Streams  []Stream
 }
 
 // Caster specifies a sourcetable record for a caster.
@@ -140,6 +133,40 @@ type Stream struct {
 	Misc          string   // Miscellaneous information
 }
 
+// Sourcetable holds the streams from an NtripCasters' sourcetable.
+type Sourcetable struct {
+	Casters  []Caster
+	Networks []Network
+	Streams  []Stream
+}
+
+// Write writes a RTCM formated sourcetable to the specified writer.
+func (st *Sourcetable) Write(w io.Writer) error {
+	// var r io.Reader
+	// var buf bytes.Buffer
+	// r = &buf
+	// w := bufio.NewWriter(&buf)
+
+	for _, ca := range st.Casters {
+		fmt.Fprintf(w, "%s;%s;%d;%s;%s;%d;%s;%.2f;%.2f;%s;%d;%s\n",
+			"CAS", ca.Host, ca.Port, ca.Identifier, ca.Operator, printNMEA(ca.Nmea), ca.Country, ca.Lat, ca.Lon, ca.FallbackHost, ca.FallbackPort, ca.Misc)
+	}
+
+	for _, net := range st.Networks {
+		fmt.Fprintf(w, "%s;%s;%s;%s;%s;%s;%s;%s;%s\n",
+			"NET", net.Identifier, net.Operator, net.Auth, printFee(net.Fee), net.WebNet, net.WebStream, net.WebReg, net.Misc)
+	}
+
+	for _, str := range st.Streams {
+		fmt.Fprintf(w, "%s;%s;%s;%s;%s;%d;%s;%s;%s;%.2f;%.2f;%d;%d;%s;%s;%s;%s;%d;%s\n",
+			"STR", str.MP, str.Identifier, str.Format, str.FormatDetails, str.Carrier, strings.Join(str.NavSystem, "+"), str.Network,
+			str.Country, str.Lat, str.Lon, printNMEA(str.Nmea), str.Solution, str.Generator, str.Compression, str.Auth, printFee(str.Fee), str.Bitrate, str.Misc)
+	}
+
+	// return ioutil.NopCloser(r), nil -> (io.ReadCloser, error)
+	return nil
+}
+
 // New returns a new Ntrip Client with the given caster address and additional options.
 // The caster addr should have the form "http://host:port". It uses HTTP proxies
 // as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and
@@ -185,10 +212,10 @@ func New(addr string, opts Options) (*Client, error) {
 			Timeout: timeout,
 			//Transport: tr, // see http DefaultTransport settings
 		},
-		url:       *casterURL,
-		username:  opts.Username,
-		password:  opts.Password,
-		useragent: opts.UserAgent,
+		URL:       casterURL,
+		Username:  opts.Username,
+		Password:  opts.Password,
+		Useragent: opts.UserAgent,
 	}, nil
 }
 
@@ -203,13 +230,13 @@ func (c *Client) IsCasterAlive() bool {
 
 // GetSourcetable downloads the sourcetable and returns the contents.
 func (c *Client) GetSourcetable() (io.ReadCloser, error) {
-	req, err := http.NewRequest("GET", c.url.String(), nil)
+	req, err := http.NewRequest("GET", c.URL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Ntrip-Version", "Ntrip/2.0")
-	req.Header.Set("User-Agent", c.useragent)
+	req.Header.Set("User-Agent", c.Useragent)
 	req.Header.Set("Connection", "close")
 
 	resp, err := c.Do(req)
@@ -237,7 +264,7 @@ func (c *Client) GetSourcetable() (io.ReadCloser, error) {
 
 	if resp.Header.Get("Content-Type") != "gnss/sourcetable" {
 		resp.Body.Close()
-		return nil, fmt.Errorf("sourcetable %s with content-type %s", c.url.String(), resp.Header.Get("Content-Type"))
+		return nil, fmt.Errorf("sourcetable %s with content-type %s", c.URL.String(), resp.Header.Get("Content-Type"))
 	}
 
 	return resp.Body, nil
@@ -312,15 +339,15 @@ func (c *Client) ConnectStream(mp string) (io.ReadCloser, error) {
 	// }
 	// httpClient := &http.Client{Transport: tr}
 
-	c.url.Path = mp // Set mountpoint
-	req, err := http.NewRequest("GET", c.url.String(), nil)
+	c.URL.Path = mp // Set mountpoint
+	req, err := http.NewRequest("GET", c.URL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", c.useragent)
+	req.Header.Set("User-Agent", c.Useragent)
 	req.Header.Add("Ntrip-Version", "Ntrip/2.0")
-	req.SetBasicAuth(c.username, c.password)
+	req.SetBasicAuth(c.Username, c.Password)
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Connection", "close")
 
@@ -331,7 +358,7 @@ func (c *Client) ConnectStream(mp string) (io.ReadCloser, error) {
 	fmt.Print(string(re))
 
 	// Send request
-	log.Printf("Pull stream %s", c.url.String())
+	log.Printf("Pull stream %s", c.URL.String())
 	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
@@ -346,7 +373,7 @@ func (c *Client) ConnectStream(mp string) (io.ReadCloser, error) {
 	}
 
 	if resp.Header.Get("Content-Type") != "gnss/data" { // Ntrip 2.0
-		return nil, fmt.Errorf("sourcetable %s has content-type %s", c.url.String(), resp.Header.Get("Content-Type"))
+		return nil, fmt.Errorf("sourcetable %s has content-type %s", c.URL.String(), resp.Header.Get("Content-Type"))
 	}
 
 	return resp.Body, nil
@@ -447,4 +474,51 @@ func parseSTR(line string) (Stream, error) {
 		Carrier: carrier, NavSystem: navSystems, Network: fields[7], Country: fields[8],
 		Lat: float32(lat), Lon: float32(lon), Nmea: nmea, Solution: sol, Generator: fields[13],
 		Compression: fields[14], Auth: fields[15], Fee: fee, Bitrate: bitrate, Misc: fields[18]}, nil
+}
+
+// MergeSourcetables merges several sourcetables to a single combined sourcetable where every stream record appears once.
+func MergeSourcetables(stables ...*Sourcetable) (*Sourcetable, error) {
+	casMap := make(map[string]int, 10)
+	netMap := make(map[string]int, 10)
+	strMap := make(map[string]int, 200)
+
+	newST := new(Sourcetable)
+	for _, st := range stables {
+		for _, ca := range st.Casters {
+			if _, exists := casMap[ca.Identifier]; !exists {
+				newST.Casters = append(newST.Casters, ca)
+				casMap[ca.Identifier]++
+			}
+		}
+
+		for _, net := range st.Networks {
+			if _, exists := netMap[net.Identifier]; !exists {
+				newST.Networks = append(newST.Networks, net)
+				netMap[net.Identifier]++
+			}
+		}
+
+		for _, str := range st.Streams {
+			if _, exists := strMap[str.MP]; !exists {
+				newST.Streams = append(newST.Streams, str)
+				strMap[str.MP]++
+			}
+		}
+	}
+
+	return newST, nil
+}
+
+func printFee(fee bool) string {
+	if fee {
+		return "Y"
+	}
+	return "N"
+}
+
+func printNMEA(nmea bool) int {
+	if nmea {
+		return 1
+	}
+	return 0
 }

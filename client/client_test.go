@@ -1,6 +1,8 @@
 package client
 
 import (
+	"net/url"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,6 +35,37 @@ func TestParseSourcetable(t *testing.T) {
 	st, err := c.ParseSourcetable()
 	assert.NoError(t, err)
 	t.Logf("%+v", st)
+}
+
+func TestSourcetable_Write(t *testing.T) {
+	c, err := New(exAddr, Options{})
+	assert.NoError(t, err)
+	defer c.CloseIdleConnections()
+
+	st, err := c.ParseSourcetable()
+	assert.NoError(t, err)
+
+	err = st.Write(os.Stdout)
+	assert.NoError(t, err)
+}
+
+func TestMergeSourcetables(t *testing.T) {
+	c, err := New(exAddr, Options{})
+	assert.NoError(t, err)
+	defer c.CloseIdleConnections()
+
+	st1, err := c.ParseSourcetable()
+	assert.NoError(t, err)
+
+	exAddr2, err := url.Parse("http://igs-ip.net:2101")
+	assert.NoError(t, err)
+	c.URL = exAddr2
+	st2, err := c.ParseSourcetable()
+	assert.NoError(t, err)
+
+	combinedST, err := MergeSourcetables(st1, st2)
+	assert.NoError(t, err)
+	t.Logf("%+v", combinedST)
 }
 
 /* func TestPullStream(t *testing.T) {

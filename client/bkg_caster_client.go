@@ -75,14 +75,14 @@ type CasterConn struct {
 }
 
 func (c *Client) sendRequest() (io.ReadCloser, error) {
-	req, err := http.NewRequest("GET", c.url.String(), nil)
+	req, err := http.NewRequest("GET", c.URL.String(), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	req.Header.Set("User-Agent", c.useragent)
+	req.Header.Set("User-Agent", c.Useragent)
 	req.Header.Add("Ntrip-Version", "Ntrip/2.0")
-	req.SetBasicAuth(c.username, c.password)
+	req.SetBasicAuth(c.Username, c.Password)
 	//req.Header.Set("Accept-Encoding", `gzip;q=0,bzip2;q=0,compress;q=0,deflate;q=0`)
 	req.Header.Set("Accept", `text/html, text/plain, text/*`)
 	req.Header.Set("Cache-Control", "no-cache")
@@ -112,8 +112,8 @@ func (c *Client) sendRequest() (io.ReadCloser, error) {
 
 // GetListeners fetches the currently connected listeners.
 func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listener
-	c.url.Path = "admin"
-	c.url.RawQuery = "mode=listeners"
+	c.URL.Path = "admin"
+	c.URL.RawQuery = "mode=listeners"
 
 	reader, err := c.sendRequest()
 	if err != nil {
@@ -202,8 +202,8 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 
 // GetSources fetches the current sources.
 func (c *Client) GetSources() ([]CasterSource, error) {
-	c.url.Path = "admin"
-	c.url.RawQuery = "mode=sources"
+	c.URL.Path = "admin"
+	c.URL.RawQuery = "mode=sources"
 
 	reader, err := c.sendRequest()
 	if err != nil {
@@ -305,8 +305,8 @@ line:
 
 // GetConnections fetches the current client connections.
 func (c *Client) GetConnections() ([]CasterConn, error) {
-	c.url.Path = "admin"
-	c.url.RawQuery = "mode=connections"
+	c.URL.Path = "admin"
+	c.URL.RawQuery = "mode=connections"
 
 	reader, err := c.sendRequest()
 	if err != nil {
@@ -389,8 +389,8 @@ func (c *Client) KickConnection(id int) error {
 		return fmt.Errorf("Invalid id: %d", id) // kann das ueberhaupt vorkommen?
 	}
 
-	c.url.Path = "admin"
-	c.url.RawQuery = "mode=kick&argument=" + strconv.Itoa(id)
+	c.URL.Path = "admin"
+	c.URL.RawQuery = "mode=kick&argument=" + strconv.Itoa(id)
 
 	reader, err := c.sendRequest()
 	if err != nil {
@@ -403,8 +403,8 @@ func (c *Client) KickConnection(id int) error {
 
 // GetStats requests some general statistics from the caster like number of clients, connections etc.
 func (c *Client) GetStats() (*CasterStats, error) {
-	c.url.Path = "admin"
-	c.url.RawQuery = "mode=stats"
+	c.URL.Path = "admin"
+	c.URL.RawQuery = "mode=stats"
 
 	stats := &CasterStats{}
 
