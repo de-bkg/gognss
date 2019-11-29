@@ -142,11 +142,6 @@ type Sourcetable struct {
 
 // Write writes a RTCM formated sourcetable to the specified writer.
 func (st *Sourcetable) Write(w io.Writer) error {
-	// var r io.Reader
-	// var buf bytes.Buffer
-	// r = &buf
-	// w := bufio.NewWriter(&buf)
-
 	for _, ca := range st.Casters {
 		fmt.Fprintf(w, "%s;%s;%d;%s;%s;%d;%s;%.2f;%.2f;%s;%d;%s\n",
 			"CAS", ca.Host, ca.Port, ca.Identifier, ca.Operator, printNMEA(ca.Nmea), ca.Country, ca.Lat, ca.Lon, ca.FallbackHost, ca.FallbackPort, ca.Misc)
@@ -163,8 +158,22 @@ func (st *Sourcetable) Write(w io.Writer) error {
 			str.Country, str.Lat, str.Lon, printNMEA(str.Nmea), str.Solution, str.Generator, str.Compression, str.Auth, printFee(str.Fee), str.Bitrate, str.Misc)
 	}
 
-	// return ioutil.NopCloser(r), nil -> (io.ReadCloser, error)
+	fmt.Fprintf(w, "%s\n", "ENDSOURCETABLE")
+
 	return nil
+}
+
+// HasStream checks if the sourcetable contains the specified stream/mountpoint.
+// The first returned value is the Stream, the second value is boolean typed and will be
+// true if the mountpont was found and otherwise false.
+func (st *Sourcetable) HasStream(mountpoint string) (Stream, bool) {
+	for _, str := range st.Streams {
+		if str.MP == mountpoint {
+			return str, true
+		}
+	}
+
+	return Stream{}, false
 }
 
 // New returns a new Ntrip Client with the given caster address and additional options.

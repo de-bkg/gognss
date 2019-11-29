@@ -49,6 +49,26 @@ func TestSourcetable_Write(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestSourcetable_HasStream(t *testing.T) {
+	c, err := New(exAddr, Options{})
+	assert.NoError(t, err)
+	defer c.CloseIdleConnections()
+
+	st, err := c.ParseSourcetable()
+	assert.NoError(t, err)
+
+	searchStream := "JaGeLaeckMiDoch"
+	_, found := st.HasStream(searchStream)
+	assert.False(t, found, "search for stream in sourcetable")
+
+	searchStream = "VALA00ESP0"
+	if str, found := st.HasStream(searchStream); found {
+		t.Logf("stream was found in st: %v", str)
+	} else {
+		t.Logf("stream was not found in st: %s", searchStream)
+	}
+}
+
 func TestMergeSourcetables(t *testing.T) {
 	c, err := New(exAddr, Options{})
 	assert.NoError(t, err)
