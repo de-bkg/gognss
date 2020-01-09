@@ -76,8 +76,7 @@ Examples:
 			log.Fatalf("%v", err)
 		}
 		if *outpFormat == "json" {
-			lisJSON, _ := json.Marshal(listeners)
-			fmt.Println(string(lisJSON))
+			json.NewEncoder(os.Stdout).Encode(listeners)
 		} else {
 			if *printHeader {
 				fmt.Printf("%-17s %-20s %-12s %-10s %-13s %-14s %-30s %-12s %s\n",
@@ -108,8 +107,7 @@ Examples:
 			log.Fatalf("%v", err)
 		}
 		if *outpFormat == "json" {
-			sourcesJSON, _ := json.Marshal(sources)
-			fmt.Println(string(sourcesJSON))
+			json.NewEncoder(os.Stdout).Encode(sources)
 		} else {
 			if *printHeader {
 				fmt.Printf("%-17s %-12s %-9s %-45s %-13s %-21s %-8s %-12s %-14s %-14s\n",
@@ -130,8 +128,7 @@ Examples:
 	}
 
 	if *outpFormat == "json" {
-		statsJSON, _ := json.Marshal(stats)
-		fmt.Println(string(statsJSON))
+		json.NewEncoder(os.Stdout).Encode(stats)
 	} else {
 		if *printHeader {
 			fmt.Printf("%-8s %-8s %-10s %-14s %-21s %-15s %-15s\n",
