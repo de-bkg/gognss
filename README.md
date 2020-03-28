@@ -1,3 +1,3 @@
 # ntrip
-Some Ntrip related thinks
+Some Ntrip related stuff
 
