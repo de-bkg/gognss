@@ -1,4 +1,4 @@
-// Package client provides functions for the Ntrip protocol
+// Package ntrip provides functions for the Ntrip protocol
 //
 // The HTTP-based NtripClient to NtripCaster communication is fully compatible to
 // HTTP 1.1, but in this context Ntrip uses only non-persistent connections.
@@ -15,7 +15,7 @@
 //
 // The net/http package automatically uses chunked encoding for request bodies when the content
 // length is not known and the application did not explicitly set the transfer encoding to "identity".
-package client
+package ntrip
 
 import (
 	"bufio"
@@ -176,11 +176,11 @@ func (st *Sourcetable) HasStream(mountpoint string) (Stream, bool) {
 	return Stream{}, false
 }
 
-// New returns a new Ntrip Client with the given caster address and additional options.
+// NewClient returns a new Ntrip Client with the given caster address and additional options.
 // The caster addr should have the form "http://host:port". It uses HTTP proxies
 // as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and
 // $no_proxy) environment variables.
-func New(addr string, opts Options) (*Client, error) {
+func NewClient(addr string, opts Options) (*Client, error) {
 	casterURL, err := url.Parse(addr)
 	if err != nil {
 		return nil, err

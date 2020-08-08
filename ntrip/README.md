@@ -15,7 +15,7 @@ the install instructions for Go](http://golang.org/doc/install.html).
 
 To install, simply run:
 ```
-$ go get github.com/erwiese/ntrip/client
+$ go get github.com/erwiese/gnss
 ```
 
 ## Examples
@@ -26,12 +26,12 @@ package main
 import (
 	"log"
 
-	"github.com/erwiese/ntrip/client"
+	"github.com/erwiese/gnss/ntrip"
 )
 
 func main() {
     casterAddr := "http://www.igs-ip.net:2101"
-    c, err := client.New(casterAddr, Options{})
+    c, err := ntrip.NewClient(casterAddr, Options{})
 	if err != nil {
 		log.Fatal(err)
 	}

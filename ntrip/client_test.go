@@ -1,4 +1,4 @@
-package client
+package ntrip
 
 import (
 	"net/url"
@@ -11,14 +11,14 @@ import (
 var exAddr string = "http://www.euref-ip.net:2101"
 
 func TestIsCasterAlive(t *testing.T) {
-	c, err := New(exAddr, Options{})
+	c, err := NewClient(exAddr, Options{})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 	_ = c.IsCasterAlive()
 }
 
 func TestDownloadSourcetable(t *testing.T) {
-	c, err := New(exAddr, Options{})
+	c, err := NewClient(exAddr, Options{})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -28,7 +28,7 @@ func TestDownloadSourcetable(t *testing.T) {
 }
 
 func TestParseSourcetable(t *testing.T) {
-	c, err := New(exAddr, Options{})
+	c, err := NewClient(exAddr, Options{})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -38,7 +38,7 @@ func TestParseSourcetable(t *testing.T) {
 }
 
 func TestSourcetable_Write(t *testing.T) {
-	c, err := New(exAddr, Options{})
+	c, err := NewClient(exAddr, Options{})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -50,7 +50,7 @@ func TestSourcetable_Write(t *testing.T) {
 }
 
 func TestSourcetable_HasStream(t *testing.T) {
-	c, err := New(exAddr, Options{})
+	c, err := NewClient(exAddr, Options{})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -70,7 +70,7 @@ func TestSourcetable_HasStream(t *testing.T) {
 }
 
 func TestMergeSourcetables(t *testing.T) {
-	c, err := New(exAddr, Options{})
+	c, err := NewClient(exAddr, Options{})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -90,7 +90,7 @@ func TestMergeSourcetables(t *testing.T) {
 
 /* func TestPullStream(t *testing.T) {
 	user, pass := "", ""
-	c, err := New("http://www.euref-ip.net:2101", Options{Username: user, Password: pass, Timeout: 10})
+	c, err := NewClient("http://www.euref-ip.net:2101", Options{Username: user, Password: pass, Timeout: 10})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 

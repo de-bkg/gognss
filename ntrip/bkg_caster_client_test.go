@@ -1,4 +1,4 @@
-package client
+package ntrip
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 var user, pass string = "", ""
 
 func TestGetStats(t *testing.T) {
-	c, err := New(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -29,7 +29,7 @@ func TestGetStats(t *testing.T) {
 }
 
 func TestGetListeners(t *testing.T) {
-	c, err := New(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -52,7 +52,7 @@ func TestGetListeners(t *testing.T) {
 }
 
 func TestGetSources(t *testing.T) {
-	c, err := New(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -76,7 +76,7 @@ func TestGetSources(t *testing.T) {
 }
 
 func TestGetConnections(t *testing.T) {
-	c, err := New(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 

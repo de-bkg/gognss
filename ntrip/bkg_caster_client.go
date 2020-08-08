@@ -1,4 +1,4 @@
-package client
+package ntrip
 
 // ----------------------------------------------------------------------------
 // Functions for the BKG NtripCaster only

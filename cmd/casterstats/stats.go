@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	cli "github.com/erwiese/ntrip/client"
+	"github.com/erwiese/gnss/ntrip"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 )
 
 func main() {
-	opts := cli.Options{}
+	opts := ntrip.Options{}
 	opts.UserAgent = "BKGStatsClient/" + version
 	fs := flag.NewFlagSet("BKGStatsClient/"+version, flag.ExitOnError)
 	fs.StringVar(&opts.Username, "username", "", "Operator username to connect to the caster.")
@@ -64,7 +64,7 @@ Examples:
 	}
 
 	casterAddr := argsNotParsed[0]
-	c, err := cli.New(casterAddr, opts)
+	c, err := ntrip.NewClient(casterAddr, opts)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
