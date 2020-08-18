@@ -1,0 +1,435 @@
+package rinex
+
+import (
+	"fmt"
+	"io"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
+)
+
+var homeDir string = getHomeDir()
+
+func TestObsDecoder_readHeader(t *testing.T) {
+	const header = `
+     3.03           OBSERVATION DATA    M                   RINEX VERSION / TYPE
+sbf2rin-12.3.1                          20181106 200225 UTC PGM / RUN BY / DATE
+BRUX                                                        MARKER NAME
+13101M010                                                   MARKER NUMBER
+GEODETIC                                                    MARKER TYPE
+ROB                 ROB                                     OBSERVER / AGENCY
+3001376             SEPT POLARX4TR      2.9.6               REC # / TYPE / VERS
+00464               JAVRINGANT_DM   NONE                    ANT # / TYPE
+  4027881.8478   306998.2610  4919498.6554                  APPROX POSITION XYZ
+        0.4689        0.0000        0.0010                  ANTENNA: DELTA H/E/N
+G   14 C1C L1C S1C C1W S1W C2W L2W S2W C2L L2L S2L C5Q L5Q  SYS / # / OBS TYPES
+       S5Q                                                  SYS / # / OBS TYPES
+E   12 C1C L1C S1C C5Q L5Q S5Q C7Q L7Q S7Q C8Q L8Q S8Q      SYS / # / OBS TYPES
+R   12 C1C L1C S1C C2P L2P S2P C2C L2C S2C C3Q L3Q S3Q      SYS / # / OBS TYPES
+C    6 C2I L2I S2I C7I L7I S7I                              SYS / # / OBS TYPES
+SEPTENTRIO RECEIVERS OUTPUT ALIGNED CARRIER PHASES.         COMMENT
+NO FURTHER PHASE SHIFT APPLIED IN THE RINEX ENCODER.        COMMENT
+G L1C                                                       SYS / PHASE SHIFT
+G L2W                                                       SYS / PHASE SHIFT
+G L2L  0.00000                                              SYS / PHASE SHIFT
+G L5Q  0.00000                                              SYS / PHASE SHIFT
+E L1C  0.00000                                              SYS / PHASE SHIFT
+E L5Q  0.00000                                              SYS / PHASE SHIFT
+E L7Q  0.00000                                              SYS / PHASE SHIFT
+E L8Q  0.00000                                              SYS / PHASE SHIFT
+R L1C                                                       SYS / PHASE SHIFT
+R L2P  0.00000                                              SYS / PHASE SHIFT
+R L2C                                                       SYS / PHASE SHIFT
+R L3Q  0.00000                                              SYS / PHASE SHIFT
+C L2I                                                       SYS / PHASE SHIFT
+C L7I                                                       SYS / PHASE SHIFT
+    30.000                                                  INTERVAL
+  2018    11     6    19     0    0.0000000     GPS         TIME OF FIRST OBS
+  2018    11     6    19    59   30.0000000     GPS         TIME OF LAST OBS
+    43                                                      # OF SATELLITES
+ C1C    0.000 C2C    0.000 C2P    0.000                     GLONASS COD/PHS/BIS
+DBHZ                                                        SIGNAL STRENGTH UNIT
+ 11 R03  5 R04  6 R05  1 R06 -4 R13 -2 R14 -7 R15  0 R16 -1 GLONASS SLOT / FRQ #
+    R22 -3 R23  3 R24  2                                    GLONASS SLOT / FRQ #
+															END OF HEADER
+> 2018 11 06 19 00  0.0000000  0 31`
+
+	assert := assert.New(t)
+	dec, err := NewObsDecoder(strings.NewReader(header))
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	assert.Equal("O", dec.Header.RINEXType, "RINEX Type")
+	assert.Equal("BRUX", dec.Header.MarkerName, "Markername")
+	assert.Equal("3001376", dec.Header.ReceiverNumber, "ReceiverNumber")
+	assert.Equal("SEPT POLARX4TR", dec.Header.ReceiverType, "ReceiverType")
+	assert.Equal("2.9.6", dec.Header.ReceiverVersion, "ReceiverVersion")
+	assert.Equal("DBHZ", dec.Header.SignalStrengthUnit, "Signal Strength Unit")
+	assert.Equal("DBHZ", dec.Header.SignalStrengthUnit, "Signal Strength Unit")
+	assert.Equal(time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC), dec.Header.TimeOfFirstObs, "TimeOfFirstObs")
+	assert.Equal(time.Date(2018, 11, 6, 19, 59, 30, 0, time.UTC), dec.Header.TimeOfLastObs, "TimeOfLastObs")
+	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
+	assert.Equal(43, dec.Header.NSatellites, "number of satellites")
+	t.Logf("RINEX Header: %+v\n", dec)
+}
+
+func BenchmarkReadEpochs(b *testing.B) {
+	b.ReportAllocs()
+	filepath := "testdata/white/REYK00ISL_S_20192701000_01H_30S_MO.rnx"
+	r, err := os.Open(filepath)
+	if err != nil {
+		b.Fatalf("%v", err)
+	}
+	defer r.Close()
+
+	dec, err := NewObsDecoder(r)
+	if err != nil {
+		b.Fatalf("%v", err)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for dec.NextEpoch() {
+			epo := dec.Epoch()
+			fmt.Printf("%v\n", epo)
+		}
+		if err := dec.Err(); err != nil {
+			fmt.Fprintln(os.Stderr, "reading standard input:", err)
+		}
+	}
+}
+
+// Loop over the epochs of a observation data input stream.
+func ExampleObsDecoder_loop() {
+	filepath := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
+	r, err := os.Open(filepath)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	defer r.Close()
+
+	dec, err := NewObsDecoder(r)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+
+	nEpochs := 0
+	for dec.NextEpoch() {
+		nEpochs++
+		_ = dec.Epoch()
+		// Do something with epoch
+	}
+	if err := dec.Err(); err != nil {
+		log.Printf("reading epochs: %v", err)
+	}
+
+	fmt.Println(nEpochs)
+	// Output: 120
+}
+
+func TestReadEpochs(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
+	//filepath := "testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx"
+	//filepath := filepath.Join(homeDir, "IGS000USA_R_20192180344_02H_01S_MO.rnx")
+	//filepath := filepath.Join(homeDir, "TEST07DEU_S_20192180000_01D_01S_MO.rnx")
+	r, err := os.Open(filepath)
+	assert.NoError(err)
+	defer r.Close()
+
+	dec, err := NewObsDecoder(r)
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	numOfEpochs := 0
+	for dec.NextEpoch() {
+		numOfEpochs++
+		epo := dec.Epoch()
+		fmt.Printf("%v\n", epo)
+	}
+	if err := dec.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+	assert.Equal(120, numOfEpochs, "# epochs")
+	t.Logf("got all epochs: %d", numOfEpochs)
+}
+
+func TestPrintEpochs(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
+	//filepath := "testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx"
+	//filepath := filepath.Join(homeDir, "IGS000USA_R_20192180344_02H_01S_MO.rnx")
+	//filepath := filepath.Join(homeDir, "TEST07DEU_S_20192180000_01D_01S_MO.rnx")
+	r, err := os.Open(filepath)
+	assert.NoError(err)
+	defer r.Close()
+
+	dec, err := NewObsDecoder(r)
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	numOfEpochs := 0
+	for dec.NextEpoch() {
+		numOfEpochs++
+		epo := dec.Epoch()
+		epo.PrintTab(Options{SatSys: "GR"})
+	}
+	if err := dec.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+}
+
+func TestStat(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
+	obsFil, err := NewObsFil(filepath)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	assert.NotNil(obsFil)
+	stat, err := obsFil.Stat()
+	assert.NoError(err)
+	t.Logf("%+v", stat)
+}
+
+func TestParseEpochTime(t *testing.T) {
+	assert := assert.New(t)
+	tests := map[string]time.Time{
+		"2018 11 06 19 00  0.0000000": time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC),
+		"2018 11 06 19 00 30.0000000": time.Date(2018, 11, 6, 19, 0, 30, 0, time.UTC),
+		"2019  8  6  3 44 29.0000000": time.Date(2019, 8, 6, 3, 44, 29, 0, time.UTC),
+		"2019  8  6  4 44  0.0000000": time.Date(2019, 8, 6, 4, 44, 0, 0, time.UTC),
+		"2019  8  6  5  5  8.0000000": time.Date(2019, 8, 6, 5, 5, 8, 0, time.UTC),
+	}
+
+	for k, v := range tests {
+		epTime, err := time.Parse(epochTimeFormat, k)
+		assert.NoError(err)
+		assert.Equal(v, epTime)
+		fmt.Printf("epoch: %s\n", epTime)
+	}
+}
+
+func TestParseDoY(t *testing.T) {
+	assert := assert.New(t)
+
+	// Go 1.13+ !!!
+
+	// yyyy
+	tests := map[string]time.Time{
+		"2019001": time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC),
+		"2018365": time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC),
+		"1999360": time.Date(1999, 12, 26, 0, 0, 0, 0, time.UTC),
+	}
+
+	for k, v := range tests {
+		ti, err := time.Parse("2006002", k) // or "2006__2"
+		assert.NoError(err)
+		assert.Equal(v, ti)
+		fmt.Printf("epoch: %s\n", ti)
+	}
+
+	// yy
+	tests = map[string]time.Time{
+		"19001": time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC),
+		"18365": time.Date(2018, 12, 31, 0, 0, 0, 0, time.UTC),
+	}
+
+	for k, v := range tests {
+		ti, err := time.Parse("06002", k) // or "06__2"
+		assert.NoError(err)
+		assert.Equal(v, ti)
+		fmt.Printf("epoch: %s\n", ti)
+	}
+}
+
+func TestDiff(t *testing.T) {
+	assert := assert.New(t)
+	//filePath1 := filepath.Join(homeDir, "IGS000USA_R_20192180344_02H_01S_MO.rnx")
+	//filePath2 := filepath.Join(homeDir, "TEST07DEU_S_20192180000_01D_01S_MO.rnx")
+	filePath1 := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
+	filePath2 := "testdata/white/REYK00ISL_S_20192701000_01H_30S_MO.rnx"
+	obs1, err := NewObsFil(filePath1)
+	assert.NotNil(obs1)
+	assert.NoError(err)
+	obs2, err := NewObsFil(filePath2)
+	assert.NotNil(obs2)
+	assert.NoError(err)
+
+	obs1.Opts.SatSys = "GR"
+	err = obs1.Diff(obs2)
+	assert.NoError(err)
+}
+
+func TestSyncEpochs(t *testing.T) {
+	assert := assert.New(t)
+	//filePath1 := filepath.Join(homeDir, "IGS000USA_R_20192180344_02H_01S_MO.rnx")
+	//filePath2 := filepath.Join(homeDir, "TEST07DEU_S_20192180000_01D_01S_MO.rnx")
+	filePath1 := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
+	filePath2 := "testdata/white/REYK00ISL_S_20192701000_01H_30S_MO.rnx"
+	// file 1
+	r1, err := os.Open(filePath1)
+	assert.NoError(err)
+	defer r1.Close()
+	dec, err := NewObsDecoder(r1)
+	assert.NoError(err)
+
+	// file 2
+	r2, err := os.Open(filePath2)
+	assert.NoError(err)
+	defer r2.Close()
+	dec2, err := NewObsDecoder(r2)
+	assert.NoError(err)
+
+	numOfSyncEpochs := 0
+	for dec.sync(dec2) {
+		numOfSyncEpochs++
+		syncEpo := dec.SyncEpoch()
+
+		if numOfSyncEpochs == 1 {
+			fmt.Printf("1st synced epoch: %s\n", syncEpo.Epo1.Time)
+		}
+	}
+	if err := dec.Err(); err != nil {
+		t.Fatalf("read error: %v", err)
+	}
+
+	assert.Equal(115, numOfSyncEpochs, "#synced epochs") // 325
+}
+
+func TestRnx2crx(t *testing.T) {
+	assert := assert.New(t)
+
+	tempDir, err := ioutil.TempDir("testdata/tmp", "obs_*")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		t.Logf("clean up dir %s", tempDir)
+		os.RemoveAll(tempDir)
+	})
+
+	// Rnx3
+	rnxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx", tempDir)
+	if err != nil {
+		t.Fatalf("Could not copy to temp dir: %v", err)
+	}
+	rnx3Fil, err := NewObsFil(rnxFilePath)
+	assert.NoError(err)
+	err = rnx3Fil.Rnx2crx()
+	if err != nil {
+		t.Fatalf("Could not Hatanaka compress file %s: %v", rnxFilePath, err)
+	}
+	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20183101900_01H_30S_MO.crx"), rnx3Fil.Path, "crx file")
+
+	// Rnx2
+	rnxFilePath, err = copyToTempDir("testdata/white/brst155h.20o", tempDir)
+	if err != nil {
+		t.Fatalf("Could not copy to temp dir: %v", err)
+	}
+	rnx2Fil, err := NewObsFil(rnxFilePath)
+	assert.NoError(err)
+	err = rnx2Fil.Rnx2crx()
+	if err != nil {
+		t.Fatalf("Could not Hatanaka compress file: %v", err)
+	}
+	assert.Equal(filepath.Join(tempDir, "brst155h.20d"), rnx2Fil.Path, "crx file")
+}
+
+func TestCrx2rnx(t *testing.T) {
+	assert := assert.New(t)
+
+	tempDir, err := ioutil.TempDir("testdata/tmp", "obs_")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Rnx3
+	crxFilePath, err := copyToTempDir("testdata/white/FFMJ00DEU_R_20190091000_01H_30S_MO.crx", tempDir)
+	if err != nil {
+		t.Fatalf("Could not copy to temp dir: %v", err)
+	}
+	rnx3Fil, err := NewObsFil(crxFilePath)
+	assert.NoError(err)
+	err = rnx3Fil.Crx2rnx()
+	if err != nil {
+		t.Fatalf("Could not Hatanaka decompress file: %v", err)
+	}
+	assert.Equal(filepath.Join(tempDir, "FFMJ00DEU_R_20190091000_01H_30S_MO.rnx"), rnx3Fil.Path, "rnx file")
+
+	// Rnx2
+	crxFilePath, err = copyToTempDir("testdata/white/ffmj016v.19d", tempDir)
+	if err != nil {
+		t.Fatalf("Could not copy to temp dir: %v", err)
+	}
+	rnx2Fil, err := NewObsFil(crxFilePath)
+	assert.NoError(err)
+
+	err = rnx2Fil.Crx2rnx()
+	if err != nil {
+		t.Fatalf("Could not Hatanaka decompress file: %v", err)
+	}
+	assert.Equal(filepath.Join(tempDir, "ffmj016v.19o"), rnx2Fil.Path, "rnx file")
+
+	os.RemoveAll(tempDir) // clean up
+}
+
+func getHomeDir() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic("could not get homeDir")
+	}
+	return homeDir
+}
+
+func copyToTempDir(src, targetDir string) (string, error) {
+	_, err := copyFile(src, targetDir)
+	if err != nil {
+		return "", err
+	}
+	_, fileName := filepath.Split(src)
+	return filepath.Join(targetDir, fileName), nil
+}
+
+// copyFile copies a file.
+func copyFile(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	// if dest is a dir, use the src's filename
+	if destFileStat, err := os.Stat(dst); !os.IsNotExist(err) {
+		if destFileStat.Mode().IsDir() {
+			_, srcFileName := filepath.Split(src)
+			dst = filepath.Join(dst, srcFileName)
+		}
+	}
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
