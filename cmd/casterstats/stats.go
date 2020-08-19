@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/de-bkg/gognss/ntrip"
+	"github.com/de-bkg/gognss/pkg/ntrip"
 )
 
 const (

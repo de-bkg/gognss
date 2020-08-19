@@ -7,17 +7,6 @@ with functions for
 
 Connecting to the caster is done by HTTP only, i.e. no UDP, RTSP etc.
 
-
-## Installation
-
-Make sure you have a working Go environment.  Go version 1.13+ is supported.  [See
-the install instructions for Go](http://golang.org/doc/install.html).
-
-To install, simply run:
-```
-$ go get github.com/erwiese/gnss
-```
-
 ## Examples
 
 ``` go
@@ -26,7 +15,7 @@ package main
 import (
 	"log"
 
-	"github.com/erwiese/gnss/ntrip"
+	"github.com/de-bkg/gognss/ntrip"
 )
 
 func main() {
