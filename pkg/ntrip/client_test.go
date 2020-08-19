@@ -1,6 +1,8 @@
 package ntrip
 
 import (
+	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"testing"
@@ -22,9 +24,11 @@ func TestDownloadSourcetable(t *testing.T) {
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
-	_, err = c.GetSourcetable()
+	st, err := c.GetSourcetable()
 	assert.NoError(t, err)
-	//t.Logf("sourcetable: \n%s", st)
+	if _, err := io.Copy(os.Stdout, st); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestParseSourcetable(t *testing.T) {
@@ -88,13 +92,13 @@ func TestMergeSourcetables(t *testing.T) {
 	t.Logf("%+v", combinedST)
 }
 
-/* func TestPullStream(t *testing.T) {
+func TestPullStream(t *testing.T) {
 	user, pass := "", ""
 	c, err := NewClient("http://www.euref-ip.net:2101", Options{Username: user, Password: pass, Timeout: 10})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
-	r, err := c.ConnectStream("WARN00DEU0")
+	r, err := c.GetStream("WARN00DEU0")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -104,7 +108,8 @@ func TestMergeSourcetables(t *testing.T) {
 	for {
 		n, err := r.Read(buf[0:])
 		if err != nil {
-			fmt.Printf("Read error: %v", err)
+			t.Logf("read error: %v", err)
+			break
 		}
 		fmt.Print(string(buf[0:n]))
 	}
@@ -113,7 +118,7 @@ func TestMergeSourcetables(t *testing.T) {
 	// var m Message
 	// dec := NewRTCM3Decoder(r)
 	// dec.Decode(&m)
-} */
+}
 
 /*
 func TestRawFil(t *testing.T) {
