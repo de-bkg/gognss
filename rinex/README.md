@@ -1,16 +1,6 @@
 # rinex
 
-A RINEX Version 3 library.
-
-## Installation
-
-Make sure you have a working Go environment.  Go version 1.14+ is supported.  [See
-the install instructions for Go](http://golang.org/doc/install.html).
-
-To install, simply run:
-```
-$ go get -u github.com/erwiese/rinex
-```
+Package rinex contains functions for reading RINEX Version 3 files.
 
 ## Examples
 
@@ -20,7 +10,7 @@ package main
 import (
 	"log"
 
-	"github.com/erwiese/gnss/rinex"
+	"github.com/de-bkg/gognss/rinex"
 )
 
 func main() {

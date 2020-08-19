@@ -3,7 +3,6 @@ package rinex
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -14,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var homeDir string = getHomeDir()
+//var homeDir string = getHomeDir()
 
 func TestObsDecoder_readHeader(t *testing.T) {
 	const header = `
@@ -76,6 +75,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.Equal(time.Date(2018, 11, 6, 19, 59, 30, 0, time.UTC), dec.Header.TimeOfLastObs, "TimeOfLastObs")
 	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
 	assert.Equal(43, dec.Header.NSatellites, "number of satellites")
+	assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
 	t.Logf("RINEX Header: %+v\n", dec)
 }
 
@@ -184,7 +184,6 @@ func TestPrintEpochs(t *testing.T) {
 	if err := dec.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
-
 }
 
 func TestStat(t *testing.T) {
@@ -307,16 +306,15 @@ func TestSyncEpochs(t *testing.T) {
 
 func TestRnx2crx(t *testing.T) {
 	assert := assert.New(t)
-
-	tempDir, err := ioutil.TempDir("testdata/tmp", "obs_*")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Cleanup(func() {
-		t.Logf("clean up dir %s", tempDir)
-		os.RemoveAll(tempDir)
-	})
+	tempDir := t.TempDir()
+	/* 	tempDir, err := ioutil.TempDir("testdata/tmp", "obs_*")
+	   	if err != nil {
+	   		t.Fatal(err)
+	   	}
+	   	t.Cleanup(func() {
+	   		t.Logf("clean up dir %s", tempDir)
+	   		os.RemoveAll(tempDir)
+	   	}) */
 
 	// Rnx3
 	rnxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx", tempDir)
@@ -347,14 +345,10 @@ func TestRnx2crx(t *testing.T) {
 
 func TestCrx2rnx(t *testing.T) {
 	assert := assert.New(t)
-
-	tempDir, err := ioutil.TempDir("testdata/tmp", "obs_")
-	if err != nil {
-		t.Fatal(err)
-	}
+	tempDir := t.TempDir()
 
 	// Rnx3
-	crxFilePath, err := copyToTempDir("testdata/white/FFMJ00DEU_R_20190091000_01H_30S_MO.crx", tempDir)
+	crxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20202302000_01H_30S_MO.crx", tempDir)
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
@@ -364,10 +358,10 @@ func TestCrx2rnx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not Hatanaka decompress file: %v", err)
 	}
-	assert.Equal(filepath.Join(tempDir, "FFMJ00DEU_R_20190091000_01H_30S_MO.rnx"), rnx3Fil.Path, "rnx file")
+	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20202302000_01H_30S_MO.rnx"), rnx3Fil.Path, "rnx file")
 
 	// Rnx2
-	crxFilePath, err = copyToTempDir("testdata/white/ffmj016v.19d", tempDir)
+	crxFilePath, err = copyToTempDir("testdata/white/brst155h.20d", tempDir)
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
@@ -378,17 +372,7 @@ func TestCrx2rnx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not Hatanaka decompress file: %v", err)
 	}
-	assert.Equal(filepath.Join(tempDir, "ffmj016v.19o"), rnx2Fil.Path, "rnx file")
-
-	os.RemoveAll(tempDir) // clean up
-}
-
-func getHomeDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic("could not get homeDir")
-	}
-	return homeDir
+	assert.Equal(filepath.Join(tempDir, "brst155h.20o"), rnx2Fil.Path, "rnx file")
 }
 
 func copyToTempDir(src, targetDir string) (string, error) {
@@ -433,3 +417,11 @@ func copyFile(src, dst string) (int64, error) {
 	nBytes, err := io.Copy(destination, source)
 	return nBytes, err
 }
+
+/* func getHomeDir() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic("could not get homeDir")
+	}
+	return homeDir
+} */

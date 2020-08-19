@@ -152,7 +152,7 @@ type ObsHeader struct {
 	Position     Coord    // Geocentric approximate marker position [m]
 	AntennaDelta CoordNEU // North,East,Up deltas in [m]
 
-	ObsTypes map[string][]string
+	ObsTypes map[SatelliteSystem][]string
 
 	SignalStrengthUnit string
 	Interval           float64 // Observation interval in seconds
@@ -200,7 +200,7 @@ func (dec *ObsDecoder) Err() error {
 // readHeader reads a RINEX Navigation header. If the Header does not exist,
 // a ErrNoHeader error will be returned.
 func (dec *ObsDecoder) readHeader() (hdr ObsHeader, err error) {
-	hdr.ObsTypes = map[string][]string{}
+	hdr.ObsTypes = map[SatelliteSystem][]string{}
 	maxLines := 800
 	rememberMe := ""
 read:
@@ -290,15 +290,23 @@ read:
 				hdr.AntennaDelta.N = f64
 			}
 		case "SYS / # / OBS TYPES":
-			sys := val[:1]
-			if sys != " " {
-				rememberMe = sys
+			sysStr := val[:1]
+			if sysStr == " " { // line continued
+				sysStr = rememberMe
+			} else {
+				rememberMe = sysStr
+			}
+
+			sys, ok := sysPerAbbr[sysStr]
+			if !ok {
+				err = fmt.Errorf("invalid satellite system: %q: line %d", val[:1], dec.lineNum)
+				return
 			}
 
 			if strings.TrimSpace(val[3:6]) != "" { // number of obstypes
 				hdr.ObsTypes[sys] = strings.Fields(val[7:])
 			} else {
-				hdr.ObsTypes[rememberMe] = append(hdr.ObsTypes[rememberMe], strings.Fields(val[7:])...)
+				hdr.ObsTypes[sys] = append(hdr.ObsTypes[sys], strings.Fields(val[7:])...)
 			}
 		case "SIGNAL STRENGTH UNIT":
 			hdr.SignalStrengthUnit = strings.TrimSpace(val[:20])
@@ -420,7 +428,7 @@ func (dec *ObsDecoder) NextEpoch() bool {
 
 			obsPerTyp := make(map[string]Obs, 30) // cap
 			col := 3                              // line column
-			for _, typ := range dec.Header.ObsTypes[string(sys)] {
+			for _, typ := range dec.Header.ObsTypes[sys] {
 				var val float64
 				if col+14 > len(line) {
 					// error ??
@@ -828,9 +836,9 @@ func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
 				val2 = getDecimal(val2)
 			}
 			if (o1.LLI != o2.LLI) || (math.Abs(val1-val2) > deltaPhase) {
-				fmt.Printf("%s %s %02d %s %s %14.03f %d %d | %14.03f %d %d\n", epoTime.Format(time.RFC3339Nano), string(prn.Sys), prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
+				fmt.Printf("%s %v %02d %s %s %14.03f %d %d | %14.03f %d %d\n", epoTime.Format(time.RFC3339Nano), prn.Sys, prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
 			} else if checkSNR && o1.SNR != o2.SNR {
-				fmt.Printf("%s %s %02d %s %s %14.03f %d %d | %14.03f %d %d\n", epoTime.Format(time.RFC3339Nano), string(prn.Sys), prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
+				fmt.Printf("%s %v %02d %s %s %14.03f %d %d | %14.03f %d %d\n", epoTime.Format(time.RFC3339Nano), prn.Sys, prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
 			}
 
 			// if o1.SNR != o2.SNR {

@@ -176,25 +176,27 @@ func (f *RnxFil) Rnx2Filename() (string, error) {
 }
 
 // Rnx3Filename returns the filename following the RINEX3 convention.
-// The file must exist, as we must read the header. The countrycode must come from an external source.
+// In most cases we must read the read the header. The countrycode must come from an external source.
 // DO NOT USE! Must parse header first!
 func (f *RnxFil) Rnx3Filename() (string, error) {
 	if f.IsObsType() {
-		r, err := os.Open(f.Path)
-		if err != nil {
-			return "", err
-		}
-		defer r.Close()
-		dec, err := NewObsDecoder(r)
-		if err != nil {
-			return "", err
-		}
+		if f.DataFreq == "" || f.FilePeriod == "" {
+			r, err := os.Open(f.Path)
+			if err != nil {
+				return "", err
+			}
+			defer r.Close()
+			dec, err := NewObsDecoder(r)
+			if err != nil {
+				return "", err
+			}
 
-		if dec.Header.Interval != 0 {
-			f.DataFreq = fmt.Sprintf("%02d%s", int(dec.Header.Interval), "S")
-		}
+			if dec.Header.Interval != 0 {
+				f.DataFreq = fmt.Sprintf("%02d%s", int(dec.Header.Interval), "S")
+			}
 
-		f.DataType = fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), "O")
+			f.DataType = fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), "O")
+		}
 	} else {
 		return "", fmt.Errorf("nav and meteo not implemented yet")
 	}
@@ -406,7 +408,7 @@ func parseFloat(s string) (float64, error) {
 }
 
 func getHourAsChar(hr int) string {
-	return string(hr + 97)
+	return string(rune(hr + 97))
 }
 
 func getHourAsDigit(char rune) (int, error) {

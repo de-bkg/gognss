@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/erwiese/gnss/rinex"
+	"github.com/de-bkg/gognss/rinex"
 	"github.com/urfave/cli"
 )
 

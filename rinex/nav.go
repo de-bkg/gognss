@@ -44,7 +44,7 @@ func NewEph(sys SatelliteSystem) Eph {
 	case SatSysSBAS:
 		eph = &EphSBAS{}
 	default:
-		log.Fatalf("unknown satellite system: %s", string(sys))
+		log.Fatalf("unknown satellite system: %v", sys)
 	}
 
 	return eph
