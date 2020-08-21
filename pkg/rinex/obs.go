@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"math/big"
 	"os"
@@ -228,7 +227,7 @@ read:
 			if f64, err := strconv.ParseFloat(strings.TrimSpace(val[:20]), 32); err == nil {
 				hdr.RINEXVersion = float32(f64)
 			} else {
-				log.Printf("Could not parse RINEX VERSION: %v", err)
+				return hdr, fmt.Errorf("parsing RINEX VERSION: %v", err)
 			}
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
 			if sys, ok := sysPerAbbr[strings.TrimSpace(val[40:41])]; ok {
@@ -262,8 +261,7 @@ read:
 		case "APPROX POSITION XYZ":
 			pos := strings.Fields(val)
 			if len(pos) != 3 {
-				log.Printf("Could not parse approx. position from line: %s", line)
-				continue
+				return hdr, fmt.Errorf("parsing approx. position from line: %s", line)
 			}
 			if f64, err := strconv.ParseFloat(pos[0], 64); err == nil {
 				hdr.Position.X = f64
@@ -277,8 +275,7 @@ read:
 		case "ANTENNA: DELTA H/E/N":
 			ecc := strings.Fields(val)
 			if len(ecc) != 3 {
-				log.Printf("Could not parse antenna deltas from line: %s", line)
-				continue
+				return hdr, fmt.Errorf("parsing antenna deltas from line: %s", line)
 			}
 			if f64, err := strconv.ParseFloat(ecc[0], 64); err == nil {
 				hdr.AntennaDelta.Up = f64
@@ -317,31 +314,31 @@ read:
 		case "TIME OF FIRST OBS":
 			t, err := time.Parse(epochTimeFormat, strings.TrimSpace(val[:43]))
 			if err != nil {
-				log.Printf("Could not parse %q: %v", key, err)
+				return hdr, fmt.Errorf("parsing %q: %v", key, err)
 			}
 			hdr.TimeOfFirstObs = t
 		case "TIME OF LAST OBS":
 			t, err := time.Parse(epochTimeFormat, strings.TrimSpace(val[:43]))
 			if err != nil {
-				log.Printf("Could not parse %q: %v", key, err)
+				return hdr, fmt.Errorf("parsing %q: %v", key, err)
 			}
 			hdr.TimeOfLastObs = t
 		case "LEAP SECONDS": // not complete! TODO: extend
 			i, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 			if err != nil {
-				log.Printf("Could not parse %q: %v", key, err)
+				return hdr, fmt.Errorf("parsing %q: %v", key, err)
 			}
 			hdr.LeapSeconds = i
 		case "# OF SATELLITES":
 			i, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 			if err != nil {
-				log.Printf("Could not parse %q: %v", key, err)
+				return hdr, fmt.Errorf("parsing %q: %v", key, err)
 			}
 			hdr.NSatellites = i
 		case "END OF HEADER":
 			break read
 		default:
-			log.Printf("Header field %q not handled yet", key)
+			fmt.Printf("Header field %q not handled yet\n", key)
 		}
 	}
 
@@ -362,7 +359,7 @@ func (dec *ObsDecoder) NextEpoch() bool {
 		}
 
 		if !strings.HasPrefix(line, "> ") {
-			log.Printf("stream does not start with epoch line: %q", line) // must not be an error
+			fmt.Printf("stream does not start with epoch line: %q\n", line) // must not be an error
 			continue
 		}
 
@@ -375,7 +372,7 @@ func (dec *ObsDecoder) NextEpoch() bool {
 
 		epochFlag, err := strconv.Atoi(line[31:32])
 		if err != nil {
-			dec.setErr(fmt.Errorf("Could not parse epoch flag in line %d: %q", dec.lineNum, line))
+			dec.setErr(fmt.Errorf("parsing epoch flag in line %d: %q", dec.lineNum, line))
 			return false
 		}
 
@@ -413,12 +410,12 @@ func (dec *ObsDecoder) NextEpoch() bool {
 
 			snum, err := strconv.Atoi(line[1:3])
 			if err != nil {
-				dec.setErr(fmt.Errorf("Could not parse sat num in line %d: %q: %v", dec.lineNum, line, err))
+				dec.setErr(fmt.Errorf("parsing sat num in line %d: %q: %v", dec.lineNum, line, err))
 				return false
 			}
 			prn, err := newPRN(sys, int8(snum))
 			if err != nil {
-				dec.setErr(fmt.Errorf("Could not parse sat num in line %d: %q: %v", dec.lineNum, line, err))
+				dec.setErr(fmt.Errorf("parsing sat num in line %d: %q: %v", dec.lineNum, line, err))
 				return false
 			}
 
@@ -442,7 +439,7 @@ func (dec *ObsDecoder) NextEpoch() bool {
 				if obsStr != "" {
 					val, err = strconv.ParseFloat(obsStr, 64)
 					if err != nil {
-						dec.setErr(fmt.Errorf("Could not parse the %s observation in line %d: %q", typ, dec.lineNum, line))
+						dec.setErr(fmt.Errorf("parsing the %s observation in line %d: %q", typ, dec.lineNum, line))
 						return false
 					}
 				}
@@ -456,7 +453,7 @@ func (dec *ObsDecoder) NextEpoch() bool {
 				col++
 				lli, err := parseFlag(line[col-1 : col])
 				if err != nil {
-					dec.setErr(fmt.Errorf("Could not parse the %s LLI in line %d: %q: %v", typ, dec.lineNum, line, err))
+					dec.setErr(fmt.Errorf("parsing the %s LLI in line %d: %q: %v", typ, dec.lineNum, line, err))
 					return false
 				}
 
@@ -468,8 +465,8 @@ func (dec *ObsDecoder) NextEpoch() bool {
 				col++
 				snr, err := parseFlag(line[col-1 : col])
 				if err != nil {
-					log.Printf("Could not parse the %s SNR in line %d: %q: %v", typ, dec.lineNum, line, err)
-					continue
+					dec.setErr(fmt.Errorf("parsing the %s SNR in line %d: %q: %v", typ, dec.lineNum, line, err))
+					return false
 				}
 
 				obsPerTyp[typ] = Obs{Val: val, LLI: int8(lli), SNR: int8(snr)}
@@ -592,8 +589,6 @@ func (obsFil *ObsFil) Diff(obsFil2 *ObsFil) error {
 		return fmt.Errorf("read epochs error: %v", err)
 	}
 
-	log.Printf("#sync epochs: %d", nSyncEpochs)
-
 	return nil
 }
 
@@ -660,11 +655,10 @@ func (obsFil *ObsFil) Rnx2crx() error {
 	rnxFilePath := obsFil.Path
 
 	if obsFil.IsHatanakaCompressed() {
-		log.Printf("File is already Hatanaka compressed")
+		fmt.Printf("File is already Hatanaka compressed\n")
 		return nil
 	}
 
-	log.Printf("Hatanaka compress %s", rnxFilePath)
 	tool, err := exec.LookPath("RNX2CRX")
 	if err != nil {
 		return err
@@ -705,7 +699,6 @@ func (obsFil *ObsFil) Rnx2crx() error {
 	}
 
 	obsFil.Path = crxFilePath
-	log.Printf("file %s created", crxFilePath)
 
 	return nil
 }
@@ -716,11 +709,10 @@ func (obsFil *ObsFil) Crx2rnx() error {
 	crxFilepath := obsFil.Path
 
 	if !obsFil.IsHatanakaCompressed() {
-		log.Printf("File is already Hatanaka uncompressed")
+		fmt.Printf("File is already Hatanaka uncompressed\n")
 		return nil
 	}
 
-	log.Printf("Hatanaka uncompress %s", crxFilepath)
 	tool, err := exec.LookPath("CRX2RNX")
 	if err != nil {
 		return err

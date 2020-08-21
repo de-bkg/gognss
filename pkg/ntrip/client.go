@@ -22,7 +22,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -173,7 +172,7 @@ func (c *Client) GetSourcetable() (io.ReadCloser, error) {
 		   //fmt.Print(string(dump)) */
 
 	// servername := resp.Header.Get("Server")
-	// log.Printf("Server: %s\n", servername)
+	// fmt.Printf("Server: %s\n", servername)
 
 	if resp.StatusCode != http.StatusOK { // / if resp.Status != "200 OK"
 		resp.Body.Close()
@@ -224,7 +223,7 @@ func (c *Client) ParseSourcetable() (*Sourcetable, error) {
 		case "ENDSOURCETABLE":
 			break
 		default:
-			log.Printf("%s: illegal sourcetable line: '%s'", c.URL.String(), ln)
+			return nil, fmt.Errorf("%s: illegal sourcetable line: '%s'", c.URL.String(), ln)
 		}
 
 		//fmt.Println(ln)
@@ -416,23 +415,23 @@ func parseCAS(line string) (Caster, error) {
 	}
 	port, err := strconv.Atoi(fields[2])
 	if err != nil {
-		log.Printf("could not parse the casters port in line: %s", line)
+		return Caster{}, fmt.Errorf("parsing the casters port in line: %s", line)
 	}
 	fbPort, err := strconv.Atoi(fields[10])
 	if err != nil {
-		log.Printf("could not parse the casters fallback-port in line: %s", line)
+		return Caster{}, fmt.Errorf("parsing the casters fallback-port in line: %s", line)
 	}
 	nmea, err := strconv.ParseBool(fields[5])
 	if err != nil {
-		log.Printf("could not parse the casters nmea in line: %s", line)
+		return Caster{}, fmt.Errorf("parsing the casters nmea in line: %s", line)
 	}
 	lat, err := strconv.ParseFloat(fields[7], 32)
 	if err != nil {
-		log.Printf("could not parse the casters latitude in line: %s", line)
+		return Caster{}, fmt.Errorf("parsing the casters latitude in line: %s", line)
 	}
 	lon, err := strconv.ParseFloat(fields[8], 32)
 	if err != nil {
-		log.Printf("could not parse the casters longitude in line: %s", line)
+		return Caster{}, fmt.Errorf("parsing the casters longitude in line: %s", line)
 	}
 
 	return Caster{Host: fields[1], Port: port, Identifier: fields[3], Operator: fields[4],
@@ -465,28 +464,28 @@ func parseSTR(line string) (Stream, error) {
 
 	carrier, err := strconv.Atoi(fields[5])
 	if err != nil {
-		log.Printf("could not parse the streams carrier in line: %s", line)
+		return Stream{}, fmt.Errorf("parsing the streams carrier in line: %s", line)
 	}
 
 	satSystems := strings.Split(fields[6], "+")
 
 	lat, err := strconv.ParseFloat(fields[9], 32)
 	if err != nil {
-		log.Printf("could not parse the streams latitude in line: %s", line)
+		return Stream{}, fmt.Errorf("parsing the streams latitude in line: %s", line)
 	}
 	lon, err := strconv.ParseFloat(fields[10], 32)
 	if err != nil {
-		log.Printf("could not parse the streams longitude in line: %s", line)
+		return Stream{}, fmt.Errorf("parsing the streams longitude in line: %s", line)
 	}
 
 	nmea, err := strconv.ParseBool(fields[11])
 	if err != nil {
-		log.Printf("could not parse the streams nmea in line: %s", line)
+		return Stream{}, fmt.Errorf("parsing the streams nmea in line: %s", line)
 	}
 
 	sol, err := strconv.Atoi(fields[12])
 	if err != nil {
-		log.Printf("could not parse the streams solution in line: %s", line)
+		return Stream{}, fmt.Errorf("parsing the streams solution in line: %s", line)
 	}
 
 	fee := false
@@ -496,7 +495,7 @@ func parseSTR(line string) (Stream, error) {
 
 	bitrate, err := strconv.Atoi(fields[17])
 	if err != nil {
-		log.Printf("could not parse the streams carrier in line: %s", line)
+		return Stream{}, fmt.Errorf("parsing the streams carrier in line: %s", line)
 	}
 
 	return Stream{MP: fields[1], Identifier: fields[2], Format: fields[3], FormatDetails: fields[4],

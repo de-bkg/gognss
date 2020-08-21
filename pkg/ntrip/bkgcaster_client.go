@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
@@ -97,8 +96,8 @@ func (c *Client) sendRequest() (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	ntripcaster := resp.Header.Get("Server")
-	log.Printf("Server: %s", ntripcaster)
+	//ntripcaster := resp.Header.Get("Server")
+	//fmt.Printf("Server: %s\n", ntripcaster)
 
 	if resp.StatusCode != http.StatusOK { // / if resp.Status != "200 OK"
 		respi, _ := httputil.DumpResponse(resp, false)
@@ -158,32 +157,32 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 					if i, err := strconv.Atoi(val); err == nil {
 						li.ID = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Connected for":
 					if d, err := parseDuration(val); err == nil {
 						li.ConnectedFor = d
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Bytes written":
 					if i, err := strconv.Atoi(val); err == nil {
 						li.BytesWritten = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Errors":
 					if i, err := strconv.Atoi(val); err == nil {
 						li.Errors = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "User agent":
 					li.UserAgent = val
 				case "Type":
 					li.Type = val // strings.TrimSuffix(val, "]")
 				default:
-					log.Printf("unknown key: %s", key)
+					return nil, fmt.Errorf("unknown field: %q", key)
 				}
 
 			}
@@ -246,48 +245,48 @@ line:
 					if i, err := strconv.Atoi(val); err == nil {
 						src.ID = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Connected for":
 					if d, err := parseDuration(val); err == nil {
 						src.ConnectedFor = d
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Time of connect":
 					if t, err := time.Parse("02/Jan/2006:15:04:05", val); err == nil {
 						src.ConnectionTime = t
 					} else {
-						log.Printf("could not parse time of connect: %v", err)
+						return nil, fmt.Errorf("could not parse time of connect: %v", err)
 					}
 				case "KBytes read":
 					if i, err := strconv.Atoi(val); err == nil {
 						src.KBytesRead = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "KBytes written":
 					if i, err := strconv.Atoi(val); err == nil {
 						src.KBytesWritten = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Clients":
 					if i, err := strconv.Atoi(val); err == nil {
 						src.Clients = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Client connections":
 					if i, err := strconv.Atoi(val); err == nil {
 						src.ClientConnections = i
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Source Agent":
 					src.Agent = val
 				default:
-					log.Printf("Unknown key \"%s\"", headline[i])
+					return nil, fmt.Errorf("Unknown field %q", headline[i])
 				}
 
 			}
@@ -355,21 +354,21 @@ line:
 						if i, err := strconv.Atoi(res[1]); err == nil {
 							conn.ID = i
 						} else {
-							log.Printf("%v", err)
+							return nil, err
 						}
 					} else {
-						log.Printf("RegEx for \"Id\" did not match")
+						return nil, fmt.Errorf("RegEx for \"Id\" did not match")
 					}
 				case "Connected for":
 					if d, err := parseDuration(val); err == nil {
 						conn.ConnectedFor = d
 					} else {
-						log.Printf("%v", err)
+						return nil, err
 					}
 				case "Agent":
 					conn.UserAgent = val
 				default:
-					log.Printf("Unknown key \"%s\"", header[i])
+					return nil, fmt.Errorf("Unknown key %q", header[i])
 				}
 			}
 			conns = append(conns, conn)
@@ -439,7 +438,7 @@ func (c *Client) GetStats() (*CasterStats, error) {
 
 		fields = strings.Split(ln, ":")
 		if len(fields) < 2 {
-			//log.Printf(">>>>>>>>>>>>>>>>>> %s", ln)
+			//fmt.Printf(">>>>>>>>>>>>>>>>>> %s\n", ln)
 			continue
 		}
 		key, val := fields[0], strings.TrimSpace(fields[1])
@@ -466,25 +465,25 @@ func (c *Client) GetStats() (*CasterStats, error) {
 			if d, err := parseDuration(val); err == nil {
 				stats.Uptime = d
 			} else {
-				log.Printf("%v", err)
+				return nil, err
 			}
 		} else if strings.Contains(key, "last resync") {
 			if t, err := time.Parse("02/Jan/2006:150405", val+":"+fields[2]+fields[3]+fields[4]); err == nil {
 				stats.LastResync = t
 			} else {
-				log.Printf("could not parse time of last resync: %v", err)
+				return nil, fmt.Errorf("parsing time of last resync: %v", err)
 			}
 		} else if strings.Contains(key, "KBytes read") {
 			if i, err := strconv.Atoi(val); err == nil {
 				stats.KBytesRead = i
 			} else {
-				log.Printf("%v", err)
+				return nil, err
 			}
 		} else if strings.Contains(key, "KBytes written") {
 			if i, err := strconv.Atoi(val); err == nil {
 				stats.KBytesWritten = i
 			} else {
-				log.Printf("%v", err)
+				return nil, err
 			}
 		}
 

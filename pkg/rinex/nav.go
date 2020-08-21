@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -44,7 +43,8 @@ func NewEph(sys SatelliteSystem) Eph {
 	case SatSysSBAS:
 		eph = &EphSBAS{}
 	default:
-		log.Fatalf("unknown satellite system: %v", sys)
+		fmt.Printf("unknown satellite system: %v", sys)
+		os.Exit(1)
 	}
 
 	return eph
@@ -437,7 +437,7 @@ func NewNavDecoder(r io.Reader) (*NavDecoder, error) {
 	//br := bufio.NewReader(r)
 	/* 	rc, ok := r.(io.ReadCloser)
 	   	if !ok && r != nil {
-	   		log.Printf("WARN: new nav decoder: could not convert underlying reader to io.ReadCloser")
+	   		fmt.Println("WARN: new nav decoder: could not convert underlying reader to io.ReadCloser")
 	   		rc = ioutil.NopCloser(r)
 	   	}
 	   	dec := &NavDecoder{r: rc} */
@@ -542,7 +542,7 @@ read:
 			if f64, err := strconv.ParseFloat(strings.TrimSpace(val[:20]), 32); err == nil {
 				hdr.RINEXVersion = float32(f64)
 			} else {
-				log.Printf("Could not parse RINEX VERSION: %v", err)
+				return hdr, fmt.Errorf("Could not parse RINEX VERSION: %v", err)
 			}
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
 
@@ -588,7 +588,7 @@ read:
 		case "END OF HEADER":
 			break read
 		default:
-			log.Printf("Header field %q not handled yet", key)
+			fmt.Printf("Header field %q not handled yet\n", key)
 		}
 	}
 
@@ -611,7 +611,7 @@ func (dec *NavDecoder) NextEphemeris() bool {
 		if dec.Header.RINEXVersion == 0 || dec.Header.RINEXVersion >= 3 {
 			//if !strings.ContainsAny(line[:1], "GREJCIS") {
 			if !bytes.ContainsAny(line[:1], "GREJCIS") {
-				log.Printf("stream does not start with epoch line: %q", line) // must not be an error
+				fmt.Printf("stream does not start with epoch line: %q\n", line) // must not be an error
 				continue
 			}
 
@@ -696,7 +696,6 @@ func NewNavFile(filepath string) (*NavFile, error) {
 
 // Validate validates the RINEX Nav file. It is valid if no error is returned.
 func (f *NavFile) Validate() error {
-	log.Printf("validate nav file %s", f.Path)
 	r, err := os.Open(f.Path)
 	if err != nil {
 		return fmt.Errorf("open nav file: %v", err)

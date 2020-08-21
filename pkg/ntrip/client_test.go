@@ -137,7 +137,7 @@ func TestRawFil(t *testing.T) {
 	// 	if err := dec.Decode(&m); err == io.EOF {
 	// 		break
 	// 	} else if err != nil {
-	// 		log.Fatal(err)
+	// 		t.Fatal(err)
 	// 	}
 	// 	//fmt.Printf("%s: %s\n", m.Name, m.Text)
 	// }
