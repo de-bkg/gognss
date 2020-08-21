@@ -1,5 +1,4 @@
-// BKG NtripCaster client program for collection caster statistics like uptime, number of sources etc.
-//
+// Command-line tool for collecting status information from a BKG NtripCaster instance, e.g. uptime, number of sources etc.
 package main
 
 import (

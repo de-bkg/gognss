@@ -1,6 +1,8 @@
 # GNSS
 Go packages for handling RINEX files and retrieving status information from a BKG NtripCaster instance.
 
+[![PkgGoDev](https://pkg.go.dev/badge/de-bkg/gognss)](https://pkg.go.dev/de-bkg/gognss)
+
 ## Installation
 
 Make sure you have a working Go environment.  Go version 1.15+ is supported.  [See
@@ -10,3 +12,5 @@ To install, simply run:
 ```
 $ go get -u github.com/de-bkg/gognss
 ```
+
+

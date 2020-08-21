@@ -1,3 +1,4 @@
+// Command-line tool for handling RINEX files - TODO -
 package main
 
 import (
