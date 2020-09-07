@@ -1,4 +1,4 @@
-// Package rinex provides functions for reading and writing RINEX files.
+// Package rinex provides functions for reading RINEX files.
 package rinex
 
 import (

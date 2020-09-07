@@ -1,0 +1,1490 @@
+{
+  "id": 10902,
+  "entryDate": null,
+  "lastModifiedDate": "2019-10-22T03:14:15.137Z",
+  "siteLogText": "<geo:GeodesyML xmlns:geo=\"urn:xml-gov-au:icsm:egeodesy:0.4\" xmlns:csw=\"http://www.opengis.net/cat/csw/2.0.2\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:ns9=\"http://www.w3.org/1999/xlink\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gmx=\"http://www.isotc211.org/2005/gmx\" xmlns:om=\"http://www.opengis.net/om/2.0\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:wfs=\"http://www.opengis.net/wfs/2.0\" xmlns:fes=\"http://www.opengis.net/fes/2.0\"><geo:siteLog><gml:description/><gml:descriptionReference/><gml:identifier/><gml:boundedBy/><geo:atSite/><geo:formInformation><geo:preparedBy>mohammad.choudhury@ga.gov.au</geo:preparedBy><geo:datePrepared>2019-10-22T03:14:13.000Z</geo:datePrepared><geo:reportType>UPDATE</geo:reportType></geo:formInformation><geo:siteIdentification><geo:siteName>Alice Springs AU012</geo:siteName><geo:fourCharacterID>ALIC</geo:fourCharacterID><geo:monumentInscription>National Geodetic Fiducial Ntwk (AUSLIG) AU012</geo:monumentInscription><geo:iersDOMESNumber>50137M001</geo:iersDOMESNumber><geo:cdpNumber>None</geo:cdpNumber><geo:monumentDescription>PILLAR</geo:monumentDescription><geo:heightOfTheMonument>0.5</geo:heightOfTheMonument><geo:monumentFoundation>CONCRETE BLOCK</geo:monumentFoundation><geo:dateInstalled>1992-08-12T00:00:00.000Z</geo:dateInstalled><geo:geologicCharacteristic>BEDROCK</geo:geologicCharacteristic><geo:bedrockType>METAMORPHIC</geo:bedrockType><geo:bedrockCondition>WEATHERED</geo:bedrockCondition><geo:faultZonesNearby>NO</geo:faultZonesNearby><geo:notes>Monument is a 600mm dia concrete pillar, 0.5 metes above ground surface.</geo:notes></geo:siteIdentification><geo:siteLocation><geo:city>Alice Springs</geo:city><geo:state>Northern Territory</geo:state><geo:countryCodeISO>AUS</geo:countryCodeISO><geo:tectonicPlate>AUSTRALIAN</geo:tectonicPlate><geo:approximatePositionITRF><geo:cartesianPosition><gml:Point><gml:pos>-4052051.767 4212836.215 -2545106.027</gml:pos></gml:Point></geo:cartesianPosition><geo:geodeticPosition><gml:Point><gml:pos>-23.6701238722 133.885513219 603.3581</gml:pos></gml:Point></geo:geodeticPosition></geo:approximatePositionITRF><geo:notes>ARGN (Australian Regional GPS Network)</geo:notes></geo:siteLocation><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>C128</geo:manufacturerSerialNumber><geo:igsModelCode>AOA ICS-4000Z</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:firmwareVersion>3.2.33.1</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>1994-05-15T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>1999-07-31T01:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>1994-05-15T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>Upgrade of firmware to avoid GPS week</geo:notes><geo:manufacturerSerialNumber>C128</geo:manufacturerSerialNumber><geo:igsModelCode>AOA ICS-4000Z</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:firmwareVersion>3.2.32.9</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>1999-07-31T01:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2000-01-14T01:50:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>1999-07-31T01:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>This receiver is AC power only</geo:notes><geo:manufacturerSerialNumber>C102U</geo:manufacturerSerialNumber><geo:igsModelCode>AOA SNR-12 ACT</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:firmwareVersion>3.3.32.3</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2000-01-14T02:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2000-01-24T01:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2000-01-14T02:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>This receiver is AC/DC</geo:notes><geo:manufacturerSerialNumber>C126U</geo:manufacturerSerialNumber><geo:igsModelCode>AOA ICS-4000Z ACT</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:firmwareVersion>3.3.32.3</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2000-01-24T02:15:00.000Z</geo:dateInstalled><geo:dateRemoved>2003-10-22T23:59:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2000-01-24T02:15:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>The Old AOA Rx still remains on site as a backup to the Micro Z</geo:notes><geo:manufacturerSerialNumber>UC2200302004</geo:manufacturerSerialNumber><geo:igsModelCode>ASHTECH UZ-12</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:firmwareVersion>ZC00</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2003-10-23T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2008-04-15T23:59:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2003-10-23T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>5.62</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2008-04-16T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2008-09-16T23:59:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2008-04-16T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>6.00</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2008-09-17T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2009-07-24T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2008-09-17T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>The tracking was changed from C2 or P2, to P2 only at 2009-07-30T00:00Z Tracking was change to All in view at 2009-09-09T00:00Z</geo:notes><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>7.50</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2009-07-24T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2010-05-06T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2009-07-24T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>ME upgrade due to GLONASS tracking problem.</geo:notes><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>7.50/3.019</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2010-05-06T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2011-06-26T23:59:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2010-05-06T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>8.20/3.019</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2011-06-27T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2013-03-08T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2011-06-27T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>8.51/3.019</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2013-03-08T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2013-07-08T00:45:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2013-03-08T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>355318</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GRX1200GGPRO</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:firmwareVersion>8.71/3.822</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2013-07-08T00:45:00.000Z</geo:dateInstalled><geo:dateRemoved>2016-02-04T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2013-07-08T00:45:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>6.521</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2016-02-04T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2016-04-14T00:48:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2016-02-04T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>3.22.1818/6.522</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2016-04-14T00:48:00.000Z</geo:dateInstalled><geo:dateRemoved>2016-09-22T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2016-04-14T00:48:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>4.00.335/6.522</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2016-09-22T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2016-12-13T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2016-09-22T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>4.02.386/6.522</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2016-12-13T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2017-01-31T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2016-12-13T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>4.10.598/6.523</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2017-01-31T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2017-02-23T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2017-01-31T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>4.11.606/6.523</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2017-02-23T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2018-05-21T00:35:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted>2017-02-23T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>Firmware update only</geo:notes><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:firmwareVersion>4.20.232/6.524</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2018-05-21T00:35:00.000Z</geo:dateInstalled><geo:dateRemoved>2018-07-02T23:59:59.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted></geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>Firmware update only</geo:notes><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:firmwareVersion>4.20.232/7.300</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2018-07-03T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2019-03-18T00:00:00.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted></geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:notes>Firmware upgrade only</geo:notes><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>4.30.063/6.525</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2019-03-18T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2019-10-22T03:13:47.000Z</geo:dateRemoved></geo:GnssReceiver><geo:dateInserted></geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssReceiver><geo:GnssReceiver><geo:manufacturerSerialNumber>1830439</geo:manufacturerSerialNumber><geo:igsModelCode>LEICA GR25</geo:igsModelCode><geo:satelliteSystem>GPS</geo:satelliteSystem><geo:satelliteSystem>GLO</geo:satelliteSystem><geo:satelliteSystem>GAL</geo:satelliteSystem><geo:satelliteSystem>BDS</geo:satelliteSystem><geo:satelliteSystem>QZSS</geo:satelliteSystem><geo:firmwareVersion>4.31.101</geo:firmwareVersion><geo:elevationCutoffSetting>0</geo:elevationCutoffSetting><geo:dateInstalled>2019-10-22T03:13:47.000Z</geo:dateInstalled><geo:dateRemoved></geo:dateRemoved></geo:GnssReceiver><geo:dateInserted></geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssReceiver><geo:gnssAntenna><geo:GnssAntenna><geo:notes>Radome was damaged at an unknown time during this period.</geo:notes><geo:manufacturerSerialNumber>318</geo:manufacturerSerialNumber><geo:igsModelCode>AOAD/M_T        AUST</geo:igsModelCode><geo:antennaReferencePoint>BPA</geo:antennaReferencePoint><geo:marker-arpUpEcc.>0.007</geo:marker-arpUpEcc.><geo:marker-arpNorthEcc.>0</geo:marker-arpNorthEcc.><geo:marker-arpEastEcc.>0</geo:marker-arpEastEcc.><geo:alignmentFromTrueNorth>0</geo:alignmentFromTrueNorth><geo:antennaRadomeType>AUST</geo:antennaRadomeType><geo:dateInstalled>1994-05-15T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved>2003-06-15T03:30:00.000Z</geo:dateRemoved></geo:GnssAntenna><geo:dateInserted>1994-05-15T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssAntenna><geo:gnssAntenna><geo:GnssAntenna><geo:notes>Damaged radome was removed.</geo:notes><geo:manufacturerSerialNumber>318</geo:manufacturerSerialNumber><geo:igsModelCode>AOAD/M_T        NONE</geo:igsModelCode><geo:antennaReferencePoint>BPA</geo:antennaReferencePoint><geo:marker-arpUpEcc.>0.007</geo:marker-arpUpEcc.><geo:marker-arpNorthEcc.>0</geo:marker-arpNorthEcc.><geo:marker-arpEastEcc.>0</geo:marker-arpEastEcc.><geo:alignmentFromTrueNorth>0</geo:alignmentFromTrueNorth><geo:antennaRadomeType>NONE</geo:antennaRadomeType><geo:dateInstalled>2003-06-15T03:30:00.000Z</geo:dateInstalled><geo:dateRemoved>2011-07-20T00:00:00.000Z</geo:dateRemoved></geo:GnssAntenna><geo:dateInserted>2003-06-15T03:30:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssAntenna><geo:gnssAntenna><geo:GnssAntenna><geo:manufacturerSerialNumber>09370001</geo:manufacturerSerialNumber><geo:igsModelCode>LEIAR25.R3      NONE</geo:igsModelCode><geo:antennaReferencePoint>BPA</geo:antennaReferencePoint><geo:marker-arpUpEcc.>0.0015</geo:marker-arpUpEcc.><geo:marker-arpNorthEcc.>0</geo:marker-arpNorthEcc.><geo:marker-arpEastEcc.>0</geo:marker-arpEastEcc.><geo:alignmentFromTrueNorth>0</geo:alignmentFromTrueNorth><geo:antennaRadomeType>NONE</geo:antennaRadomeType><geo:antennaCableType>LMR400</geo:antennaCableType><geo:antennaCableLength>81</geo:antennaCableLength><geo:dateInstalled>2011-07-20T00:00:00.000Z</geo:dateInstalled><geo:dateRemoved></geo:dateRemoved></geo:GnssAntenna><geo:dateInserted>2011-07-20T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:gnssAntenna><geo:surveyedLocalTie><geo:SurveyedLocalTie><geo:tiedMarkerName>RM1</geo:tiedMarkerName><geo:differentialComponentsGNSSMarkerToTiedMonumentITRS><geo:dx>-15.366</geo:dx><geo:dy>-9.632</geo:dy><geo:dz>9.099</geo:dz></geo:differentialComponentsGNSSMarkerToTiedMonumentITRS><geo:localSiteTiesAccuracy>1</geo:localSiteTiesAccuracy><geo:dateMeasured>1992-08-12T00:00:00.000Z</geo:dateMeasured></geo:SurveyedLocalTie><geo:dateInserted>1992-08-12T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:surveyedLocalTie><geo:surveyedLocalTie><geo:SurveyedLocalTie><geo:tiedMarkerName>RM2</geo:tiedMarkerName><geo:differentialComponentsGNSSMarkerToTiedMonumentITRS><geo:dx>6.89</geo:dx><geo:dy>-0.437</geo:dy><geo:dz>-9.874</geo:dz></geo:differentialComponentsGNSSMarkerToTiedMonumentITRS><geo:localSiteTiesAccuracy>1</geo:localSiteTiesAccuracy><geo:dateMeasured>1992-08-12T00:00:00.000Z</geo:dateMeasured></geo:SurveyedLocalTie><geo:dateInserted>1992-08-12T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:surveyedLocalTie><geo:surveyedLocalTie><geo:SurveyedLocalTie><geo:tiedMarkerName>RM3</geo:tiedMarkerName><geo:differentialComponentsGNSSMarkerToTiedMonumentITRS><geo:dx>4.399</geo:dx><geo:dy>15.434</geo:dy><geo:dz>18.074</geo:dz></geo:differentialComponentsGNSSMarkerToTiedMonumentITRS><geo:localSiteTiesAccuracy>1</geo:localSiteTiesAccuracy><geo:dateMeasured>1992-08-12T00:00:00.000Z</geo:dateMeasured></geo:SurveyedLocalTie><geo:dateInserted>1992-08-12T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:surveyedLocalTie><geo:frequencyStandard><geo:FrequencyStandard><geo:standardType>INTERNAL</geo:standardType><gml:validTime><gml:TimePeriod><gml:beginPosition>1994-05-15T00:00:00.000Z</gml:beginPosition><gml:endPosition></gml:endPosition></gml:TimePeriod></gml:validTime></geo:FrequencyStandard><geo:dateInserted>1994-05-15T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:frequencyStandard><geo:humiditySensor><geo:HumiditySensor><geo:type>PAROSCIENTIFIC MET3A</geo:type><geo:manufacturer>Paroscientific, Inc.</geo:manufacturer><geo:serialNumber>98850</geo:serialNumber><geo:heightDiffToAntenna>2.4</geo:heightDiffToAntenna><geo:calibrationDate></geo:calibrationDate><gml:validTime><gml:TimePeriod><gml:beginPosition>2006-03-29T00:00:00.000Z</gml:beginPosition><gml:endPosition></gml:endPosition></gml:TimePeriod></gml:validTime><geo:dataSamplingInterval>30</geo:dataSamplingInterval><geo:accuracy-percentRelativeHumidity>2</geo:accuracy-percentRelativeHumidity><geo:aspiration>FAN</geo:aspiration></geo:HumiditySensor><geo:dateInserted>2006-03-29T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:humiditySensor><geo:pressureSensor><geo:PressureSensor><geo:type>PAROSCIENTIFIC MET3A</geo:type><geo:manufacturer>Paroscientific, Inc.</geo:manufacturer><geo:serialNumber>98850</geo:serialNumber><geo:heightDiffToAntenna>2.4</geo:heightDiffToAntenna><geo:calibrationDate></geo:calibrationDate><gml:validTime><gml:TimePeriod><gml:beginPosition>2006-03-29T00:00:00.000Z</gml:beginPosition><gml:endPosition></gml:endPosition></gml:TimePeriod></gml:validTime><geo:dataSamplingInterval>30</geo:dataSamplingInterval><geo:accuracy-hPa>0.1</geo:accuracy-hPa></geo:PressureSensor><geo:dateInserted>2006-03-29T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:pressureSensor><geo:temperatureSensor><geo:TemperatureSensor><geo:type>PAROSCIENTIFIC MET3A</geo:type><geo:manufacturer>Paroscientific, Inc.</geo:manufacturer><geo:serialNumber>98850</geo:serialNumber><geo:heightDiffToAntenna>2.4</geo:heightDiffToAntenna><geo:calibrationDate></geo:calibrationDate><gml:validTime><gml:TimePeriod><gml:beginPosition>2006-03-29T00:00:00.000Z</gml:beginPosition><gml:endPosition></gml:endPosition></gml:TimePeriod></gml:validTime><geo:dataSamplingInterval>30</geo:dataSamplingInterval><geo:accuracy-degreesCelcius>0.5</geo:accuracy-degreesCelcius><geo:aspiration>FAN</geo:aspiration></geo:TemperatureSensor><geo:dateInserted>2006-03-29T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:temperatureSensor><geo:localEpisodicEffect><geo:LocalEpisodicEffect><gml:validTime><gml:TimePeriod><gml:beginPosition>2011-07-20T00:00:00.000Z</gml:beginPosition><gml:endPosition>2011-07-20T00:00:00.000Z</gml:endPosition></gml:TimePeriod></gml:validTime><geo:event>TREE CLEARING</geo:event></geo:LocalEpisodicEffect><geo:dateInserted>2011-07-20T00:00:00.000Z</geo:dateInserted><geo:dateDeleted></geo:dateDeleted></geo:localEpisodicEffect><geo:siteContact><gmd:CI_ResponsibleParty><gmd:individualName><gco:CharacterString>Ryan Ruddick</gco:CharacterString></gmd:individualName><gmd:organisationName><gco:CharacterString>Geoscience Australia</gco:CharacterString></gmd:organisationName><gmd:positionName><gco:CharacterString></gco:CharacterString></gmd:positionName><gmd:contactInfo><gmd:CI_Contact><gmd:phone><gmd:CI_Telephone><gmd:voice><gco:CharacterString>+61 2 6249 9426</gco:CharacterString></gmd:voice><gmd:voice><gco:CharacterString>+61 2 6249 9111</gco:CharacterString></gmd:voice><gmd:facsimile><gco:CharacterString></gco:CharacterString></gmd:facsimile></gmd:CI_Telephone></gmd:phone><gmd:address><gmd:CI_Address><gmd:deliveryPoint><gco:CharacterString>GPO Box 378</gco:CharacterString></gmd:deliveryPoint><gmd:deliveryPoint><gco:CharacterString>Canberra  ACT  2601</gco:CharacterString></gmd:deliveryPoint><gmd:deliveryPoint><gco:CharacterString>AUSTRALIA</gco:CharacterString></gmd:deliveryPoint><gmd:city><gco:CharacterString></gco:CharacterString></gmd:city><gmd:administrativeArea><gco:CharacterString></gco:CharacterString></gmd:administrativeArea><gmd:postalCode><gco:CharacterString></gco:CharacterString></gmd:postalCode><gmd:country><gco:CharacterString></gco:CharacterString></gmd:country><gmd:electronicMailAddress><gco:CharacterString>geodesy@ga.gov.au</gco:CharacterString></gmd:electronicMailAddress></gmd:CI_Address></gmd:address></gmd:CI_Contact></gmd:contactInfo><gmd:role><gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\" codeSpace=\"ISOTC211/19115\">pointOfContact</gmd:CI_RoleCode></gmd:role></gmd:CI_ResponsibleParty></geo:siteContact><geo:siteContact><gmd:CI_ResponsibleParty><gmd:individualName><gco:CharacterString>Nicholas Brown</gco:CharacterString></gmd:individualName><gmd:organisationName><gco:CharacterString>Geoscience Australia</gco:CharacterString></gmd:organisationName><gmd:positionName><gco:CharacterString></gco:CharacterString></gmd:positionName><gmd:contactInfo><gmd:CI_Contact><gmd:phone><gmd:CI_Telephone><gmd:voice><gco:CharacterString>+61 2 6249 9831</gco:CharacterString></gmd:voice><gmd:voice><gco:CharacterString>+61 2 6249 9111</gco:CharacterString></gmd:voice><gmd:facsimile><gco:CharacterString></gco:CharacterString></gmd:facsimile></gmd:CI_Telephone></gmd:phone><gmd:address><gmd:CI_Address><gmd:deliveryPoint><gco:CharacterString>GPO Box 378</gco:CharacterString></gmd:deliveryPoint><gmd:deliveryPoint><gco:CharacterString>Canberra  ACT  2601</gco:CharacterString></gmd:deliveryPoint><gmd:deliveryPoint><gco:CharacterString>AUSTRALIA</gco:CharacterString></gmd:deliveryPoint><gmd:city><gco:CharacterString></gco:CharacterString></gmd:city><gmd:administrativeArea><gco:CharacterString></gco:CharacterString></gmd:administrativeArea><gmd:postalCode><gco:CharacterString></gco:CharacterString></gmd:postalCode><gmd:country><gco:CharacterString></gco:CharacterString></gmd:country><gmd:electronicMailAddress><gco:CharacterString>geodesy@ga.gov.au</gco:CharacterString></gmd:electronicMailAddress></gmd:CI_Address></gmd:address></gmd:CI_Contact></gmd:contactInfo><gmd:role><gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\" codeSpace=\"ISOTC211/19115\">pointOfContact</gmd:CI_RoleCode></gmd:role></gmd:CI_ResponsibleParty></geo:siteContact><geo:siteMetadataCustodian><gmd:CI_ResponsibleParty><gmd:individualName><gco:CharacterString>Ryan Ruddick</gco:CharacterString></gmd:individualName><gmd:organisationName><gco:CharacterString>Geoscience Australia</gco:CharacterString></gmd:organisationName><gmd:positionName><gco:CharacterString></gco:CharacterString></gmd:positionName><gmd:contactInfo><gmd:CI_Contact><gmd:phone><gmd:CI_Telephone><gmd:voice><gco:CharacterString>+61 2 6249 9426</gco:CharacterString></gmd:voice><gmd:voice><gco:CharacterString>+61 2 6249 9111</gco:CharacterString></gmd:voice><gmd:facsimile><gco:CharacterString></gco:CharacterString></gmd:facsimile></gmd:CI_Telephone></gmd:phone><gmd:address><gmd:CI_Address><gmd:deliveryPoint><gco:CharacterString>GPO Box 378</gco:CharacterString></gmd:deliveryPoint><gmd:deliveryPoint><gco:CharacterString>Canberra  ACT  2601</gco:CharacterString></gmd:deliveryPoint><gmd:deliveryPoint><gco:CharacterString>AUSTRALIA</gco:CharacterString></gmd:deliveryPoint><gmd:city><gco:CharacterString></gco:CharacterString></gmd:city><gmd:administrativeArea><gco:CharacterString></gco:CharacterString></gmd:administrativeArea><gmd:postalCode><gco:CharacterString></gco:CharacterString></gmd:postalCode><gmd:country><gco:CharacterString></gco:CharacterString></gmd:country><gmd:electronicMailAddress><gco:CharacterString>geodesy@ga.gov.au</gco:CharacterString></gmd:electronicMailAddress></gmd:CI_Address></gmd:address></gmd:CI_Contact></gmd:contactInfo><gmd:role><gmd:CI_RoleCode codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"pointOfContact\" codeSpace=\"ISOTC211/19115\">pointOfContact</gmd:CI_RoleCode></gmd:role></gmd:CI_ResponsibleParty></geo:siteMetadataCustodian><geo:moreInformation><geo:dataCenter>GA</geo:dataCenter><geo:dataCenter>CDDIS</geo:dataCenter><geo:urlForMoreInformation>http://www.ga.gov.au</geo:urlForMoreInformation><geo:siteMap>Y</geo:siteMap><geo:siteDiagram>Y</geo:siteDiagram><geo:horizonMask>Y</geo:horizonMask><geo:monumentDescription>Y</geo:monumentDescription><geo:sitePictures>Y</geo:sitePictures><geo:DOI codeSpace=\"eGeodesy/doi\">TODO</geo:DOI></geo:moreInformation><geo:dataStream/></geo:siteLog></geo:GeodesyML>",
+  "formInformation": {
+    "preparedBy": "mohammad.choudhury@ga.gov.au",
+    "datePrepared": "2019-10-22T03:14:13Z",
+    "reportType": "UPDATE"
+  },
+  "siteIdentification": {
+    "siteName": "Alice Springs AU012",
+    "fourCharacterId": "ALIC",
+    "nineCharacterId": null,
+    "monumentInscription": "National Geodetic Fiducial Ntwk (AUSLIG) AU012",
+    "iersDOMESNumber": "50137M001",
+    "cdpNumber": "None",
+    "monumentDescription": "PILLAR",
+    "heightOfMonument": 0.5,
+    "monumentFoundation": "CONCRETE BLOCK",
+    "foundationDepth": null,
+    "markerDescription": null,
+    "dateInstalled": "1992-08-12T00:00:00Z",
+    "geologicCharacteristic": "BEDROCK",
+    "bedrockType": "METAMORPHIC",
+    "bedrockCondition": "WEATHERED",
+    "fractureSpacing": null,
+    "faultZonesNearby": "NO",
+    "distanceActivity": null,
+    "notes": "Monument is a 600mm dia concrete pillar, 0.5 metes above ground surface."
+  },
+  "siteLocation": {
+    "city": "Alice Springs",
+    "state": "Northern Territory",
+    "country": "AUS",
+    "tectonicPlate": "AUSTRALIAN",
+    "approximatePosition": {
+      "cartesianPosition": {
+        "type": "Point",
+        "coordinates": [
+          -4052051.767,
+          4212836.215,
+          -2545106.027
+        ]
+      },
+      "geodeticPosition": {
+        "type": "Point",
+        "coordinates": [
+          -23.6701238722,
+          133.885513219,
+          603.3581
+        ]
+      }
+    },
+    "notes": "ARGN (Australian Regional GPS Network)"
+  },
+  "gnssReceivers": [
+    {
+      "dateInserted": "1999-07-31T01:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA ICS-4000Z",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C128",
+      "firmwareVersion": "3.2.32.9",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "1999-07-31T01:00:00Z",
+      "dateRemoved": "2000-01-14T01:50:00Z",
+      "temperatureStabilization": null,
+      "notes": "Upgrade of firmware to avoid GPS week",
+      "effectiveDates": {
+        "from": "1999-07-31T01:00:00Z",
+        "to": "2000-01-14T01:50:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-09-22T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.00.335/6.522",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-09-22T00:00:00Z",
+      "dateRemoved": "2016-12-13T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-09-22T00:00:00Z",
+        "to": "2016-12-13T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2000-01-24T02:15:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA ICS-4000Z ACT",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C126U",
+      "firmwareVersion": "3.3.32.3",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2000-01-24T02:15:00Z",
+      "dateRemoved": "2003-10-22T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": "This receiver is AC/DC",
+      "effectiveDates": {
+        "from": "2000-01-24T02:15:00Z",
+        "to": "2003-10-22T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,QZSS,GLO,GAL,BDS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.20.232/7.300",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2018-07-03T00:00:00Z",
+      "dateRemoved": "2019-03-18T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": "Firmware update only",
+      "effectiveDates": {
+        "from": "2018-07-03T00:00:00Z",
+        "to": "2019-03-18T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2008-09-17T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "6.00",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2008-09-17T00:00:00Z",
+      "dateRemoved": "2009-07-24T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2008-09-17T00:00:00Z",
+        "to": "2009-07-24T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-02-04T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "6.521",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-02-04T00:00:00Z",
+      "dateRemoved": "2016-04-14T00:48:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-02-04T00:00:00Z",
+        "to": "2016-04-14T00:48:00Z"
+      }
+    },
+    {
+      "dateInserted": "2013-03-08T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "8.51/3.019",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2013-03-08T00:00:00Z",
+      "dateRemoved": "2013-07-08T00:45:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2013-03-08T00:00:00Z",
+        "to": "2013-07-08T00:45:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-12-13T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.02.386/6.522",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-12-13T00:00:00Z",
+      "dateRemoved": "2017-01-31T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-12-13T00:00:00Z",
+        "to": "2017-01-31T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,BDS,GLO,QZSS,GAL",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.20.232/6.524",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2018-05-21T00:35:00Z",
+      "dateRemoved": "2018-07-02T23:59:59Z",
+      "temperatureStabilization": null,
+      "notes": "Firmware update only",
+      "effectiveDates": {
+        "from": "2018-05-21T00:35:00Z",
+        "to": "2018-07-02T23:59:59Z"
+      }
+    },
+    {
+      "dateInserted": "2003-10-23T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "ASHTECH UZ-12",
+      "satelliteSystem": "GPS",
+      "serialNumber": "UC2200302004",
+      "firmwareVersion": "ZC00",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2003-10-23T00:00:00Z",
+      "dateRemoved": "2008-04-15T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": "The Old AOA Rx still remains on site as a backup to the Micro Z",
+      "effectiveDates": {
+        "from": "2003-10-23T00:00:00Z",
+        "to": "2008-04-15T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.30.063/6.525",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2019-03-18T00:00:00Z",
+      "dateRemoved": "2019-10-22T03:13:47Z",
+      "temperatureStabilization": null,
+      "notes": "Firmware upgrade only",
+      "effectiveDates": {
+        "from": "2019-03-18T00:00:00Z",
+        "to": "2019-10-22T03:13:47Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.31.101",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2019-10-22T03:13:47Z",
+      "dateRemoved": null,
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2019-10-22T03:13:47Z",
+        "to": null
+      }
+    },
+    {
+      "dateInserted": "2000-01-14T02:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA SNR-12 ACT",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C102U",
+      "firmwareVersion": "3.3.32.3",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2000-01-14T02:00:00Z",
+      "dateRemoved": "2000-01-24T01:00:00Z",
+      "temperatureStabilization": null,
+      "notes": "This receiver is AC power only",
+      "effectiveDates": {
+        "from": "2000-01-14T02:00:00Z",
+        "to": "2000-01-24T01:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2011-06-27T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "8.20/3.019",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2011-06-27T00:00:00Z",
+      "dateRemoved": "2013-03-08T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2011-06-27T00:00:00Z",
+        "to": "2013-03-08T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "1994-05-15T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA ICS-4000Z",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C128",
+      "firmwareVersion": "3.2.33.1",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "1994-05-15T00:00:00Z",
+      "dateRemoved": "1999-07-31T01:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "1994-05-15T00:00:00Z",
+        "to": "1999-07-31T01:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2009-07-24T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "7.50",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2009-07-24T00:00:00Z",
+      "dateRemoved": "2010-05-06T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": "The tracking was changed from C2 or P2, to P2 only at 2009-07-30T00:00Z Tracking was change to All in view at 2009-09-09T00:00Z",
+      "effectiveDates": {
+        "from": "2009-07-24T00:00:00Z",
+        "to": "2010-05-06T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2013-07-08T00:45:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "8.71/3.822",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2013-07-08T00:45:00Z",
+      "dateRemoved": "2016-02-04T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2013-07-08T00:45:00Z",
+        "to": "2016-02-04T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2017-01-31T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.10.598/6.523",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2017-01-31T00:00:00Z",
+      "dateRemoved": "2017-02-23T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2017-01-31T00:00:00Z",
+        "to": "2017-02-23T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2017-02-23T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.11.606/6.523",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2017-02-23T00:00:00Z",
+      "dateRemoved": "2018-05-21T00:35:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2017-02-23T00:00:00Z",
+        "to": "2018-05-21T00:35:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-04-14T00:48:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "3.22.1818/6.522",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-04-14T00:48:00Z",
+      "dateRemoved": "2016-09-22T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-04-14T00:48:00Z",
+        "to": "2016-09-22T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2010-05-06T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "7.50/3.019",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2010-05-06T00:00:00Z",
+      "dateRemoved": "2011-06-26T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": "ME upgrade due to GLONASS tracking problem.",
+      "effectiveDates": {
+        "from": "2010-05-06T00:00:00Z",
+        "to": "2011-06-26T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": "2008-04-16T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "5.62",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2008-04-16T00:00:00Z",
+      "dateRemoved": "2008-09-16T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2008-04-16T00:00:00Z",
+        "to": "2008-09-16T23:59:00Z"
+      }
+    }
+  ],
+  "gnssAntennas": [
+    {
+      "dateInserted": "2003-06-15T03:30:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOAD/M_T        NONE",
+      "serialNumber": "318",
+      "antennaReferencePoint": "BPA",
+      "markerArpUpEcc": 0.007,
+      "markerArpNorthEcc": 0.0,
+      "markerArpEastEcc": 0.0,
+      "alignmentFromTrueNorth": 0.0,
+      "antennaRadomeType": "NONE",
+      "radomeSerialNumber": null,
+      "antennaCableType": null,
+      "antennaCableLength": null,
+      "dateInstalled": "2003-06-15T03:30:00Z",
+      "dateRemoved": "2011-07-20T00:00:00Z",
+      "notes": "Damaged radome was removed.",
+      "effectiveDates": {
+        "from": "2003-06-15T03:30:00Z",
+        "to": "2011-07-20T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "1994-05-15T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOAD/M_T        AUST",
+      "serialNumber": "318",
+      "antennaReferencePoint": "BPA",
+      "markerArpUpEcc": 0.007,
+      "markerArpNorthEcc": 0.0,
+      "markerArpEastEcc": 0.0,
+      "alignmentFromTrueNorth": 0.0,
+      "antennaRadomeType": "AUST",
+      "radomeSerialNumber": null,
+      "antennaCableType": null,
+      "antennaCableLength": null,
+      "dateInstalled": "1994-05-15T00:00:00Z",
+      "dateRemoved": "2003-06-15T03:30:00Z",
+      "notes": "Radome was damaged at an unknown time during this period.",
+      "effectiveDates": {
+        "from": "1994-05-15T00:00:00Z",
+        "to": "2003-06-15T03:30:00Z"
+      }
+    },
+    {
+      "dateInserted": "2011-07-20T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEIAR25.R3      NONE",
+      "serialNumber": "09370001",
+      "antennaReferencePoint": "BPA",
+      "markerArpUpEcc": 0.0015,
+      "markerArpNorthEcc": 0.0,
+      "markerArpEastEcc": 0.0,
+      "alignmentFromTrueNorth": 0.0,
+      "antennaRadomeType": "NONE",
+      "radomeSerialNumber": null,
+      "antennaCableType": "LMR400",
+      "antennaCableLength": 81.0,
+      "dateInstalled": "2011-07-20T00:00:00Z",
+      "dateRemoved": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2011-07-20T00:00:00Z",
+        "to": null
+      }
+    }
+  ],
+  "surveyedLocalTies": [
+    {
+      "dateInserted": "1992-08-12T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "tiedMarkerName": "RM2",
+      "tiedMarkerUsage": null,
+      "tiedMarkerCdpNumber": null,
+      "tiedMarkerDomesNumber": null,
+      "differentialFromMarker": {
+        "dx": 6.89,
+        "dy": -0.437,
+        "dz": -9.874
+      },
+      "localSiteTieAccuracy": 1.0,
+      "surveyMethod": null,
+      "dateMeasured": "1992-08-12T00:00:00Z",
+      "notes": null,
+      "effectiveDates": {
+        "from": "1992-08-12T00:00:00Z",
+        "to": "1992-08-12T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "1992-08-12T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "tiedMarkerName": "RM1",
+      "tiedMarkerUsage": null,
+      "tiedMarkerCdpNumber": null,
+      "tiedMarkerDomesNumber": null,
+      "differentialFromMarker": {
+        "dx": -15.366,
+        "dy": -9.632,
+        "dz": 9.099
+      },
+      "localSiteTieAccuracy": 1.0,
+      "surveyMethod": null,
+      "dateMeasured": "1992-08-12T00:00:00Z",
+      "notes": null,
+      "effectiveDates": {
+        "from": "1992-08-12T00:00:00Z",
+        "to": "1992-08-12T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "1992-08-12T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "tiedMarkerName": "RM3",
+      "tiedMarkerUsage": null,
+      "tiedMarkerCdpNumber": null,
+      "tiedMarkerDomesNumber": null,
+      "differentialFromMarker": {
+        "dx": 4.399,
+        "dy": 15.434,
+        "dz": 18.074
+      },
+      "localSiteTieAccuracy": 1.0,
+      "surveyMethod": null,
+      "dateMeasured": "1992-08-12T00:00:00Z",
+      "notes": null,
+      "effectiveDates": {
+        "from": "1992-08-12T00:00:00Z",
+        "to": "1992-08-12T00:00:00Z"
+      }
+    }
+  ],
+  "frequencyStandards": [
+    {
+      "dateInserted": "1994-05-15T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "INTERNAL",
+      "inputFrequency": null,
+      "effectiveDates": {
+        "from": "1994-05-15T00:00:00Z",
+        "to": null
+      },
+      "notes": null,
+      "serialNumber": null
+    }
+  ],
+  "collocationInformation": [],
+  "humiditySensors": [
+    {
+      "dateInserted": "2006-03-29T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "PAROSCIENTIFIC MET3A",
+      "manufacturer": "Paroscientific, Inc.",
+      "serialNumber": "98850",
+      "heightDiffToAntenna": 2.4,
+      "calibrationDate": null,
+      "effectiveDates": {
+        "from": "2006-03-29T00:00:00Z",
+        "to": null
+      },
+      "dataSamplingInterval": 30.0,
+      "accuracyPercentRelativeHumidity": 2.0,
+      "aspiration": "FAN",
+      "notes": null
+    }
+  ],
+  "pressureSensors": [
+    {
+      "dateInserted": "2006-03-29T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "PAROSCIENTIFIC MET3A",
+      "manufacturer": "Paroscientific, Inc.",
+      "serialNumber": "98850",
+      "heightDiffToAntenna": 2.4,
+      "calibrationDate": null,
+      "effectiveDates": {
+        "from": "2006-03-29T00:00:00Z",
+        "to": null
+      },
+      "dataSamplingInterval": 30.0,
+      "accuracyHPa": 0.1,
+      "notes": null
+    }
+  ],
+  "temperatureSensors": [
+    {
+      "dateInserted": "2006-03-29T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "PAROSCIENTIFIC MET3A",
+      "manufacturer": "Paroscientific, Inc.",
+      "serialNumber": "98850",
+      "heightDiffToAntenna": 2.4,
+      "calibrationDate": null,
+      "effectiveDates": {
+        "from": "2006-03-29T00:00:00Z",
+        "to": null
+      },
+      "dataSamplingInterval": 30.0,
+      "accuracyDegreesCelcius": 0.5,
+      "aspiration": "FAN",
+      "notes": null
+    }
+  ],
+  "waterVaporSensors": [],
+  "otherInstrumentationLogItem": [],
+  "radioInterferences": [],
+  "multipathSourceLogItems": [],
+  "signalObstructionLogItems": [],
+  "localEpisodicEffectLogItems": [
+    {
+      "dateInserted": "2011-07-20T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "effectiveDates": {
+        "from": "2011-07-20T00:00:00Z",
+        "to": "2011-07-20T00:00:00Z"
+      },
+      "event": "TREE CLEARING"
+    }
+  ],
+  "moreInformation": {
+    "primaryDataCenter": "GA",
+    "secondaryDataCenter": "CDDIS",
+    "urlForMoreInformation": "http://www.ga.gov.au",
+    "hardCopyOnFile": null,
+    "siteMap": "Y",
+    "siteDiagram": "Y",
+    "horizonMask": "Y",
+    "monumentDescription": "Y",
+    "sitePictures": "Y",
+    "notes": null,
+    "antennaGraphicsWithDimensions": null,
+    "insertTextGraphicFromAntenna": null,
+    "doi": "TODO"
+  },
+  "responsibleParties": [
+    {
+      "contactTypeId": 651,
+      "party": {
+        "individualName": "Ryan Ruddick",
+        "organisationName": "Geoscience Australia",
+        "positionName": "",
+        "contactInfo": {
+          "contactInstructions": null,
+          "hoursOfService": null,
+          "onLineResource": null,
+          "address": {
+            "administrativeArea": "",
+            "city": "",
+            "country": "",
+            "postalCode": "",
+            "deliveryPoints": [
+              "GPO Box 378",
+              "Canberra  ACT  2601",
+              "AUSTRALIA"
+            ],
+            "electronicMailAddresses": [
+              "geodesy@ga.gov.au"
+            ],
+            "standard": {},
+            "modifiable": true,
+            "interface": "org.opengis.metadata.citation.Address"
+          },
+          "phone": {
+            "voices": [
+              "+61 2 6249 9426",
+              "+61 2 6249 9111"
+            ],
+            "facsimiles": [
+              ""
+            ]
+          },
+          "standard": {},
+          "modifiable": true,
+          "interface": "org.opengis.metadata.citation.Contact"
+        },
+        "role": {},
+        "standard": {},
+        "modifiable": true,
+        "interface": "org.opengis.metadata.citation.ResponsibleParty"
+      }
+    },
+    {
+      "contactTypeId": 651,
+      "party": {
+        "individualName": "Nicholas Brown",
+        "organisationName": "Geoscience Australia",
+        "positionName": "",
+        "contactInfo": {
+          "contactInstructions": null,
+          "hoursOfService": null,
+          "onLineResource": null,
+          "address": {
+            "administrativeArea": "",
+            "city": "",
+            "country": "",
+            "postalCode": "",
+            "deliveryPoints": [
+              "GPO Box 378",
+              "Canberra  ACT  2601",
+              "AUSTRALIA"
+            ],
+            "electronicMailAddresses": [
+              "geodesy@ga.gov.au"
+            ],
+            "standard": {},
+            "modifiable": true,
+            "interface": "org.opengis.metadata.citation.Address"
+          },
+          "phone": {
+            "voices": [
+              "+61 2 6249 9831",
+              "+61 2 6249 9111"
+            ],
+            "facsimiles": [
+              ""
+            ]
+          },
+          "standard": {},
+          "modifiable": true,
+          "interface": "org.opengis.metadata.citation.Contact"
+        },
+        "role": {},
+        "standard": {},
+        "modifiable": true,
+        "interface": "org.opengis.metadata.citation.ResponsibleParty"
+      }
+    },
+    {
+      "contactTypeId": 701,
+      "party": {
+        "individualName": "Ryan Ruddick",
+        "organisationName": "Geoscience Australia",
+        "positionName": "",
+        "contactInfo": {
+          "contactInstructions": null,
+          "hoursOfService": null,
+          "onLineResource": null,
+          "address": {
+            "administrativeArea": "",
+            "city": "",
+            "country": "",
+            "postalCode": "",
+            "deliveryPoints": [
+              "GPO Box 378",
+              "Canberra  ACT  2601",
+              "AUSTRALIA"
+            ],
+            "electronicMailAddresses": [
+              "geodesy@ga.gov.au"
+            ],
+            "standard": {},
+            "modifiable": true,
+            "interface": "org.opengis.metadata.citation.Address"
+          },
+          "phone": {
+            "voices": [
+              "+61 2 6249 9426",
+              "+61 2 6249 9111"
+            ],
+            "facsimiles": [
+              ""
+            ]
+          },
+          "standard": {},
+          "modifiable": true,
+          "interface": "org.opengis.metadata.citation.Contact"
+        },
+        "role": {},
+        "standard": {},
+        "modifiable": true,
+        "interface": "org.opengis.metadata.citation.ResponsibleParty"
+      }
+    }
+  ],
+  "siteContacts": [
+    {
+      "contactTypeId": 651,
+      "party": {
+        "individualName": "Ryan Ruddick",
+        "organisationName": "Geoscience Australia",
+        "positionName": "",
+        "contactInfo": {
+          "contactInstructions": null,
+          "hoursOfService": null,
+          "onLineResource": null,
+          "address": {
+            "administrativeArea": "",
+            "city": "",
+            "country": "",
+            "postalCode": "",
+            "deliveryPoints": [
+              "GPO Box 378",
+              "Canberra  ACT  2601",
+              "AUSTRALIA"
+            ],
+            "electronicMailAddresses": [
+              "geodesy@ga.gov.au"
+            ],
+            "standard": {},
+            "modifiable": true,
+            "interface": "org.opengis.metadata.citation.Address"
+          },
+          "phone": {
+            "voices": [
+              "+61 2 6249 9426",
+              "+61 2 6249 9111"
+            ],
+            "facsimiles": [
+              ""
+            ]
+          },
+          "standard": {},
+          "modifiable": true,
+          "interface": "org.opengis.metadata.citation.Contact"
+        },
+        "role": {},
+        "standard": {},
+        "modifiable": true,
+        "interface": "org.opengis.metadata.citation.ResponsibleParty"
+      }
+    },
+    {
+      "contactTypeId": 651,
+      "party": {
+        "individualName": "Nicholas Brown",
+        "organisationName": "Geoscience Australia",
+        "positionName": "",
+        "contactInfo": {
+          "contactInstructions": null,
+          "hoursOfService": null,
+          "onLineResource": null,
+          "address": {
+            "administrativeArea": "",
+            "city": "",
+            "country": "",
+            "postalCode": "",
+            "deliveryPoints": [
+              "GPO Box 378",
+              "Canberra  ACT  2601",
+              "AUSTRALIA"
+            ],
+            "electronicMailAddresses": [
+              "geodesy@ga.gov.au"
+            ],
+            "standard": {},
+            "modifiable": true,
+            "interface": "org.opengis.metadata.citation.Address"
+          },
+          "phone": {
+            "voices": [
+              "+61 2 6249 9831",
+              "+61 2 6249 9111"
+            ],
+            "facsimiles": [
+              ""
+            ]
+          },
+          "standard": {},
+          "modifiable": true,
+          "interface": "org.opengis.metadata.citation.Contact"
+        },
+        "role": {},
+        "standard": {},
+        "modifiable": true,
+        "interface": "org.opengis.metadata.citation.ResponsibleParty"
+      }
+    }
+  ],
+  "equipmentLogItems": [
+    {
+      "dateInserted": "1999-07-31T01:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA ICS-4000Z",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C128",
+      "firmwareVersion": "3.2.32.9",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "1999-07-31T01:00:00Z",
+      "dateRemoved": "2000-01-14T01:50:00Z",
+      "temperatureStabilization": null,
+      "notes": "Upgrade of firmware to avoid GPS week",
+      "effectiveDates": {
+        "from": "1999-07-31T01:00:00Z",
+        "to": "2000-01-14T01:50:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-09-22T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.00.335/6.522",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-09-22T00:00:00Z",
+      "dateRemoved": "2016-12-13T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-09-22T00:00:00Z",
+        "to": "2016-12-13T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2000-01-24T02:15:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA ICS-4000Z ACT",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C126U",
+      "firmwareVersion": "3.3.32.3",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2000-01-24T02:15:00Z",
+      "dateRemoved": "2003-10-22T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": "This receiver is AC/DC",
+      "effectiveDates": {
+        "from": "2000-01-24T02:15:00Z",
+        "to": "2003-10-22T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,QZSS,GLO,GAL,BDS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.20.232/7.300",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2018-07-03T00:00:00Z",
+      "dateRemoved": "2019-03-18T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": "Firmware update only",
+      "effectiveDates": {
+        "from": "2018-07-03T00:00:00Z",
+        "to": "2019-03-18T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2008-09-17T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "6.00",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2008-09-17T00:00:00Z",
+      "dateRemoved": "2009-07-24T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2008-09-17T00:00:00Z",
+        "to": "2009-07-24T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-02-04T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "6.521",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-02-04T00:00:00Z",
+      "dateRemoved": "2016-04-14T00:48:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-02-04T00:00:00Z",
+        "to": "2016-04-14T00:48:00Z"
+      }
+    },
+    {
+      "dateInserted": "2013-03-08T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "8.51/3.019",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2013-03-08T00:00:00Z",
+      "dateRemoved": "2013-07-08T00:45:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2013-03-08T00:00:00Z",
+        "to": "2013-07-08T00:45:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-12-13T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.02.386/6.522",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-12-13T00:00:00Z",
+      "dateRemoved": "2017-01-31T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-12-13T00:00:00Z",
+        "to": "2017-01-31T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,BDS,GLO,QZSS,GAL",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.20.232/6.524",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2018-05-21T00:35:00Z",
+      "dateRemoved": "2018-07-02T23:59:59Z",
+      "temperatureStabilization": null,
+      "notes": "Firmware update only",
+      "effectiveDates": {
+        "from": "2018-05-21T00:35:00Z",
+        "to": "2018-07-02T23:59:59Z"
+      }
+    },
+    {
+      "dateInserted": "2003-10-23T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "ASHTECH UZ-12",
+      "satelliteSystem": "GPS",
+      "serialNumber": "UC2200302004",
+      "firmwareVersion": "ZC00",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2003-10-23T00:00:00Z",
+      "dateRemoved": "2008-04-15T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": "The Old AOA Rx still remains on site as a backup to the Micro Z",
+      "effectiveDates": {
+        "from": "2003-10-23T00:00:00Z",
+        "to": "2008-04-15T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.30.063/6.525",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2019-03-18T00:00:00Z",
+      "dateRemoved": "2019-10-22T03:13:47Z",
+      "temperatureStabilization": null,
+      "notes": "Firmware upgrade only",
+      "effectiveDates": {
+        "from": "2019-03-18T00:00:00Z",
+        "to": "2019-10-22T03:13:47Z"
+      }
+    },
+    {
+      "dateInserted": null,
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.31.101",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2019-10-22T03:13:47Z",
+      "dateRemoved": null,
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2019-10-22T03:13:47Z",
+        "to": null
+      }
+    },
+    {
+      "dateInserted": "2000-01-14T02:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA SNR-12 ACT",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C102U",
+      "firmwareVersion": "3.3.32.3",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2000-01-14T02:00:00Z",
+      "dateRemoved": "2000-01-24T01:00:00Z",
+      "temperatureStabilization": null,
+      "notes": "This receiver is AC power only",
+      "effectiveDates": {
+        "from": "2000-01-14T02:00:00Z",
+        "to": "2000-01-24T01:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2011-06-27T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "8.20/3.019",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2011-06-27T00:00:00Z",
+      "dateRemoved": "2013-03-08T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2011-06-27T00:00:00Z",
+        "to": "2013-03-08T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "1994-05-15T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOA ICS-4000Z",
+      "satelliteSystem": "GPS",
+      "serialNumber": "C128",
+      "firmwareVersion": "3.2.33.1",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "1994-05-15T00:00:00Z",
+      "dateRemoved": "1999-07-31T01:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "1994-05-15T00:00:00Z",
+        "to": "1999-07-31T01:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2009-07-24T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "7.50",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2009-07-24T00:00:00Z",
+      "dateRemoved": "2010-05-06T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": "The tracking was changed from C2 or P2, to P2 only at 2009-07-30T00:00Z Tracking was change to All in view at 2009-09-09T00:00Z",
+      "effectiveDates": {
+        "from": "2009-07-24T00:00:00Z",
+        "to": "2010-05-06T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2013-07-08T00:45:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "8.71/3.822",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2013-07-08T00:45:00Z",
+      "dateRemoved": "2016-02-04T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2013-07-08T00:45:00Z",
+        "to": "2016-02-04T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2017-01-31T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.10.598/6.523",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2017-01-31T00:00:00Z",
+      "dateRemoved": "2017-02-23T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2017-01-31T00:00:00Z",
+        "to": "2017-02-23T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2017-02-23T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "4.11.606/6.523",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2017-02-23T00:00:00Z",
+      "dateRemoved": "2018-05-21T00:35:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2017-02-23T00:00:00Z",
+        "to": "2018-05-21T00:35:00Z"
+      }
+    },
+    {
+      "dateInserted": "2016-04-14T00:48:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GR25",
+      "satelliteSystem": "GPS,GLO,GAL,BDS,QZSS",
+      "serialNumber": "1830439",
+      "firmwareVersion": "3.22.1818/6.522",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2016-04-14T00:48:00Z",
+      "dateRemoved": "2016-09-22T00:00:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2016-04-14T00:48:00Z",
+        "to": "2016-09-22T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "2010-05-06T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "7.50/3.019",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2010-05-06T00:00:00Z",
+      "dateRemoved": "2011-06-26T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": "ME upgrade due to GLONASS tracking problem.",
+      "effectiveDates": {
+        "from": "2010-05-06T00:00:00Z",
+        "to": "2011-06-26T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": "2008-04-16T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEICA GRX1200GGPRO",
+      "satelliteSystem": "GPS,GLO",
+      "serialNumber": "355318",
+      "firmwareVersion": "5.62",
+      "elevationCutoffSetting": 0.0,
+      "dateInstalled": "2008-04-16T00:00:00Z",
+      "dateRemoved": "2008-09-16T23:59:00Z",
+      "temperatureStabilization": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2008-04-16T00:00:00Z",
+        "to": "2008-09-16T23:59:00Z"
+      }
+    },
+    {
+      "dateInserted": "2003-06-15T03:30:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOAD/M_T        NONE",
+      "serialNumber": "318",
+      "antennaReferencePoint": "BPA",
+      "markerArpUpEcc": 0.007,
+      "markerArpNorthEcc": 0.0,
+      "markerArpEastEcc": 0.0,
+      "alignmentFromTrueNorth": 0.0,
+      "antennaRadomeType": "NONE",
+      "radomeSerialNumber": null,
+      "antennaCableType": null,
+      "antennaCableLength": null,
+      "dateInstalled": "2003-06-15T03:30:00Z",
+      "dateRemoved": "2011-07-20T00:00:00Z",
+      "notes": "Damaged radome was removed.",
+      "effectiveDates": {
+        "from": "2003-06-15T03:30:00Z",
+        "to": "2011-07-20T00:00:00Z"
+      }
+    },
+    {
+      "dateInserted": "1994-05-15T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "AOAD/M_T        AUST",
+      "serialNumber": "318",
+      "antennaReferencePoint": "BPA",
+      "markerArpUpEcc": 0.007,
+      "markerArpNorthEcc": 0.0,
+      "markerArpEastEcc": 0.0,
+      "alignmentFromTrueNorth": 0.0,
+      "antennaRadomeType": "AUST",
+      "radomeSerialNumber": null,
+      "antennaCableType": null,
+      "antennaCableLength": null,
+      "dateInstalled": "1994-05-15T00:00:00Z",
+      "dateRemoved": "2003-06-15T03:30:00Z",
+      "notes": "Radome was damaged at an unknown time during this period.",
+      "effectiveDates": {
+        "from": "1994-05-15T00:00:00Z",
+        "to": "2003-06-15T03:30:00Z"
+      }
+    },
+    {
+      "dateInserted": "2011-07-20T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "LEIAR25.R3      NONE",
+      "serialNumber": "09370001",
+      "antennaReferencePoint": "BPA",
+      "markerArpUpEcc": 0.0015,
+      "markerArpNorthEcc": 0.0,
+      "markerArpEastEcc": 0.0,
+      "alignmentFromTrueNorth": 0.0,
+      "antennaRadomeType": "NONE",
+      "radomeSerialNumber": null,
+      "antennaCableType": "LMR400",
+      "antennaCableLength": 81.0,
+      "dateInstalled": "2011-07-20T00:00:00Z",
+      "dateRemoved": null,
+      "notes": null,
+      "effectiveDates": {
+        "from": "2011-07-20T00:00:00Z",
+        "to": null
+      }
+    },
+    {
+      "dateInserted": "2006-03-29T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "PAROSCIENTIFIC MET3A",
+      "manufacturer": "Paroscientific, Inc.",
+      "serialNumber": "98850",
+      "heightDiffToAntenna": 2.4,
+      "calibrationDate": null,
+      "effectiveDates": {
+        "from": "2006-03-29T00:00:00Z",
+        "to": null
+      },
+      "dataSamplingInterval": 30.0,
+      "accuracyPercentRelativeHumidity": 2.0,
+      "aspiration": "FAN",
+      "notes": null
+    },
+    {
+      "dateInserted": "1994-05-15T00:00:00Z",
+      "dateDeleted": null,
+      "deletedReason": null,
+      "type": "INTERNAL",
+      "inputFrequency": null,
+      "effectiveDates": {
+        "from": "1994-05-15T00:00:00Z",
+        "to": null
+      },
+      "notes": null,
+      "serialNumber": null
+    }
+  ],
+  "siteMetadataCustodians": [
+    {
+      "contactTypeId": 701,
+      "party": {
+        "individualName": "Ryan Ruddick",
+        "organisationName": "Geoscience Australia",
+        "positionName": "",
+        "contactInfo": {
+          "contactInstructions": null,
+          "hoursOfService": null,
+          "onLineResource": null,
+          "address": {
+            "administrativeArea": "",
+            "city": "",
+            "country": "",
+            "postalCode": "",
+            "deliveryPoints": [
+              "GPO Box 378",
+              "Canberra  ACT  2601",
+              "AUSTRALIA"
+            ],
+            "electronicMailAddresses": [
+              "geodesy@ga.gov.au"
+            ],
+            "standard": {},
+            "modifiable": true,
+            "interface": "org.opengis.metadata.citation.Address"
+          },
+          "phone": {
+            "voices": [
+              "+61 2 6249 9426",
+              "+61 2 6249 9111"
+            ],
+            "facsimiles": [
+              ""
+            ]
+          },
+          "standard": {},
+          "modifiable": true,
+          "interface": "org.opengis.metadata.citation.Contact"
+        },
+        "role": {},
+        "standard": {},
+        "modifiable": true,
+        "interface": "org.opengis.metadata.citation.ResponsibleParty"
+      }
+    }
+  ],
+  "_links": {
+    "self": {
+      "href": "https://gws.geodesy.ga.gov.au/siteLogs/10902"
+    },
+    "siteLog": {
+      "href": "https://gws.geodesy.ga.gov.au/siteLogs/10902{?projection}",
+      "templated": true
+    }
+  }
+}

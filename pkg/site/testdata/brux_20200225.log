@@ -1,0 +1,768 @@
+
+     BRUX00BEL Site Information Form (site log)
+     International GNSS Service
+     See Instructions at:
+       ftp://igs.org/pub/station/general/sitelog_instr.txt
+
+0.   Form
+
+     Prepared by (full name)  : Kevin De Bruyne
+     Date Prepared            : 2020-02-25
+     Report Type              : UPDATE
+     If Update:
+      Previous Site Log       : brux00bel_20181112.log
+      Modified/Added Sections : 3.13, 3.14
+
+
+1.   Site Identification of the GNSS Monument
+
+     Site Name                : Brussels
+     Four Character ID        : BRUX
+     Monument Inscription     : 
+     IERS DOMES Number        : 13101M010
+     CDP Number               : 
+     Monument Description     : STEEL MAST
+       Height of the Monument : 8 m
+       Monument Foundation    : CONCRETE BLOCK
+       Foundation Depth       : 3 m
+     Marker Description       : CENTER OF HOLE IN STEEL PLATE
+     Date Installed           : 2006-07-07T00:00Z
+     Geologic Characteristic  : SAND
+       Bedrock Type           : SEDIMENTARY
+       Bedrock Condition      : FRESH
+       Fracture Spacing       : 0 cm
+       Fault zones nearby     : NO
+         Distance/activity    : 
+     Additional Information   : 
+
+
+2.   Site Location Information
+
+     City or Town             : Brussels
+     State or Province        : Brabant
+     Country                  : Belgium
+     Tectonic Plate           : EURASIAN
+     Approximate Position (ITRF)
+       X coordinate (m)       : 4027881.628
+       Y coordinate (m)       : 306998.537
+       Z coordinate (m)       : 4919498.984
+       Latitude (N is +)      : +504753.03
+       Longitude (E is +)     : +0042130.83
+       Elevation (m,ellips.)  : 158.3
+     Additional Information   : 
+
+
+3.   GNSS Receiver Information
+
+3.1  Receiver Type            : SEPT POLARX2
+     Satellite System         : GPS
+     Serial Number            : 1436
+     Firmware Version         : 2.6.2
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2006-07-07T00:00Z
+     Date Removed             : 2008-02-14T09:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : hardware replacement of receiver
+                              : with SN 1128, same receiver, but
+                              : different serial number (now 1436)
+
+3.2  Receiver Type            : ASHTECH Z-XII3T
+     Satellite System         : GPS
+     Serial Number            : RT820015201
+     Firmware Version         : 1L01-1D04
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2008-02-15T08:00Z
+     Date Removed             : 2010-06-28T13:55Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.3  Receiver Type            : SEPT POLARX3ETR
+     Satellite System         : GPS+GLO
+     Serial Number            : 2001060
+     Firmware Version         : 1.4.0
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2010-06-28T13:55Z
+     Date Removed             : 2012-01-31T13:00Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : 
+
+3.4  Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 3001376
+     Firmware Version         : 2.3.3
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2012-01-31T14:00Z
+     Date Removed             : 2012-03-05T14:00Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : The receiver delay 1PPS in to 1PPS out was
+                              : measured to be 145 ns.
+
+3.5  Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 3001376
+     Firmware Version         : 2.3-tst120216r34012
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2012-03-05T16:00Z
+     Date Removed             : 2012-09-24T11:00Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : The receiver delay 1PPS in to 1PPS out was
+                              : measured to be 142.8 ns.
+
+3.6  Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL
+     Serial Number            : 3001376
+     Firmware Version         : 2.3.4
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2012-09-24T11:45Z
+     Date Removed             : 2013-02-04T12:40Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : The receiver delay 1PPS in to 1PPS out was
+                              : measured to be 142.8 ns.
+
+3.7  Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.3.4
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2013-02-04T13:55Z
+     Date Removed             : 2014-03-17T10:10Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : The receiver delay 1PPS in to 1PPS out is
+                              : supposed to be unchanged (142.8 ns).
+
+3.8  Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.5.2
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-03-17T10:40Z
+     Date Removed             : 2015-09-07T14:45Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : The receiver delay 1PPS in to 1PPS out was
+                              : remeasured and found to be unchanged (142.8 ns).
+
+3.9  Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.9.0
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2015-09-07T14:50Z
+     Date Removed             : 2016-10-24T09:00Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : 
+
+3.10 Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.9.5
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2016-10-24T09:00Z
+     Date Removed             : 2017-01-03T12:15Z
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : 
+
+3.11 Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.9.6
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2017-01-03T12:15Z
+     Date Removed             : 
+     Temperature Stabiliz.    : 18.0 +/- 0.2
+     Additional Information   : 
+
+3.12 Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.9.6
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2017-03-20T00:00Z
+     Date Removed             : 2018-11-12T08:30Z
+     Temperature Stabiliz.    : 20.1 +/- 0.2
+     Additional Information   : 
+
+3.13 Receiver Type            : SEPT POLARX4TR
+     Satellite System         : GPS+GLO+GAL+BDS
+     Serial Number            : 3001376
+     Firmware Version         : 2.9.6-extref3
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2018-11-12T08:31Z
+     Date Removed             : 2020-02-25T13:15Z
+     Temperature Stabiliz.    : 20.1 +/- 0.2
+     Additional Information   : 
+
+3.14 Receiver Type            : SEPT POLARX5TR
+     Satellite System         : GPS+GLO+GAL+BDS+QZSS+IRNSS+SBAS
+     Serial Number            : 3057609
+     Firmware Version         : 5.3.2
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2020-02-25T13:30Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Temperature Stabiliz.    : 20.1 +/- 0.2
+     Additional Information   : 
+
+3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
+     Satellite System         : (GPS+GLO+GAL+BDS+QZSS+SBAS)
+     Serial Number            : (A20, but note the first A5 is used in SINEX)
+     Firmware Version         : (A11)
+     Elevation Cutoff Setting : (deg)
+     Date Installed           : (CCYY-MM-DDThh:mmZ)
+     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Temperature Stabiliz.    : (none or tolerance in degrees C)
+     Additional Information   : (multiple lines)
+
+
+4.   GNSS Antenna Information
+
+4.1  Antenna Type             : ASH701945E_M    NONE
+     Serial Number            : CR620023301
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.1266
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2006-07-07T00:00Z
+     Date Removed             : 2008-03-19T08:45Z
+     Additional Information   : 
+
+4.2  Antenna Type             : ASH701945C_M    NONE
+     Serial Number            : CR620002301
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.1266
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2008-03-19T09:00Z
+     Date Removed             : 2008-06-17T09:00Z
+     Additional Information   : 
+
+4.3  Antenna Type             : ASH701945C_M    NONE
+     Serial Number            : CR620002301
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.1286
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 
+     Date Removed             : 2008-09-02T13:00Z
+     Additional Information   : Testing of ECCOSORB ANW-79 around antenna in
+                              : order to obtain low reflectivity. Adaptation
+                              : antenna height by + 2 mm due to a mounting
+                              : plate which holds the ECCOSORB material under
+                              : the antenna.
+
+4.4  Antenna Type             : ASH701945C_M    NONE
+     Serial Number            : CR620002301
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.1266
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2008-09-02T13:00Z
+     Date Removed             : 2008-09-22T09:00Z
+     Additional Information   : Testing without plate and ECOSORB
+
+4.5  Antenna Type             : TRM55971.00     NONE
+     Serial Number            : 30765568
+     Antenna Reference Point  : BAM
+     Marker->ARP Up Ecc. (m)  : 0.1266
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2008-09-22T09:00Z
+     Date Removed             : 2008-10-02T09:30Z
+     Additional Information   : Testing new antenna (Antartica)
+
+4.6  Antenna Type             : TRM55971.00     TZGD
+     Serial Number            : 30765568
+     Antenna Reference Point  : BAM
+     Marker->ARP Up Ecc. (m)  : 0.1266
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : TZGD
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2008-10-02T09:30Z
+     Date Removed             : 2008-10-20T06:30Z
+     Additional Information   : Testing new antenna (Antartica)
+
+4.7  Antenna Type             : ASH701945C_M    NONE
+     Serial Number            : CR620002301
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.1266
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2008-10-20T06:30Z
+     Date Removed             : 2011-03-07T08:30Z
+     Additional Information   : 
+
+4.8  Antenna Type             : JAVRINGANT_DM   NONE
+     Serial Number            : 00464
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.4689
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2011-03-07T12:00Z
+     Date Removed             : 2018-02-01T08:15Z
+     Additional Information   : To shield the antenna from reflections on the
+                              : dome below it, a 0.8x0.8 m^2 metal shield was
+                              : installed with Eccosorb ANW-77 on top. The
+                              : spacing between the ARP and the top of the
+                              : Eccosorb ANW-77 is 17.8 cm.
+                              : On 2015-12-09, the Eccosorb was replaced by a
+                              : new more resistant version.
+
+4.9  Antenna Type             : JAVRINGANT_DM   NONE
+     Serial Number            : 00464
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.4689
+     Marker->ARP North Ecc(m) : 0.0010
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : ANDREW heliax LDF2-50A
+     Antenna Cable Length     : 60 m
+     Date Installed           : 2018-02-01T08:15Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Additional Information   : To shield the antenna from reflections on the
+                              : dome below it, a 0.8x0.8 m^2 metal shield was
+                              : installed with Eccosorb ANW-77 on top. The
+                              : spacing between the ARP and the top of the
+                              : Eccosorb ANW-77 is 17.8 cm.
+                              : On 2015-12-09, the Eccosorb was replaced by a
+                              : new more resistant version.
+                              : Surge protection device, dly: L2 553, L1 525 ps.
+
+4.x  Antenna Type             : (A20, from rcvr_ant.tab; see instructions)
+     Serial Number            : (A*, but note the first A5 is used in SINEX)
+     Antenna Reference Point  : (BPA/BCR/XXX from "antenna.gra"; see instr.)
+     Marker->ARP Up Ecc. (m)  : (F8.4)
+     Marker->ARP North Ecc(m) : (F8.4)
+     Marker->ARP East Ecc(m)  : (F8.4)
+     Alignment from True N    : (deg; + is clockwise/east)
+     Antenna Radome Type      : (A4 from rcvr_ant.tab; see instructions)
+     Radome Serial Number     : 
+     Antenna Cable Type       : (vendor & type number)
+     Antenna Cable Length     : (m)
+     Date Installed           : (CCYY-MM-DDThh:mmZ)
+     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Additional Information   : (multiple lines)
+
+
+5.   Surveyed Local Ties
+
+5.1  Tied Marker Name         : BRUS
+     Tied Marker Usage        : IGS and EPN station
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 13101M004
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : 12.164
+       dy (m)                 : 47.324
+       dz (m)                 : -23.739
+     Accuracy (mm)            : 3 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2012-03-23T00:00Z
+     Additional Information   : accuracy = 1 sigma
+
+5.2  Tied Marker Name         : BRUS
+     Tied Marker Usage        : IGS and EPN station
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 13101M004
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : 12.161
+       dy (m)                 : 47.330
+       dz (m)                 : -23.744
+     Accuracy (mm)            : 1 mm
+     Survey method            : GPS CAMPAIGN
+     Date Measured            : 2011-07-07T00:00Z
+     Additional Information   : L1 analysis covering period
+                              : 2011-05-16 to 2011-07-22.
+                              : An L3 analysis over the same period
+                              : provides (12.161;47.329;-23.745).
+                              : GPS data analysis was done using igs08.atx
+                              : calibrations for BRUS and indiv.calib.
+                              : for BRUX (from University of Bonn and TU
+                              : Darmstadt).
+
+5.3  Tied Marker Name         : BRUS
+     Tied Marker Usage        : IGS and EPN station
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 13101M004
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : 12.162
+       dy (m)                 : 47.331
+       dz (m)                 : -23.745
+     Accuracy (mm)            : 1 mm
+     Survey method            : GPS CAMPAIGN
+     Date Measured            : 2011-11-02T00:00Z
+     Additional Information   : L1 analysis covering period
+                              : 2011-007-23 to 2012-02-12.
+                              : An L3 analysis over the same period
+                              : provides (12.166;47.334;-23.748).
+                              : Differences between 5.2 and 5.3 are caused
+                              : by an unexplained coordinate jump at BRUS
+                              : at 2011-07-22.
+                              : GPS data analysis was done using igs08.atx
+                              : calibrations for BRUS and indiv.calib.
+                              : for BRUX (from University of Bonn and TU
+                              : Darmstadt).
+
+5.x  Tied Marker Name         : 
+     Tied Marker Usage        : (SLR/VLBI/LOCAL CONTROL/FOOTPRINT/etc)
+     Tied Marker CDP Number   : (A4)
+     Tied Marker DOMES Number : (A9)
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : (m)
+       dy (m)                 : (m)
+       dz (m)                 : (m)
+     Accuracy (mm)            : (mm)
+     Survey method            : (GPS CAMPAIGN/TRILATERATION/TRIANGULATION/etc)
+     Date Measured            : (CCYY-MM-DDThh:mmZ)
+     Additional Information   : (multiple lines)
+
+
+6.   Frequency Standard
+
+6.1  Standard Type            : EXTERNAL H-MASER
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2006-07-07/2010-12-21
+       Notes                  : 
+
+6.2  Standard Type            : INTERNAL
+       Input Frequency        : 
+       Effective Dates        : 2010-12-22/2011-03-23
+       Notes                  : 
+
+6.3  Standard Type            : EXTERNAL CESIUM
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2011-03-23/2011-12-19
+       Notes                  : At 12h UTC, 13h local time, on 2011-03-23 the
+                              : receiver was stopped, recabeled with an external
+                              : reference (namely UTC(ROB), derived from a
+                              : HP5071A), and restarted.
+
+6.4  Standard Type            : EXTERNAL CH1-75A MASER
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2011-12-19/2012-02-27
+       Notes                  : The 5MHz output of the CH1-75A (maser3) passes a
+                              : Minicircuits FD-2+ frequency doubler and then is
+                              : used as input to a SpectraTime femtoStepper. The
+                              : output of this phase stepper (equal to UTC(ORB))
+                              : is used as an input to the receiver.
+
+6.5  Standard Type            : EXTERNAL CESIUM
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2012-02-27/2012-03-01
+       Notes                  : The 10MHz output of the Symmetricom 5071A (ces1)
+                              : is used as input to a SpectraTime femtoStepper.
+                              : The output of this phase stepper (equal to
+                              : UTC(ORB)) is used as an input to the receiver.
+
+6.6  Standard Type            : EXTERNAL CH1-75A MASER
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2012-03-01/2013-07-09
+       Notes                  : The 5MHz output of the CH1-75A (maser3) passes a
+                              : Minicircuits FD-2+ frequency doubler and then is
+                              : used as input to a SpectraTime femtoStepper. The
+                              : output of this phase stepper (equal to UTC(ORB))
+                              : is used as an input to the receiver.
+
+6.7  Standard Type            : EXTERNAL 5071A CESIUM
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2013-07-09/2015-06-03
+       Notes                  : The 10MHz of the Symmetricom 5071A (cesium2) is
+                              : used as input to a SpectraTime femtoStepper. The
+                              : output of this phase stepper (equal to UTC(ORB))
+                              : is used as an input to the receiver.
+
+6.8  Standard Type            : EXTERNAL CH1-75A MASER
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2015-06-03/2016-11-07
+       Notes                  : The 5MHz output of the CH1-75A (maser3) passes
+                              : an amplifier HP5087A and then is used as input
+                              : to a SpectraTime femtoStepper. The output of
+                              : this phase stepper (equal to UTC(ORB)) is used
+                              : as an input to the receiver.
+
+6.9  Standard Type            : EXTERNAL 5071A CESIUM
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2016-11-07/2016-11-17
+       Notes                  : The 5MHz output of the CESIUM 5071A (ces3)
+                              : passes an amplifier HP5087A and then is used as
+                              : input  to a SpectraTime femtoStepper. The output
+                              : of this phase stepper (equal to UTC(ORB)) is
+                              : used as an input to the receiver.
+
+6.10 Standard Type            : EXTERNAL CH1-75A MASER
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2016-11-17/2018-02-01
+       Notes                  : The 5MHz output of the CH1-75A (maser3) passes
+                              : an amplifier HP5087A and then is used as input
+                              : to a SpectraTime femtoStepper. The output of
+                              : this phase stepper (equal to UTC(ORB)) is used
+                              : as an input to the receiver.
+
+6.11 Standard Type            : EXTERNAL CH1-75A MASER
+       Input Frequency        : 10 MHz
+       Effective Dates        : 2018-02-01/CCYY-MM-DD
+       Notes                  : The 5MHz output of the CH1-75A (maser3) passes
+                              : an amplifier HP5087A and then is used as input
+                              : to a SpectraTime femtoStepper. The output of
+                              : this phase stepper (equal to UTC(ORB)) is used
+                              : as an input to the receiver.
+                              : REFDLY = 157.5 ns.
+
+6.x  Standard Type            : (INTERNAL or EXTERNAL H-MASER/CESIUM/etc)
+       Input Frequency        : (if external)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+
+7.   Collocation Information
+
+7.1  Instrumentation Type     : CRYOGENIC GRAVIMETER
+       Status                 : PERMANENT
+       Effective Dates        : 1993-10-20/2000-08-21
+       Notes                  : 
+
+7.2  Instrumentation Type     : SEISMOMETER
+       Status                 : PERMANENT
+       Effective Dates        : 1993-10-20/CCYY-MM-DD
+       Notes                  : 
+
+7.x  Instrumentation Type     : (GPS/GLONASS/DORIS/PRARE/SLR/VLBI/TIME/etc)
+       Status                 : (PERMANENT/MOBILE)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+
+8.   Meteorological Instrumentation
+
+8.1.1  Humidity Sensor Model  : WXTPTU
+       Manufacturer           : Vaisala
+       Serial Number          : J2420010
+       Data Sampling Interval :    10 sec
+       Accuracy (% rel h)     : 3 % rel h
+       Aspiration             : NATURAL
+       Height Diff to Ant     : -0.5 m
+       Calibration date       : 2013-06-14
+       Effective Dates        : 2018-08-23/CCYY-MM-DD
+       Notes                  : Vaisala WXT520 SN: J2440011
+                              : Humidity Sensor is 0.5 m under the antenna
+                              : capacitive thin film polymer HUMICAP 180 sensor
+
+8.1.x  Humidity Sensor Model  : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy (% rel h)     : (% rel h)
+       Aspiration             : (UNASPIRATED/NATURAL/FAN/etc)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.2.1  Pressure Sensor Model  : WXTPTU
+       Manufacturer           : Vaisala
+       Serial Number          : J2420010
+       Data Sampling Interval :  10 sec
+       Accuracy               : 1 hPa
+       Height Diff to Ant     : -0.5 m
+       Calibration date       : 2013-06-14
+       Effective Dates        : 2018-08-23/CCYY-MM-DD
+       Notes                  : Vaisala WXT520 SN: J2440011
+                              : Pressure Sensor is 0.5 m under the antenna
+                              : capacitive silicon BAROCAP sensor
+
+8.2.x  Pressure Sensor Model  :
+       Manufacturer           :
+       Serial Number          :
+       Data Sampling Interval : (sec)
+       Accuracy               : (hPa)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.3.1  Temp. Sensor Model     : WXTPTU
+       Manufacturer           : Vaisala
+       Serial Number          : J2420010
+       Data Sampling Interval : 10 sec
+       Accuracy               : 0.3 deg C
+       Aspiration             : NATURAL
+       Height Diff to Ant     : -0.5 m
+       Calibration date       : 2013-06-14
+       Effective Dates        : 2018-08-23/CCYY-MM-DD
+       Notes                  : Vaisala WXT520 SN: J2440011
+                              : Temperature Sensor is 0.5 m under the antenna
+
+8.3.x  Temp. Sensor Model     : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy               : (deg C)
+       Aspiration             : (UNASPIRATED/NATURAL/FAN/etc)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.4.1  Water Vapor Radiometer : CTGR129502
+       Manufacturer           : Captec, Bern / ETH, Zuerich
+       Serial Number          :
+       Distance to Antenna    : 27 m
+       Height Diff to Ant     : 1 m
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : 1997-04-15/CCYY-MM-DD
+       Notes                  : (multiple lines)
+
+8.4.x  Water Vapor Radiometer : 
+       Manufacturer           : 
+       Serial Number          : 
+       Distance to Antenna    : (m)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.5.x  Other Instrumentation  : (multiple lines)
+
+
+9.   Local Ongoing Conditions Possibly Affecting Computed Position
+
+9.1.x  Radio Interferences    : (TV/CELL PHONE ANTENNA/RADAR/etc)
+       Observed Degradations  : (SN RATIO/DATA GAPS/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+9.2.x  Multipath Sources      : (METAL ROOF/DOME/VLBI ANTENNA/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+9.3.x  Signal Obstructions    : (TREES/BUILDINGS/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+
+10.  Local Episodic Effects Possibly Affecting Data Quality
+
+10.1 Date                     : 2011-08-25/2011-08-25
+     Event                    : TREE CLEARING
+
+10.x Date                     : (CCYY-MM-DD/CCYY-MM-DD)
+     Event                    : (TREE CLEARING/CONSTRUCTION/etc)
+
+11.  On-Site, Point of Contact Agency Information
+
+     Agency                   : Royal Observatory of Belgium
+     Preferred Abbreviation   : ROB
+     Mailing Address          : Av. Circulaire 3
+                              : 1180 Brussels
+                              : Belgium
+     Primary Contact
+       Contact Name           : Kevin De Bruyne
+       Telephone (primary)    : +32 2 373 02 92
+       Telephone (secondary)  : +32 2 373 02 11
+       Fax                    : +32 2 374 98 22
+       E-mail                 : c.b@oma.be
+     Secondary Contact
+       Contact Name           : Franz Beckenbauer
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : p.d@oma.be
+     Additional Information   : 
+
+
+12.  Responsible Agency (if different from 11.)
+
+     Agency                   : 
+     Preferred Abbreviation   : 
+     Mailing Address          : 
+     Primary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Secondary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Additional Information   : 
+
+13.  More Information
+
+     Primary Data Center      : ROB
+     Secondary Data Center    : BKG
+     URL for More Information : 
+     Hardcopy on File
+       Site Map               : 
+       Site Diagram           : 
+       Horizon Mask           : 
+       Monument Description   : 
+       Site Pictures          : 
+     Additional Information   : 
+     Antenna Graphics with Dimensions
+
+JAVRINGANT_DM
+
+                       ---------
+                     /           \
+                    |             |
+  +-------------------------------------------------+     <--  0.1015  TCR
+  |                                                 |
+  |                                                 |
+  |                                                 |
+  |                                                 |
++-+-------------------------------------------------+-+   <--  0.0379
++-------------------+-------------+-------------------+   <--  0.0345  BCR
+                    |             |
+                    |             |
+                    +------x------+                       <--  0.0000  BPA=ARP
+
+<--                      0.3800                     -->
+
+ARP: Antenna Reference Point
+L1 : L1 Phase Center                   L2 : L2 Phase Center
+TCR: Top of Chokering                  BCR: Bottom of Chokering
+BPA: Bottom of Preamplifier
+
+All dimensions are in meters.
+
+
