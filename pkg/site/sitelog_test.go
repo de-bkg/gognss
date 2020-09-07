@@ -10,6 +10,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEncodeSitelog(t *testing.T) {
+	s := &Site{}
+	s.Identification.FourCharacterID = "FFMJ"
+	//w := &bytes.Buffer{}
+	w := os.Stdout
+	err := EncodeSitelog(w, s)
+	assert.NoError(t, err)
+}
+
 func TestReadSitelog(t *testing.T) {
 	assert := assert.New(t)
 

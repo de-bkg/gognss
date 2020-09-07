@@ -1,3 +1,5 @@
+package site
+
 // The sitelog template
 const sitelogTempl = `
      XXXX Site Information Form (site log)
@@ -18,7 +20,7 @@ const sitelogTempl = `
 1.   Site Identification of the GNSS Monument
 
      Site Name                : 
-     Four Character ID        : (A4)
+     Four Character ID        : {{.Identification.FourCharacterID}}
      Monument Inscription     : 
      IERS DOMES Number        : (A9)
      CDP Number               : (A4)
@@ -331,4 +333,3 @@ const sitelogTempl = `
 
      (insert text graphic from file antenna.gra)
 `
-

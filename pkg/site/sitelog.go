@@ -3,6 +3,7 @@ package site
 import (
 	"bufio"
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"regexp"
@@ -53,6 +54,17 @@ type SitelogDecoder struct {
 	type errorMsgs []*Error
 		// Errors is a list of errors attached to all the handlers/middlewares who used this context.
 		Errors errorMsgs */
+}
+
+// EncodeSitelog writes the Site s to the writer w in IGS sitelog format.
+func EncodeSitelog(w io.Writer, s *Site) error {
+	t := template.Must(template.New("sitelog").Parse(sitelogTempl))
+	err := t.Execute(w, s)
+	if err != nil {
+		return fmt.Errorf("executing sitelog template: %v", err)
+	}
+
+	return nil
 }
 
 // DecodeSitelog reads and parses the sitelog input stream and returns it as a site.
