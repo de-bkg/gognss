@@ -12,7 +12,23 @@ import (
 
 func TestEncodeSitelog(t *testing.T) {
 	s := &Site{}
-	s.Identification.FourCharacterID = "FFMJ"
+	s.Ident.FourCharacterID = "FFMJ"
+
+	s.Receivers = append(s.Receivers, &Receiver{Type: "SEPT POLARX2", SatSys: "GPS", SerialNum: "1436", Firmware: "2.6.2",
+		ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
+		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"},
+		&Receiver{Type: "SEPT POLARX5TR", SatSys: "GPS+GLO+GAL+BDS+QZSS+IRNSS+SBAS", SerialNum: "3057609", Firmware: "5.3.2",
+			ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2", DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC),
+			DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""})
+
+	s.Antennas = append(s.Antennas, &Antenna{Type: "ASH701945E_M    NONE", Radome: "NONE", RadomeSerialNum: "", SerialNum: "CR620023301", ReferencePoint: "BPA", EccUp: 0.1266, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0,
+		CableType: "ANDREW heliax LDF2-50A", CableLength: 60, DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
+		DateRemoved: time.Date(2008, 03, 19, 8, 45, 0, 0, time.UTC), Notes: ""},
+		&Antenna{Type: "JAVRINGANT_DM   NONE", Radome: "NONE", RadomeSerialNum: "", SerialNum: "00464", ReferencePoint: "BPA",
+			EccUp: 0.4689, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0, CableType: "ANDREW heliax LDF2-50A", CableLength: 60,
+			DateInstalled: time.Date(2018, 02, 01, 8, 15, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC),
+			Notes: "To shield the antenna from reflections on the dome below it, a 0.8x0.8 m^2 metal shield was installed with Eccosorb ANW-77 on top. The spacing between the ARP and the top of the Eccosorb ANW-77 is 17.8 cm. On 2015-12-09, the Eccosorb was replaced by a new more resistant version. Surge protection device, dly: L2 553, L1 525 ps."})
+
 	//w := &bytes.Buffer{}
 	w := os.Stdout
 	err := EncodeSitelog(w, s)
@@ -41,7 +57,7 @@ func TestReadSitelog(t *testing.T) {
 		MarkerDescription: "CENTER OF HOLE IN STEEL PLATE", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		GeologicCharacteristic: "SAND", BedrockType: "SEDIMENTARY", BedrockCondition: "FRESH", FractureSpacing: "0 cm",
 		FaultZonesNearby: "NO", DistanceActivity: "", Notes: ""}
-	assert.Equal(ident, site.Identification)
+	assert.Equal(ident, site.Ident)
 
 	// Site location
 	location := Location{City: "Brussels", State: "Brabant", Country: "Belgium", TectonicPlate: "EURASIAN",

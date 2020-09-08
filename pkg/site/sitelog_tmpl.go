@@ -20,7 +20,7 @@ const sitelogTempl = `
 1.   Site Identification of the GNSS Monument
 
      Site Name                : 
-     Four Character ID        : {{.Identification.FourCharacterID}}
+     Four Character ID        : {{.Ident.FourCharacterID}}
      Monument Inscription     : 
      IERS DOMES Number        : (A9)
      CDP Number               : (A4)
@@ -56,17 +56,17 @@ const sitelogTempl = `
 
 
 3.   GNSS Receiver Information
-
-3.1  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
-     Satellite System         : (GPS+GLO+GAL+BDS+QZSS+SBAS)
-     Serial Number            : (A20, but note the first A5 is used in SINEX)
-     Firmware Version         : (A11)
-     Elevation Cutoff Setting : (deg)
-     Date Installed           : (CCYY-MM-DDThh:mmZ)
-     Date Removed             : (CCYY-MM-DDThh:mmZ)
+{{range $i, $recv := .Receivers}}
+3.{{$i | add 1}}  Receiver Type            : {{$recv.Type}}
+     Satellite System         : {{$recv.SatSys}}
+     Serial Number            : {{$recv.SerialNum}}
+     Firmware Version         : {{$recv.Firmware}}
+     Elevation Cutoff Setting : {{$recv.ElevationCutoff}}
+     Date Installed           : {{$recv.DateInstalled | printDateTime}}
+     Date Removed             : {{$recv.DateRemoved | printDateTime}}
      Temperature Stabiliz.    : (none or tolerance in degrees C)
      Additional Information   : (multiple lines)
-
+{{end}}
 3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
      Satellite System         : (GPS+GLO+GAL+BDS+QZSS+SBAS)
      Serial Number            : (A20, but note the first A5 is used in SINEX)
@@ -79,22 +79,22 @@ const sitelogTempl = `
 
 
 4.   GNSS Antenna Information
-
-4.1  Antenna Type             : (A20, from rcvr_ant.tab; see instructions)
-     Serial Number            : (A*, but note the first A5 is used in SINEX)
-     Antenna Reference Point  : (BPA/BCR/XXX from "antenna.gra"; see instr.)
-     Marker->ARP Up Ecc. (m)  : (F8.4)
-     Marker->ARP North Ecc(m) : (F8.4)
-     Marker->ARP East Ecc(m)  : (F8.4)
+{{range $i, $ant := .Antennas}}
+4.{{$i | add 1}}  Antenna Type             : {{$ant.Type}}
+     Serial Number            : {{$ant.SerialNum}}
+     Antenna Reference Point  : {{$ant.ReferencePoint}}
+     Marker->ARP Up Ecc. (m)  : {{printf "%.04f" $ant.EccUp}}
+     Marker->ARP North Ecc(m) : {{printf "%.04f" $ant.EccNorth}}
+     Marker->ARP East Ecc(m)  : {{printf "%.04f" $ant.EccEast}}
      Alignment from True N    : (deg; + is clockwise/east)
-     Antenna Radome Type      : (A4 from rcvr_ant.tab; see instructions)
-     Radome Serial Number     : 
+     Antenna Radome Type      : {{$ant.Radome}}
+     Radome Serial Number     : {{$ant.RadomeSerialNum}}
      Antenna Cable Type       : (vendor & type number)
      Antenna Cable Length     : (m)
-     Date Installed           : (CCYY-MM-DDThh:mmZ)
-     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Date Installed           : {{$ant.DateInstalled | printDateTime}}
+     Date Removed             : {{$ant.DateRemoved | printDateTime}}
      Additional Information   : (multiple lines)
-
+{{end}}
 4.x  Antenna Type             : (A20, from rcvr_ant.tab; see instructions)
      Serial Number            : (A*, but note the first A5 is used in SINEX)
      Antenna Reference Point  : (BPA/BCR/XXX from "antenna.gra"; see instr.)

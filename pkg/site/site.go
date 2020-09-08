@@ -9,9 +9,9 @@ type Site struct {
 	EntryDate        time.Time `json:"entryDate"`
 	LastModifiedDate time.Time `json:"lastModifiedDate"`
 	//SiteLogText                 time.Time                `json:"siteLogText"`
-	FormInfo       FormInformation `json:"formInformation"`
-	Identification Identification  `json:"siteIdentification"`
-	Location       Location        `json:"siteLocation"`
+	FormInfo FormInformation `json:"formInformation"`
+	Ident    Identification  `json:"siteIdentification"`
+	Location Location        `json:"siteLocation"`
 
 	Receivers []*Receiver `json:"gnssReceivers" validate:"required,min=1,dive,required"`
 	Antennas  []*Antenna  `json:"gnssAntennas" validate:"required,min=1,dive,required"`

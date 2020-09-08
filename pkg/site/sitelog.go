@@ -58,7 +58,14 @@ type SitelogDecoder struct {
 
 // EncodeSitelog writes the Site s to the writer w in IGS sitelog format.
 func EncodeSitelog(w io.Writer, s *Site) error {
-	t := template.Must(template.New("sitelog").Parse(sitelogTempl))
+	funcMap := template.FuncMap{
+		"add":           func(val1, val2 int) int { return val1 + val2 },
+		"printDateTime": printSitelogDateTime,
+		// The name "title" is what the function will be called in the template text.
+		//"title": strings.Title,
+	}
+
+	t := template.Must(template.New("sitelog").Funcs(funcMap).Parse(sitelogTempl))
 	err := t.Execute(w, s)
 	if err != nil {
 		return fmt.Errorf("executing sitelog template: %v", err)
@@ -896,7 +903,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 	err = scanner.Err()
 
 	site.FormInfo = formInfo
-	site.Identification = ident
+	site.Ident = ident
 	site.Location = location
 	site.MoreInformation = moreInfo
 	return site, nil
@@ -1135,6 +1142,14 @@ func parseEffectiveDates(s string) (effDates EffectiveDates, err error) {
 	return
 }
 
+// print datetime in sitelog format CCYY-MM-DDThh:mmZ.
+func printSitelogDateTime(t time.Time) string {
+	if t.IsZero() {
+		return "(CCYY-MM-DDThh:mmZ)"
+	}
+	return t.Format("2006-01-02T15:04Z")
+}
+
 func parseSatSystems(s string) (string, error) {
 	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "NavIC", "IRNSS")
 	s = r.Replace(s)
@@ -1156,10 +1171,8 @@ func addMultipleLine(note, newNote string) string {
 	}
 
 	if note != "" {
-
 		note += " " + newNote
 		return note
 	}
-
 	return newNote
 }
