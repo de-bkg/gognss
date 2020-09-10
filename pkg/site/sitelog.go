@@ -32,19 +32,13 @@ var (
 	validate *validator.Validate
 )
 
-// A SiteDecoder decodes GNSS site information.
-// type SiteDecoder interface {
-// 	Decode(site *Site) error
-// }
-
 // A SitelogDecoder reads and decodes site information from an IGS sitelog input stream.
-type SitelogDecoder struct {
+/* type SitelogDecoder struct {
 	r   io.Reader
 	err error
 
-	/* 	// see  gin.Context.go for adding errors!!!!
-	//
-		//Error represents a error's specification.
+	// see  gin.Context.go for adding errors!!!!
+	//Error represents a error's specification.
 	type Error struct {
 		Err  error
 		Type ErrorType
@@ -53,8 +47,8 @@ type SitelogDecoder struct {
 
 	type errorMsgs []*Error
 		// Errors is a list of errors attached to all the handlers/middlewares who used this context.
-		Errors errorMsgs */
-}
+		Errors errorMsgs
+} */
 
 // EncodeSitelog writes the Site s to the writer w in IGS sitelog format.
 func EncodeSitelog(w io.Writer, s *Site) error {
@@ -70,7 +64,6 @@ func EncodeSitelog(w io.Writer, s *Site) error {
 	if err != nil {
 		return fmt.Errorf("executing sitelog template: %v", err)
 	}
-
 	return nil
 }
 

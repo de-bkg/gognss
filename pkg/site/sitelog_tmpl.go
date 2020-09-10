@@ -9,7 +9,7 @@ const sitelogTempl = `
 
 0.   Form
 
-     Prepared by (full name)  : 
+     Prepared by (full name)  : {{.FormInfo.PreparedBy}}
      Date Prepared            : (CCYY-MM-DD)
      Report Type              : (NEW/UPDATE)
      If Update:
@@ -18,33 +18,33 @@ const sitelogTempl = `
 
 
 1.   Site Identification of the GNSS Monument
-
-     Site Name                : 
-     Four Character ID        : {{.Ident.FourCharacterID}}
-     Monument Inscription     : 
-     IERS DOMES Number        : (A9)
-     CDP Number               : (A4)
-     Monument Description     : (PILLAR/BRASS PLATE/STEEL MAST/etc)
-       Height of the Monument : (m)
-       Monument Foundation    : (STEEL RODS, CONCRETE BLOCK, ROOF, etc)
-       Foundation Depth       : (m)
-     Marker Description       : (CHISELLED CROSS/DIVOT/BRASS NAIL/etc)
-     Date Installed           : (CCYY-MM-DDThh:mmZ)
-     Geologic Characteristic  : (BEDROCK/CLAY/CONGLOMERATE/GRAVEL/SAND/etc)
-       Bedrock Type           : (IGNEOUS/METAMORPHIC/SEDIMENTARY)
-       Bedrock Condition      : (FRESH/JOINTED/WEATHERED)
-       Fracture Spacing       : (1-10 cm/11-50 cm/51-200 cm/over 200 cm)
-       Fault zones nearby     : (YES/NO/Name of the zone)
-         Distance/activity    : (multiple lines)
+{{with .Ident}}
+     Site Name                : {{.Name}}
+     Four Character ID        : {{.FourCharacterID}}
+     Monument Inscription     : {{.MonumentInscription}}
+     IERS DOMES Number        : {{.DOMESNumber}}
+     CDP Number               : {{.CDPNumber}}
+     Monument Description     : {{.MonumentDescription}}
+       Height of the Monument : {{.HeightOfMonument}}
+       Monument Foundation    : {{.MonumentFoundation}}
+       Foundation Depth       : {{.FoundationDepth}}
+     Marker Description       : {{.MarkerDescription}}
+     Date Installed           : {{.DateInstalled | printDateTime}}
+     Geologic Characteristic  : {{.GeologicCharacteristic}}
+       Bedrock Type           : {{.BedrockType}}
+       Bedrock Condition      : {{.BedrockCondition}}
+       Fracture Spacing       : {{.FractureSpacing}}
+       Fault zones nearby     : {{.FaultZonesNearby}}
+         Distance/activity    : {{.DistanceActivity}}
      Additional Information   : (multiple lines)
-
+{{end}}
 
 2.   Site Location Information
 
-     City or Town             : 
-     State or Province        : 
-     Country                  : 
-     Tectonic Plate           : 
+     City or Town             : {{.Location.City}}
+     State or Province        : {{.Location.State}}
+     Country                  : {{.Location.Country}}
+     Tectonic Plate           : {{.Location.TectonicPlate}}
      Approximate Position (ITRF)
        X coordinate (m)       : 
        Y coordinate (m)       : 
@@ -64,7 +64,7 @@ const sitelogTempl = `
      Elevation Cutoff Setting : {{$recv.ElevationCutoff}}
      Date Installed           : {{$recv.DateInstalled | printDateTime}}
      Date Removed             : {{$recv.DateRemoved | printDateTime}}
-     Temperature Stabiliz.    : (none or tolerance in degrees C)
+     Temperature Stabiliz.    : {{$recv.TemperatureStabiliz}}
      Additional Information   : (multiple lines)
 {{end}}
 3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
@@ -86,11 +86,11 @@ const sitelogTempl = `
      Marker->ARP Up Ecc. (m)  : {{printf "%.04f" $ant.EccUp}}
      Marker->ARP North Ecc(m) : {{printf "%.04f" $ant.EccNorth}}
      Marker->ARP East Ecc(m)  : {{printf "%.04f" $ant.EccEast}}
-     Alignment from True N    : (deg; + is clockwise/east)
+     Alignment from True N    : {{$ant.AlignmentFromTrueNorth}} 
      Antenna Radome Type      : {{$ant.Radome}}
      Radome Serial Number     : {{$ant.RadomeSerialNum}}
-     Antenna Cable Type       : (vendor & type number)
-     Antenna Cable Length     : (m)
+     Antenna Cable Type       : {{$ant.CableType}} 
+     Antenna Cable Length     : {{$ant.CableLength}}
      Date Installed           : {{$ant.DateInstalled | printDateTime}}
      Date Removed             : {{$ant.DateRemoved | printDateTime}}
      Additional Information   : (multiple lines)

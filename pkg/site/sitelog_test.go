@@ -12,7 +12,13 @@ import (
 
 func TestEncodeSitelog(t *testing.T) {
 	s := &Site{}
-	s.Ident.FourCharacterID = "FFMJ"
+	s.FormInfo = FormInformation{PreparedBy: "Kevin De Bruyne", DatePrepared: time.Date(2020, 02, 25, 0, 0, 0, 0, time.UTC), ReportType: "UPDATE"}
+
+	s.Ident = Identification{Name: "Brussels", FourCharacterID: "BRUX", NineCharacterID: "", MonumentInscription: "", DOMESNumber: "13101M010",
+		CDPNumber: "", MonumentDescription: "STEEL MAST", HeightOfMonument: 8, MonumentFoundation: "CONCRETE BLOCK", FoundationDepth: 3,
+		MarkerDescription: "CENTER OF HOLE IN STEEL PLATE", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
+		GeologicCharacteristic: "SAND", BedrockType: "SEDIMENTARY", BedrockCondition: "FRESH", FractureSpacing: "0 cm",
+		FaultZonesNearby: "NO", DistanceActivity: "", Notes: ""}
 
 	s.Receivers = append(s.Receivers, &Receiver{Type: "SEPT POLARX2", SatSys: "GPS", SerialNum: "1436", Firmware: "2.6.2",
 		ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),

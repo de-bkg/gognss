@@ -104,18 +104,18 @@ type Receiver struct {
 type Antenna struct {
 	Type                   string    `json:"type" validate:"required"`
 	Radome                 string    `json:"antennaRadomeType"`
-	RadomeSerialNum        string    `json:"radomeSerialNumber"` // DB
+	RadomeSerialNum        string    `json:"radomeSerialNumber"`
 	SerialNum              string    `json:"serialNumber" validate:"required"`
-	ReferencePoint         string    `json:"antennaReferencePoint"` // -> DB
+	ReferencePoint         string    `json:"antennaReferencePoint"`
 	EccUp                  float64   `json:"markerArpUpEcc"`
 	EccNorth               float64   `json:"markerArpNorthEcc"`
 	EccEast                float64   `json:"markerArpEastEcc"`
-	AlignmentFromTrueNorth float64   `json:"alignmentFromTrueNorth"` // in degree , -> DB
-	CableType              string    `json:"antennaCableType"`       // -> DB
-	CableLength            float32   `json:"antennaCableLength"`     // -> DB
+	AlignmentFromTrueNorth float64   `json:"alignmentFromTrueNorth"` // in deg; + is clockwise/east
+	CableType              string    `json:"antennaCableType"`       // vendor & type number
+	CableLength            float32   `json:"antennaCableLength"`     // in meter
 	DateInstalled          time.Time `json:"dateInstalled"`
 	DateRemoved            time.Time `json:"dateRemoved"`
-	Notes                  string    `json:"notes"` // Additional Information -> DB
+	Notes                  string    `json:"notes"` // Additional Information
 
 	/* 	"dateInserted": "2003-06-15T03:30:00Z",
 	   	"dateDeleted": null,
