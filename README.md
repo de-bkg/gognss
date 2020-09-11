@@ -1,5 +1,8 @@
 # GNSS
-Go packages for handling RINEX files and retrieving status information from a BKG NtripCaster instance.
+Golang packages for 
+* **ntrip**: connect to an NtripCaster, get status information from a BKG NtripCaster, run commands against a BKG NtripCaster
+* **rinex**: read RINEX3 files
+* **site**: handle metadata for a GNSS site/station, read and write IGS sitelog files
 
 Docs: [![PkgGoDev](https://pkg.go.dev/badge/de-bkg/gognss)](https://pkg.go.dev/github.com/de-bkg/gognss)
 
