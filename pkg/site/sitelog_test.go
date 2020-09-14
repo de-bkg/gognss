@@ -14,6 +14,10 @@ func TestEncodeSitelog(t *testing.T) {
 	s := &Site{}
 	s.FormInfo = FormInformation{PreparedBy: "Kevin De Bruyne", DatePrepared: time.Date(2020, 02, 25, 0, 0, 0, 0, time.UTC), ReportType: "UPDATE"}
 
+	s.Location = Location{City: "Brussels", State: "Brabant", Country: "Belgium", TectonicPlate: "EURASIAN",
+		ApproximatePosition: ApproximatePosition{CartesianPosition: CartesianPosition{Type: "Point", Coordinates: [3]float64{4027881.628, 306998.537, 4919498.984}},
+			GeodeticPosition: GeodeticPosition{Type: "Point", Coordinates: [3]float64{504753.03, 42130.83, 158.3}}}, Notes: ""}
+
 	s.Ident = Identification{Name: "Brussels", FourCharacterID: "BRUX", NineCharacterID: "", MonumentInscription: "", DOMESNumber: "13101M010",
 		CDPNumber: "", MonumentDescription: "STEEL MAST", HeightOfMonument: 8, MonumentFoundation: "CONCRETE BLOCK", FoundationDepth: 3,
 		MarkerDescription: "CENTER OF HOLE IN STEEL PLATE", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),

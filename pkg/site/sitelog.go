@@ -54,6 +54,7 @@ var (
 func EncodeSitelog(w io.Writer, s *Site) error {
 	funcMap := template.FuncMap{
 		"add":           func(val1, val2 int) int { return val1 + val2 },
+		"printDate":     printSitelogDate,
 		"printDateTime": printSitelogDateTime,
 		// The name "title" is what the function will be called in the template text.
 		//"title": strings.Title,
@@ -811,9 +812,9 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			if strings.Contains(line, "Secondary Contact") {
 				// store Primary Contact
 				if blockNumber == 11 {
-					site.ResponsibleParties = append(site.ResponsibleParties, ResponsibleParty{Party: party})
-				} else { // 12
 					site.Contacts = append(site.Contacts, Contact{Party: party})
+				} else { // 12
+					site.ResponsibleAgencies = append(site.ResponsibleAgencies, ResponsibleAgency{Party: party})
 				}
 
 				// reset fields from primary contact
@@ -845,9 +846,9 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				if party.IndividualName != "" {
 					// store secondary contact
 					if blockNumber == 11 {
-						site.ResponsibleParties = append(site.ResponsibleParties, ResponsibleParty{Party: party})
-					} else { // 12
 						site.Contacts = append(site.Contacts, Contact{Party: party})
+					} else { // 12
+						site.ResponsibleAgencies = append(site.ResponsibleAgencies, ResponsibleAgency{Party: party})
 					}
 
 					party = Party{}
@@ -1141,6 +1142,14 @@ func printSitelogDateTime(t time.Time) string {
 		return "(CCYY-MM-DDThh:mmZ)"
 	}
 	return t.Format("2006-01-02T15:04Z")
+}
+
+// print date in sitelog format CCYY-MM-DD.
+func printSitelogDate(t time.Time) string {
+	if t.IsZero() {
+		return "(CCYY-MM-DD)"
+	}
+	return t.Format("2006-01-02")
 }
 
 func parseSatSystems(s string) (string, error) {

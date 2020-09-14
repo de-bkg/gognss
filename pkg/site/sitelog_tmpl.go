@@ -10,7 +10,7 @@ const sitelogTempl = `
 0.   Form
 
      Prepared by (full name)  : {{.FormInfo.PreparedBy}}
-     Date Prepared            : (CCYY-MM-DD)
+     Date Prepared            : {{.FormInfo.DatePrepared | printDate}}
      Report Type              : (NEW/UPDATE)
      If Update:
       Previous Site Log       : (ssss_ccyymmdd.log)
@@ -40,20 +40,20 @@ const sitelogTempl = `
 {{end}}
 
 2.   Site Location Information
-
-     City or Town             : {{.Location.City}}
-     State or Province        : {{.Location.State}}
-     Country                  : {{.Location.Country}}
-     Tectonic Plate           : {{.Location.TectonicPlate}}
+{{with .Location}}
+     City or Town             : {{.City}}
+     State or Province        : {{.State}}
+     Country                  : {{.Country}}
+     Tectonic Plate           : {{.TectonicPlate}}
      Approximate Position (ITRF)
-       X coordinate (m)       : 
-       Y coordinate (m)       : 
-       Z coordinate (m)       : 
+       X coordinate (m)       : {{index .ApproximatePosition.CartesianPosition.Coordinates 0 | printf "%.03f"}} 
+       Y coordinate (m)       : {{index .ApproximatePosition.CartesianPosition.Coordinates 1 | printf "%.03f"}} 
+       Z coordinate (m)       : {{index .ApproximatePosition.CartesianPosition.Coordinates 2 | printf "%.03f"}} 
        Latitude (N is +)      : (+/-DDMMSS.SS)
        Longitude (E is +)     : (+/-DDDMMSS.SS)
        Elevation (m,ellips.)  : (F7.1)
      Additional Information   : (multiple lines)
-
+{{end}}
 
 3.   GNSS Receiver Information
 {{range $i, $recv := .Receivers}}
