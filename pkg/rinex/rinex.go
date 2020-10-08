@@ -10,31 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/de-bkg/gognss/pkg/gnss"
 )
-
-// SatelliteSystem specifies a GNSS.
-type SatelliteSystem int
-
-// Available Satellite Systems.
-const (
-	SatSysGPS SatelliteSystem = iota + 1
-	SatSysGLO
-	SatSysGAL
-	SatSysQZSS
-	SatSysBDS
-	SatSysIRNSS
-	SatSysSBAS
-	SatSysMIXED
-)
-
-func (sys SatelliteSystem) String() string {
-	return [...]string{"", "GPS", "GLO", "GAL", "QZSS", "BDS", "IRNSS", "SBAS", "MIXED"}[sys]
-}
-
-// Abbr returns the systems' abbreviation used in RINEX.
-func (sys SatelliteSystem) Abbr() string {
-	return [...]string{"", "G", "R", "E", "J", "C", "I", "S", "M"}[sys]
-}
 
 const (
 	// epochTimeFormat is the time format for the epoch-time in RINEX3 files.
@@ -57,15 +35,15 @@ var (
 	// Rnx3FileNamePattern is the regex for RINEX3 filenames.
 	Rnx3FileNamePattern = regexp.MustCompile(`((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCSM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
 
-	sysPerAbbr = map[string]SatelliteSystem{
-		"G": SatSysGPS,
-		"R": SatSysGLO,
-		"E": SatSysGAL,
-		"J": SatSysQZSS,
-		"C": SatSysBDS,
-		"I": SatSysIRNSS,
-		"S": SatSysSBAS,
-		"M": SatSysMIXED,
+	sysPerAbbr = map[string]gnss.System{
+		"G": gnss.SysGPS,
+		"R": gnss.SysGLO,
+		"E": gnss.SysGAL,
+		"J": gnss.SysQZSS,
+		"C": gnss.SysBDS,
+		"I": gnss.SysIRNSS,
+		"S": gnss.SysSBAS,
+		"M": gnss.SysMIXED,
 	}
 
 	// rnxTypMap maps RINEX3 data-types to RINEX2 types.

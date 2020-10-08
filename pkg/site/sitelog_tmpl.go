@@ -58,13 +58,13 @@ const sitelogTempl = `
 3.   GNSS Receiver Information
 {{range $i, $recv := .Receivers}}
 3.{{$i | add 1}}  Receiver Type            : {{$recv.Type}}
-     Satellite System         : {{$recv.SatSys}}
+     Satellite System         : {{$recv.SatSystems | html}}
      Serial Number            : {{$recv.SerialNum}}
      Firmware Version         : {{$recv.Firmware}}
      Elevation Cutoff Setting : {{$recv.ElevationCutoff}}
      Date Installed           : {{$recv.DateInstalled | printDateTime}}
      Date Removed             : {{$recv.DateRemoved | printDateTime}}
-     Temperature Stabiliz.    : {{$recv.TemperatureStabiliz}}
+     Temperature Stabiliz.    : {{$recv.TemperatureStabiliz | html}}
      Additional Information   : (multiple lines)
 {{end}}
 3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
@@ -278,16 +278,16 @@ const sitelogTempl = `
      Event                    : (TREE CLEARING/CONSTRUCTION/etc)
 
 11.   On-Site, Point of Contact Agency Information
-
-     Agency                   : (multiple lines)
-     Preferred Abbreviation   : (A10)
+{{with $priContact := index .Contacts 0}}
+     Agency                   : {{$priContact.Party.OrganisationName}}
+     Preferred Abbreviation   : {{$priContact.Party.Abbreviation}}
      Mailing Address          : (multiple lines)
      Primary Contact
-       Contact Name           : 
+       Contact Name           : {{$priContact.Party.IndividualName}}
        Telephone (primary)    :
        Telephone (secondary)  : 
        Fax                    : 
-       E-mail                 : 
+       E-mail                 :                            {{end}}
      Secondary Contact
        Contact Name           : 
        Telephone (primary)    : 
@@ -295,7 +295,6 @@ const sitelogTempl = `
        Fax                    : 
        E-mail                 : 
      Additional Information   : (multiple lines)
-
 
 12.  Responsible Agency (if different from 11.)
 

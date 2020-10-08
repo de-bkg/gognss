@@ -1,7 +1,11 @@
 // Package site handles a GNSS site with its antenna, receiver etc. including the history.
 package site
 
-import "time"
+import (
+	"time"
+
+	"github.com/de-bkg/gognss/pkg/gnss"
+)
 
 // Site specifies a GNSS site.
 type Site struct {
@@ -81,15 +85,15 @@ type Location struct {
 
 // Receiver is a GNSS receiver.
 type Receiver struct {
-	Type                string    `json:"type" validate:"required"`
-	SatSys              string    `json:"satelliteSystem" validate:"required"` // Sattelite System
-	SerialNum           string    `json:"serialNumber" validate:"required"`
-	Firmware            string    `json:"firmwareVersion"`
-	ElevationCutoff     float64   `json:"elevationCutoffSetting"`   // degree
-	TemperatureStabiliz string    `json:"temperatureStabilization"` // none or tolerance in degrees C
-	DateInstalled       time.Time `json:"dateInstalled" validate:"required"`
-	DateRemoved         time.Time `json:"dateRemoved"`
-	Notes               string    `json:"notes"` // Additional Information
+	Type                string       `json:"type" validate:"required"`
+	SatSystems          gnss.Systems `json:"satelliteSystem" validate:"required"` // Sattelite System
+	SerialNum           string       `json:"serialNumber" validate:"required"`
+	Firmware            string       `json:"firmwareVersion"`
+	ElevationCutoff     float64      `json:"elevationCutoffSetting"`   // degree
+	TemperatureStabiliz string       `json:"temperatureStabilization"` // none or tolerance in degrees C
+	DateInstalled       time.Time    `json:"dateInstalled" validate:"required"`
+	DateRemoved         time.Time    `json:"dateRemoved"`
+	Notes               string       `json:"notes"` // Additional Information
 
 	/* 	"dateInserted": "1999-07-31T01:00:00Z",
 	   	"dateDeleted": null,

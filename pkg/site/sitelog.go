@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/de-bkg/gognss/pkg/gnss"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -21,9 +22,6 @@ var (
 	// sub block. e.g. '4.x  Antenna Type : (A20, from rcvr_ant.tab; see instructions)'
 	//8.1.x Humidity Sensor Model   :
 	dummyBlockPattern = regexp.MustCompile(`^(\d+\.[xX])\s+(.*)`)
-
-	// satSysMap is a help map for checking satellite systems
-	satSysMap = map[string]int{"GPS": 1, "GLO": 1, "GAL": 1, "BDS": 1, "IRNSS": 1, "QZSS": 1, "SBAS": 1}
 
 	// timeShift used if chronological items e.g. receivers have identical start/end time.
 	timeShift = time.Second
@@ -329,7 +327,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			switch key {
 			case "Satellite System":
 				//assertNotNull()
-				if recv.SatSys, err = parseSatSystems(val); err != nil {
+				if recv.SatSystems, err = parseSatSystems(val); err != nil {
 					return nil, parseError()
 				}
 			case "Serial Number":
@@ -1152,18 +1150,31 @@ func printSitelogDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
 
-func parseSatSystems(s string) (string, error) {
+var sysPerAbbr = map[string]gnss.System{
+	"GPS":   gnss.SysGPS,
+	"GLO":   gnss.SysGLO,
+	"GAL":   gnss.SysGAL,
+	"QZSS":  gnss.SysQZSS,
+	"BDS":   gnss.SysBDS,
+	"IRNSS": gnss.SysIRNSS,
+	"SBAS":  gnss.SysSBAS,
+}
+
+func parseSatSystems(s string) (gnss.Systems, error) {
 	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "NavIC", "IRNSS")
 	s = r.Replace(s)
 
+	sysList := make([]gnss.System, 0, 5)
+
 	systems := strings.Split(s, "+")
 	for _, sys := range systems {
-		if _, exists := satSysMap[sys]; !exists {
-			return "", fmt.Errorf("Unknwon Satellite System: %s", sys)
+		if _, exists := sysPerAbbr[sys]; !exists {
+			return nil, fmt.Errorf("invalid satellite system: %q", sys)
 		}
+		sysList = append(sysList, sysPerAbbr[sys])
 	}
 
-	return s, nil
+	return sysList, nil
 }
 
 // Notes often have multiple lines

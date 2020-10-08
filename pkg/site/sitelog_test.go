@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/de-bkg/gognss/pkg/gnss"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,10 +25,10 @@ func TestEncodeSitelog(t *testing.T) {
 		GeologicCharacteristic: "SAND", BedrockType: "SEDIMENTARY", BedrockCondition: "FRESH", FractureSpacing: "0 cm",
 		FaultZonesNearby: "NO", DistanceActivity: "", Notes: ""}
 
-	s.Receivers = append(s.Receivers, &Receiver{Type: "SEPT POLARX2", SatSys: "GPS", SerialNum: "1436", Firmware: "2.6.2",
+	s.Receivers = append(s.Receivers, &Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436", Firmware: "2.6.2",
 		ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"},
-		&Receiver{Type: "SEPT POLARX5TR", SatSys: "GPS+GLO+GAL+BDS+QZSS+IRNSS+SBAS", SerialNum: "3057609", Firmware: "5.3.2",
+		&Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysIRNSS, gnss.SysSBAS}, SerialNum: "3057609", Firmware: "5.3.2",
 			ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2", DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC),
 			DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""})
 
@@ -38,6 +39,9 @@ func TestEncodeSitelog(t *testing.T) {
 			EccUp: 0.4689, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0, CableType: "ANDREW heliax LDF2-50A", CableLength: 60,
 			DateInstalled: time.Date(2018, 02, 01, 8, 15, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC),
 			Notes: "To shield the antenna from reflections on the dome below it, a 0.8x0.8 m^2 metal shield was installed with Eccosorb ANW-77 on top. The spacing between the ARP and the top of the Eccosorb ANW-77 is 17.8 cm. On 2015-12-09, the Eccosorb was replaced by a new more resistant version. Surge protection device, dly: L2 553, L1 525 ps."})
+
+	// Contact
+	s.Contacts = append(s.Contacts, Contact{Party: Party{IndividualName: "Kevin De Bruyne", OrganisationName: "FC Chelsea", Abbreviation: "Chels"}})
 
 	//w := &bytes.Buffer{}
 	w := os.Stdout
@@ -77,10 +81,10 @@ func TestReadSitelog(t *testing.T) {
 
 	// Receiver
 	assert.Len(site.Receivers, 14, "number of receivers")
-	recvFirst := Receiver{Type: "SEPT POLARX2", SatSys: "GPS", SerialNum: "1436",
+	recvFirst := Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436",
 		Firmware: "2.6.2", ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"}
-	recvLast := Receiver{Type: "SEPT POLARX5TR", SatSys: "GPS+GLO+GAL+BDS+QZSS+IRNSS+SBAS",
+	recvLast := Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysIRNSS, gnss.SysSBAS},
 		SerialNum: "3057609", Firmware: "5.3.2", ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2",
 		DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""}
 	assert.Equal(recvFirst, *site.Receivers[0], "first receiver")

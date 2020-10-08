@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
 // Options for global settings.
@@ -45,12 +47,12 @@ type Obs struct {
 
 // PRN specifies a GNSS satellite.
 type PRN struct {
-	Sys SatelliteSystem
+	Sys gnss.System
 	Num int8 // number
 	// flags
 }
 
-func newPRN(sys SatelliteSystem, num int8) (PRN, error) {
+func newPRN(sys gnss.System, num int8) (PRN, error) {
 	/* 	if !(sys == 'G' || sys == 'R' || sys == 'E' || sys == 'J' || sys == 'C' || sys == 'I' || sys == 'S') {
 		return PRN{}, fmt.Errorf("Invalid satellite system: '%v'", sys)
 	} */
@@ -131,9 +133,9 @@ type ObsStat struct {
 
 // A ObsHeader provides the RINEX Observation Header information.
 type ObsHeader struct {
-	RINEXVersion float32         // RINEX Format version
-	RINEXType    string          // RINEX File type. O for Obs
-	SatSystem    SatelliteSystem // Satellite System. System is "Mixed" if more than one.
+	RINEXVersion float32     // RINEX Format version
+	RINEXType    string      // RINEX File type. O for Obs
+	SatSystem    gnss.System // Satellite System. System is "Mixed" if more than one.
 
 	Pgm   string // name of program creating this file
 	RunBy string // name of agency creating this file
@@ -151,7 +153,7 @@ type ObsHeader struct {
 	Position     Coord    // Geocentric approximate marker position [m]
 	AntennaDelta CoordNEU // North,East,Up deltas in [m]
 
-	ObsTypes map[SatelliteSystem][]string
+	ObsTypes map[gnss.System][]string
 
 	SignalStrengthUnit string
 	Interval           float64 // Observation interval in seconds
@@ -199,7 +201,7 @@ func (dec *ObsDecoder) Err() error {
 // readHeader reads a RINEX Navigation header. If the Header does not exist,
 // a ErrNoHeader error will be returned.
 func (dec *ObsDecoder) readHeader() (hdr ObsHeader, err error) {
-	hdr.ObsTypes = map[SatelliteSystem][]string{}
+	hdr.ObsTypes = map[gnss.System][]string{}
 	maxLines := 800
 	rememberMe := ""
 read:

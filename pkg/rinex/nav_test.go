@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/de-bkg/gognss/pkg/gnss"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,7 +27,7 @@ func TestNavDecoder_readHeader(t *testing.T) {
 
 	assert.Equal(float32(3.04), dec.Header.RINEXVersion, "RINEX Version")
 	assert.Equal("N", dec.Header.RINEXType, "RINEX Type")
-	assert.Equal(SatSysMIXED, dec.Header.SatSystem, "Sat System")
+	assert.Equal(gnss.SysMIXED, dec.Header.SatSystem, "Sat System")
 
 	t.Logf("RINEX Header: %+v\n", dec)
 }
@@ -279,21 +280,21 @@ func TestUnmarshalEph(t *testing.T) {
 	}{
 		{
 			name: "GPS eph",
-			args: args{NewEph(SatSysGPS), gps},
-			want: &EphGPS{PRN: PRN{SatSysGPS, 20}, TOC: time.Date(2020, 6, 18, 0, 0, 0, 0, time.UTC), ClockBias: 5.274894647300E-04, ClockDrift: -1.136868377216E-13, ClockDriftRate: 0,
-				IODE: 83, Crs: 2.078125000000E+01, DeltaN: 5.373438110980E-09, M0: -2.252452975616,
-				Cuc: 1.156702637672E-06, Ecc: 5.203154985793E-03, Cus: 7.405877113342E-06, SqrtA: 5.153647661209E+03,
-				Toe: 3.456000000000E+05, Cic: -1.247972249985E-07, Omega0: -2.679776962713, Cis: 2.048909664154E-08,
-				I0: 9.344138223835E-01, Crc: 2.252500000000E+02, Omega: 2.669542608731, OmegaDot: -8.333918569731E-09,
-				IDOT: 4.632335812523E-10, L2Codes: 1.0, ToeWeek: 2110, L2PFlag: 0,
-				URA: 2.0, Health: 0, TGD: -8.847564458847E-09, IODC: 83,
-				Tom: 3.393480000000E+05, FitInterval: 4},
+			args: args{NewEph(gnss.SysGPS), gps},
+			want: &EphGPS{PRN: PRN{gnss.SysGPS, 20}, TOC: time.Date(2020, 6, 18, 0, 0, 0, 0, time.UTC), ClockBias: 5.274894647300e-04, ClockDrift: -1.136868377216e-13, ClockDriftRate: 0,
+				IODE: 83, Crs: 2.078125000000e+01, DeltaN: 5.373438110980e-09, M0: -2.252452975616,
+				Cuc: 1.156702637672e-06, Ecc: 5.203154985793e-03, Cus: 7.405877113342e-06, SqrtA: 5.153647661209e+03,
+				Toe: 3.456000000000e+05, Cic: -1.247972249985e-07, Omega0: -2.679776962713, Cis: 2.048909664154e-08,
+				I0: 9.344138223835e-01, Crc: 2.252500000000e+02, Omega: 2.669542608731, OmegaDot: -8.333918569731e-09,
+				IDOT: 4.632335812523e-10, L2Codes: 1.0, ToeWeek: 2110, L2PFlag: 0,
+				URA: 2.0, Health: 0, TGD: -8.847564458847e-09, IODC: 83,
+				Tom: 3.393480000000e+05, FitInterval: 4},
 			wantErr: false,
 		},
 		{
 			name:    "GAL eph",
-			args:    args{NewEph(SatSysGAL), gal},
-			want:    &EphGAL{PRN: PRN{SatSysGAL, 26}, TOC: time.Date(2020, 6, 17, 4, 20, 0, 0, time.UTC)},
+			args:    args{NewEph(gnss.SysGAL), gal},
+			want:    &EphGAL{PRN: PRN{gnss.SysGAL, 26}, TOC: time.Date(2020, 6, 17, 4, 20, 0, 0, time.UTC)},
 			wantErr: false,
 		},
 	}

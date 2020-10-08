@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
 const (
@@ -25,22 +27,22 @@ type Eph interface {
 }
 
 // NewEph returns a new ephemeris having the concrete type.
-func NewEph(sys SatelliteSystem) Eph {
+func NewEph(sys gnss.System) Eph {
 	var eph Eph
 	switch sys {
-	case SatSysGPS:
+	case gnss.SysGPS:
 		eph = &EphGPS{}
-	case SatSysGLO:
+	case gnss.SysGLO:
 		eph = &EphGLO{}
-	case SatSysGAL:
+	case gnss.SysGAL:
 		eph = &EphGAL{}
-	case SatSysQZSS:
+	case gnss.SysQZSS:
 		eph = &EphQZSS{}
-	case SatSysBDS:
+	case gnss.SysBDS:
 		eph = &EphBDS{}
-	case SatSysIRNSS:
+	case gnss.SysIRNSS:
 		eph = &EphIRNSS{}
-	case SatSysSBAS:
+	case gnss.SysSBAS:
 		eph = &EphSBAS{}
 	default:
 		fmt.Printf("unknown satellite system: %v", sys)
@@ -163,7 +165,7 @@ func (eph *EphGPS) unmarshal(data []byte) (err error) {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysGPS, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysGPS, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -264,7 +266,7 @@ func (eph *EphGLO) unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysGLO, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysGLO, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -286,7 +288,7 @@ func (eph *EphGAL) unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysGAL, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysGAL, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -308,7 +310,7 @@ func (eph *EphQZSS) unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysQZSS, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysQZSS, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -330,7 +332,7 @@ func (eph *EphBDS) unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysBDS, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysBDS, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -352,7 +354,7 @@ func (eph *EphIRNSS) unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysIRNSS, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysIRNSS, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -374,7 +376,7 @@ func (eph *EphSBAS) unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
 	}
-	eph.PRN, err = newPRN(SatSysSBAS, int8(snum))
+	eph.PRN, err = newPRN(gnss.SysSBAS, int8(snum))
 	if err != nil {
 		return err
 	}
@@ -391,9 +393,9 @@ func (eph *EphSBAS) unmarshal(data []byte) error {
 // All header parameters are optional and may comprise different types of ionospheric model parameters
 // and time conversion parameters.
 type NavHeader struct {
-	RINEXVersion float32         // RINEX Format version
-	RINEXType    string          // RINEX File type. O for Obs
-	SatSystem    SatelliteSystem // Satellite System. System is "Mixed" if more than one.
+	RINEXVersion float32     // RINEX Format version
+	RINEXType    string      // RINEX File type. O for Obs
+	SatSystem    gnss.System // Satellite System. System is "Mixed" if more than one.
 
 	Pgm   string // name of program creating this file
 	RunBy string // name of agency creating this file
@@ -460,7 +462,7 @@ func (dec *NavDecoder) Err() error {
 	return dec.err
 }
 
-func (dec *NavDecoder) unmarshal(sys SatelliteSystem) error {
+func (dec *NavDecoder) unmarshal(sys gnss.System) error {
 	eph := NewEph(sys)
 	err := eph.unmarshal(dec.buf.Bytes())
 	if err != nil {
@@ -548,7 +550,7 @@ read:
 
 			s := strings.TrimSpace(val[40:41])
 			/* 			if hdr.RINEXVersion < 3 {
-				hlp := map[string]SatelliteSystem{
+				hlp := map[string]gnss.System{
 					"N": SatSysGPS,
 					"G": SatSysGLO,
 					"E": SatSysGAL,
@@ -624,7 +626,7 @@ func (dec *NavDecoder) NextEphemeris() bool {
 			// Write the ephemeris data into the buffer.
 			nLines := 8
 			switch sys {
-			case SatSysGLO, SatSysSBAS:
+			case gnss.SysGLO, gnss.SysSBAS:
 				nLines = 4
 			}
 
