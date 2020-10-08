@@ -30,7 +30,7 @@ func (sys System) Abbr() string {
 // Systems specifies a list of satellite systems.
 type Systems []System
 
-// prints
+// String returns the contained systems in sitelog manner GPS+GLO+...
 func (syss Systems) String() string {
 	str := make([]string, 0, len(syss))
 	for _, sys := range syss {

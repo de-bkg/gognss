@@ -41,7 +41,9 @@ func TestEncodeSitelog(t *testing.T) {
 			Notes: "To shield the antenna from reflections on the dome below it, a 0.8x0.8 m^2 metal shield was installed with Eccosorb ANW-77 on top. The spacing between the ARP and the top of the Eccosorb ANW-77 is 17.8 cm. On 2015-12-09, the Eccosorb was replaced by a new more resistant version. Surge protection device, dly: L2 553, L1 525 ps."})
 
 	// Contact
-	s.Contacts = append(s.Contacts, Contact{Party: Party{IndividualName: "Kevin De Bruyne", OrganisationName: "FC Chelsea", Abbreviation: "Chels"}})
+	party := Party{IndividualName: "Kevin De Bruyne", OrganisationName: "FC Chelsea", Abbreviation: "Chels"}
+	party.ContactInfo.Address.EmailAddresses = append(party.ContactInfo.Address.EmailAddresses, "kevin@chelsea.uk")
+	s.Contacts = append(s.Contacts, Contact{Party: party})
 
 	//w := &bytes.Buffer{}
 	w := os.Stdout

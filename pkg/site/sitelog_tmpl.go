@@ -287,7 +287,7 @@ const sitelogTempl = `
        Telephone (primary)    :
        Telephone (secondary)  : 
        Fax                    : 
-       E-mail                 :                            {{end}}
+       E-mail                 : {{with $priContact.Party.ContactInfo.Address.EmailAddresses}}{{index . 0}} {{end}}{{end}}
      Secondary Contact
        Contact Name           : 
        Telephone (primary)    : 
