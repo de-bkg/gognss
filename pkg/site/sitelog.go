@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
-	"github.com/go-playground/validator/v10"
 )
 
 var (
@@ -25,9 +23,6 @@ var (
 
 	// timeShift used if chronological items e.g. receivers have identical start/end time.
 	timeShift = time.Second
-
-	// use a single instance of Validate, it caches struct info
-	validate *validator.Validate
 )
 
 // A SitelogDecoder reads and decodes site information from an IGS sitelog input stream.
@@ -204,7 +199,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				ident.MonumentDescription = val
 			case "IERS DOMES Number":
 				if len(val) != 9 {
-					log.Printf("WARN: %q should have format A9: %q", key, val)
+					site.Warnings = append(site.Warnings, fmt.Errorf("%q should have format A9: %q", key, val))
 				}
 				ident.DOMESNumber = val
 			case "CDP Number":
@@ -213,13 +208,13 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				ident.MonumentDescription = val
 			case "Height of the Monument":
 				if ident.HeightOfMonument, err = parseFloat(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Monument Foundation":
 				ident.MonumentFoundation = val
 			case "Foundation Depth":
 				if ident.FoundationDepth, err = parseFloat(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Marker Description":
 				ident.MarkerDescription = val
@@ -281,11 +276,11 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				}
 			case "Latitude (N is +)":
 				if geodPos.Coordinates[0], err = parseFloat(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Longitude (E is +)":
 				if geodPos.Coordinates[1], err = parseFloat(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Elevation (m,ellips.)":
 				if geodPos.Coordinates[2], err = parseFloat(val); err != nil {
@@ -374,7 +369,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				blocks[subBlock] = 1
 
 				if len(val) != 20 {
-					log.Printf("WARN: Antenna Type in %s is not 20 chars long: %q", subBlock, val)
+					site.Warnings = append(site.Warnings, fmt.Errorf("ANT Type in %s is not 20 chars long: %q", subBlock, val))
 				}
 				continue
 			}
@@ -398,7 +393,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				}
 			case "Alignment from True N":
 				if ant.AlignmentFromTrueNorth, err = parseFloat(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Antenna Radome Type":
 				if len(val) != 4 {
@@ -413,7 +408,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				if l, err := parseFloat(val); err == nil {
 					ant.CableLength = float32(l)
 				} else {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Date Installed":
 				if ant.DateInstalled, err = parseDate(val); err != nil {
@@ -470,13 +465,13 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				}
 			case "Accuracy (mm)":
 				if lTies.Accuracy, err = parseFloat(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Survey method":
 				lTies.SurveyMethod = val
 			case "Date Measured":
 				if lTies.DateMeasured, err = parseDate(val); err != nil {
-					log.Printf("WARN: %v", parseError())
+					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Additional Information", "Additional Informations":
 				lTies.Notes = addMultipleLine(lTies.Notes, val)
@@ -606,19 +601,19 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				case "Data Sampling Interval":
 					if humSensor.DataSamplingInterval, err = parseFloat(val); err != nil {
 						//return nil, parseError()
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Accuracy (% rel h)":
 					if humSensor.Accuracy, err = parseFloat(val); err != nil {
 						//return nil, parseError()
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Aspiration":
 					humSensor.Aspiration = val
 				case "Height Diff to Ant":
 					if humSensor.HeightDiffToAntenna, err = parseFloat(val); err != nil {
 						//return nil, parseError()
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Calibration date":
 					if humSensor.CalibrationDate, err = parseDate(val); err != nil {
@@ -650,15 +645,15 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					pressSensor.SerialNumber = val
 				case "Data Sampling Interval":
 					if pressSensor.DataSamplingInterval, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Accuracy":
 					if pressSensor.Accuracy, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Height Diff to Ant":
 					if pressSensor.HeightDiffToAntenna, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Calibration date":
 					if pressSensor.CalibrationDate, err = parseDate(val); err != nil {
@@ -690,17 +685,17 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					tempSensor.SerialNumber = val
 				case "Data Sampling Interval":
 					if tempSensor.DataSamplingInterval, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Accuracy":
 					if tempSensor.Accuracy, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Aspiration":
 					tempSensor.Aspiration = val
 				case "Height Diff to Ant":
 					if tempSensor.HeightDiffToAntenna, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Calibration date":
 					if tempSensor.CalibrationDate, err = parseDate(val); err != nil {
@@ -736,7 +731,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					}
 				case "Height Diff to Ant":
 					if watervapSensor.HeightDiffToAntenna, err = parseFloat(val); err != nil {
-						log.Printf("%v", parseError())
+						site.Warnings = append(site.Warnings, parseError())
 					}
 				case "Calibration date":
 					if watervapSensor.CalibrationDate, err = parseDate(val); err != nil {
@@ -901,161 +896,6 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 	return site, nil
 }
 
-// Validate validates the site data.
-// As often having lousy input, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
-func (site *Site) Validate() error {
-	err := site.cleanReceivers()
-	if err != nil {
-		return err
-	}
-
-	err = site.cleanAntennas()
-	if err != nil {
-		return err
-	}
-
-	validate = validator.New()
-	return validate.Struct(site)
-}
-
-func (site *Site) cleanReceivers() error {
-	// Dates
-	item := "receiver"
-	list := site.Receivers
-	nReceivers := len(list)
-	for i, curr := range site.Receivers {
-		n := i + 1 // receiver number
-
-		prev := func() *Receiver {
-			if i-1 >= 0 {
-				return list[i-1]
-			}
-			return nil
-		}
-		next := func() *Receiver {
-			if n+1 <= nReceivers {
-				return list[i+1]
-			}
-			return nil
-		}
-
-		// check date installed
-		if curr.DateInstalled.IsZero() {
-			log.Printf("WARN: %s %d with empty %q", item, n, "Date Installed")
-			if prev() == nil { // first one
-				return fmt.Errorf("%s %d with empty %q", item, n, "Date Installed")
-			}
-
-			if prev().DateRemoved.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
-			}
-
-			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
-		}
-
-		// check date removed
-		if curr.DateRemoved.IsZero() && next() != nil {
-			log.Printf("WARN: %s %d with empty %q", item, n, "Date Removed")
-			nextRecv := next()
-			if nextRecv.DateInstalled.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
-			}
-
-			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
-		}
-
-		if prev() != nil {
-			prevRecv := prev()
-			if prevRecv.DateRemoved.After(curr.DateInstalled) {
-				return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
-			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
-				// dates must be unique, so we introduce a small shift
-				prevRecv.DateRemoved = prevRecv.DateRemoved.Add(timeShift * -1)
-			}
-		}
-	}
-
-	// Other checks
-	/* 	for i, recv := range site.Receivers {
-		if err := recv.validate(); err != nil {
-			return fmt.Errorf("Block 3.%d: %v", i+1, err)
-		}
-	} */
-
-	return nil
-}
-
-func (site *Site) cleanAntennas() error {
-	// Dates
-	item := "antenna"
-	list := site.Antennas
-	nAntennas := len(list)
-	for i, curr := range site.Antennas {
-		n := i + 1 // antenna number
-
-		prev := func() *Antenna {
-			if i-1 >= 0 {
-				return list[i-1]
-			}
-			return nil
-		}
-		next := func() *Antenna {
-			if n+1 <= nAntennas {
-				return list[i+1]
-			}
-			return nil
-		}
-
-		// check date installed
-		if curr.DateInstalled.IsZero() {
-			log.Printf("WARN: %s %d with empty %q", item, n, "Date Installed")
-			if prev() == nil { // first one
-				return fmt.Errorf("%s %d with empty %q", item, n, "Date Installed")
-			}
-
-			if prev().DateRemoved.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
-			}
-
-			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
-		}
-
-		// check date removed
-		if curr.DateRemoved.IsZero() && next() != nil {
-			log.Printf("WARN: %s %d with empty %q", item, n, "Date Removed")
-			nextRecv := next()
-			if nextRecv.DateInstalled.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
-			}
-
-			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
-		}
-
-		if prev() != nil {
-			prevRecv := prev()
-			if prevRecv.DateRemoved.After(curr.DateInstalled) {
-				return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
-			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
-				// dates must be unique, so we introduce a small shift
-				prevRecv.DateRemoved = prevRecv.DateRemoved.Add(timeShift * -1)
-			}
-		}
-	}
-
-	// Other checks
-	for i, ant := range site.Antennas {
-		radome1 := ""
-		if len(ant.Type) == 20 {
-			radome1 = ant.Type[16:]
-			if radome1 != ant.Radome {
-				log.Printf("WARN: Block 4.%d: Antenna Radome Type %q differs from Antenna Type: %q", i+1, ant.Radome, ant.Type)
-			}
-		}
-	}
-
-	return nil
-}
-
 func parseFloat(s string) (float64, error) {
 	if strings.ToLower(s) == "unknown" {
 		return 0, nil
@@ -1099,7 +939,7 @@ func parseDate(s string) (t time.Time, err error) {
 
 	switch len(s) {
 	case 4: // 2002
-		//log.Printf("DEBUG: malformed date string: %q", s)
+		//fmt.Printf("DEBUG: malformed date string: %q\n", s)
 		t, err = time.Parse("2006", s)
 	case 8, 9, 10:
 		t, err = time.Parse("2006-1-2", s)

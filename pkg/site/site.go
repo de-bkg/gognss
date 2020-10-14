@@ -2,9 +2,12 @@
 package site
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
+	"github.com/go-playground/validator/v10"
 )
 
 // Site specifies a GNSS site.
@@ -38,6 +41,8 @@ type Site struct {
 	SiteMetadataCustodians      []SiteMetadataCustodian `json:"siteMetadataCustodians"`
 	//EquipmentLogItems         []EquipmentLogItems      `json:"equipmentLogItems"` // ??
 	//Links                     Links                    `json:"_links"`
+
+	Warnings []error
 }
 
 // FormInformation stores sitelog metdadata.
@@ -404,4 +409,167 @@ type SiteLog struct {
 type Links struct {
 	Self    Self    `json:"self"`
 	SiteLog SiteLog `json:"siteLog"`
+}
+
+// use a single instance of Validate, it caches struct info
+var validate *validator.Validate
+
+// Validate validates the site data.
+// As often having lousy input, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
+func (site *Site) Validate() error {
+	err := site.cleanReceivers()
+	if err != nil {
+		return err
+	}
+
+	err = site.cleanAntennas()
+	if err != nil {
+		return err
+	}
+
+	validate = validator.New()
+	return validate.Struct(site)
+}
+
+func (site *Site) cleanReceivers() error {
+	// Dates
+	item := "receiver"
+	list := site.Receivers
+	nReceivers := len(list)
+	for i, curr := range site.Receivers {
+		n := i + 1 // receiver number
+
+		prev := func() *Receiver {
+			if i-1 >= 0 {
+				return list[i-1]
+			}
+			return nil
+		}
+		next := func() *Receiver {
+			if n+1 <= nReceivers {
+				return list[i+1]
+			}
+			return nil
+		}
+
+		// check date installed
+		if curr.DateInstalled.IsZero() {
+			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Installed"))
+			if prev() == nil { // first one
+				return fmt.Errorf("%s %d with empty %q", item, n, "Date Installed")
+			}
+
+			if prev().DateRemoved.IsZero() {
+				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
+			}
+
+			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
+		}
+
+		// check date removed
+		if curr.DateRemoved.IsZero() && next() != nil {
+			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
+			nextRecv := next()
+			if nextRecv.DateInstalled.IsZero() {
+				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
+			}
+
+			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
+		}
+
+		if prev() != nil {
+			prevRecv := prev()
+			if prevRecv.DateRemoved.After(curr.DateInstalled) {
+				return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
+			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
+				// dates must be unique, so we introduce a small shift
+				prevRecv.DateRemoved = prevRecv.DateRemoved.Add(timeShift * -1)
+			}
+		}
+	}
+
+	// Other checks
+	/* 	for i, recv := range site.Receivers {
+		if err := recv.validate(); err != nil {
+			return fmt.Errorf("Block 3.%d: %v", i+1, err)
+		}
+	} */
+
+	return nil
+}
+
+func (site *Site) cleanAntennas() error {
+	item := "antenna"
+	list := site.Antennas
+	nAntennas := len(list)
+	for i, curr := range site.Antennas {
+		n := i + 1 // antenna number
+
+		prev := func() *Antenna {
+			if i-1 >= 0 {
+				return list[i-1]
+			}
+			return nil
+		}
+		next := func() *Antenna {
+			if n+1 <= nAntennas {
+				return list[i+1]
+			}
+			return nil
+		}
+
+		// ANT TYPE should be 20 char long
+		if len(curr.Type) != 20 {
+			parts := strings.Fields(curr.Type)
+			if len(parts) == 2 && len(parts[1]) == 4 {
+				curr.Type = fmt.Sprintf("%-15s %4s", parts[0], parts[1])
+				if curr.Radome == "" {
+					curr.Radome = parts[1]
+				} else {
+					if curr.Radome != parts[1] {
+						return fmt.Errorf("%s %d Antenna Radome Type %q differs from Antenna Type %q", item, n, curr.Radome, curr.Type)
+					}
+				}
+			} else if len(parts) == 1 && curr.Radome != "" {
+				curr.Type = fmt.Sprintf("%-15s %4s", parts[0], curr.Radome)
+			}
+		}
+
+		// check date installed
+		if curr.DateInstalled.IsZero() {
+			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Installed"))
+			if prev() == nil { // first one
+				return fmt.Errorf("%s %d with empty %q", item, n, "Date Installed")
+			}
+
+			if prev().DateRemoved.IsZero() {
+				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
+			}
+
+			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
+		}
+
+		// check date removed
+		if curr.DateRemoved.IsZero() && next() != nil {
+			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
+			nextRecv := next()
+			if nextRecv.DateInstalled.IsZero() {
+				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
+			}
+
+			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
+		}
+
+		if prev() != nil {
+			prevRecv := prev()
+			if prevRecv.DateRemoved.After(curr.DateInstalled) {
+				return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
+			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
+				// dates must be unique, so we introduce a small shift
+				prevRecv.DateRemoved = prevRecv.DateRemoved.Add(timeShift * -1)
+			}
+		}
+	}
+
+	return nil
 }
