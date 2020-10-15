@@ -1,7 +1,6 @@
 package site
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 	"testing"
@@ -152,27 +151,11 @@ func TestReadSitelog(t *testing.T) {
 	log.Printf("%+v", site)
 
 	// Clean data
-	err = site.Validate()
+	err = site.ValidateAndClean(false)
 	assert.NoError(err)
 
 	assert.Equal(time.Date(2017, 3, 19, 23, 59, 59, 0, time.UTC), site.Receivers[10].DateRemoved, "Set Date Removed from receiver 3.11")
 	assert.Equal(time.Date(2008, 6, 17, 9, 0, 1, 0, time.UTC), site.Antennas[2].DateInstalled, "Set Date Installed from antenna 4.3")
-}
-
-// ReadFromGAJSON parses the GA formated JSON site description file.
-func TestReadFromGAJSON(t *testing.T) {
-	assert := assert.New(t)
-
-	f, err := os.Open("testdata/ALIC.json")
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-	defer f.Close()
-
-	site := new(Site)
-	err = json.NewDecoder(f).Decode(site)
-	assert.NoError(err)
-	log.Printf("%+v", site)
 }
 
 func Test_parseDate(t *testing.T) {

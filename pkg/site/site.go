@@ -90,15 +90,16 @@ type Location struct {
 
 // Receiver is a GNSS receiver.
 type Receiver struct {
-	Type                string       `json:"type" validate:"required"`
-	SatSystems          gnss.Systems `json:"satelliteSystem" validate:"required"` // Sattelite System
-	SerialNum           string       `json:"serialNumber" validate:"required"`
-	Firmware            string       `json:"firmwareVersion"`
-	ElevationCutoff     float64      `json:"elevationCutoffSetting"`   // degree
-	TemperatureStabiliz string       `json:"temperatureStabilization"` // none or tolerance in degrees C
-	DateInstalled       time.Time    `json:"dateInstalled" validate:"required"`
-	DateRemoved         time.Time    `json:"dateRemoved"`
-	Notes               string       `json:"notes"` // Additional Information
+	Type                 string       `json:"type" validate:"required"`
+	SatSystemsDeprecated string       `json:"satelliteSystem"`                      // Sattelite System for compatibility with GA JSON, deprecated!
+	SatSystems           gnss.Systems `json:"satelliteSystems" validate:"required"` // Sattelite System
+	SerialNum            string       `json:"serialNumber" validate:"required"`
+	Firmware             string       `json:"firmwareVersion"`
+	ElevationCutoff      float64      `json:"elevationCutoffSetting"`   // degree
+	TemperatureStabiliz  string       `json:"temperatureStabilization"` // none or tolerance in degrees C
+	DateInstalled        time.Time    `json:"dateInstalled" validate:"required"`
+	DateRemoved          time.Time    `json:"dateRemoved"`
+	Notes                string       `json:"notes"` // Additional Information
 
 	/* 	"dateInserted": "1999-07-31T01:00:00Z",
 	   	"dateDeleted": null,
@@ -414,15 +415,17 @@ type Links struct {
 // use a single instance of Validate, it caches struct info
 var validate *validator.Validate
 
-// Validate validates the site data.
-// As often having lousy input, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
-func (site *Site) Validate() error {
-	err := site.cleanReceivers()
+// ValidateAndClean validates and cleans the site data.
+// With input data often hbeing lousy, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
+// With force being true, corrupt data will be cleaned with extra force as much as possible, e.g. adjust overlapping sensor dates,
+// where it would otherwise return with an error.
+func (site *Site) ValidateAndClean(force bool) error {
+	err := site.cleanReceivers(force)
 	if err != nil {
 		return err
 	}
 
-	err = site.cleanAntennas()
+	err = site.cleanAntennas(force)
 	if err != nil {
 		return err
 	}
@@ -431,7 +434,7 @@ func (site *Site) Validate() error {
 	return validate.Struct(site)
 }
 
-func (site *Site) cleanReceivers() error {
+func (site *Site) cleanReceivers(force bool) error {
 	// Dates
 	item := "receiver"
 	list := site.Receivers
@@ -462,7 +465,6 @@ func (site *Site) cleanReceivers() error {
 			if prev().DateRemoved.IsZero() {
 				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
 			}
-
 			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
 		}
 
@@ -473,14 +475,17 @@ func (site *Site) cleanReceivers() error {
 			if nextRecv.DateInstalled.IsZero() {
 				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
 			}
-
 			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
 		}
 
 		if prev() != nil {
 			prevRecv := prev()
 			if prevRecv.DateRemoved.After(curr.DateInstalled) {
-				return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
+				if !force {
+					return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
+				}
+				site.Warnings = append(site.Warnings, fmt.Errorf("%s %d adjust %q", item, n-1, "Date Removed"))
+				prevRecv.DateRemoved = curr.DateInstalled.Add(timeShift * -1)
 			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
 				// dates must be unique, so we introduce a small shift
 				prevRecv.DateRemoved = prevRecv.DateRemoved.Add(timeShift * -1)
@@ -498,7 +503,7 @@ func (site *Site) cleanReceivers() error {
 	return nil
 }
 
-func (site *Site) cleanAntennas() error {
+func (site *Site) cleanAntennas(force bool) error {
 	item := "antenna"
 	list := site.Antennas
 	nAntennas := len(list)
@@ -545,28 +550,30 @@ func (site *Site) cleanAntennas() error {
 			if prev().DateRemoved.IsZero() {
 				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
 			}
-
 			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
 		}
 
 		// check date removed
 		if curr.DateRemoved.IsZero() && next() != nil {
 			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
-			nextRecv := next()
-			if nextRecv.DateInstalled.IsZero() {
+			nextAnt := next()
+			if nextAnt.DateInstalled.IsZero() {
 				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
 			}
-
-			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
+			curr.DateRemoved = nextAnt.DateInstalled.Add(timeShift * -1)
 		}
 
 		if prev() != nil {
-			prevRecv := prev()
-			if prevRecv.DateRemoved.After(curr.DateInstalled) {
-				return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
-			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
+			prevAnt := prev()
+			if prevAnt.DateRemoved.After(curr.DateInstalled) {
+				if !force {
+					return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
+				}
+				site.Warnings = append(site.Warnings, fmt.Errorf("%s %d adjust %q", item, n-1, "Date Removed"))
+				prevAnt.DateRemoved = curr.DateInstalled.Add(timeShift * -1)
+			} else if prevAnt.DateRemoved.Equal(curr.DateInstalled) {
 				// dates must be unique, so we introduce a small shift
-				prevRecv.DateRemoved = prevRecv.DateRemoved.Add(timeShift * -1)
+				prevAnt.DateRemoved = prevAnt.DateRemoved.Add(timeShift * -1)
 			}
 		}
 	}
