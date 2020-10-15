@@ -416,7 +416,7 @@ type Links struct {
 var validate *validator.Validate
 
 // ValidateAndClean validates and cleans the site data.
-// With input data often hbeing lousy, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
+// With input data often being lousy, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
 // With force being true, corrupt data will be cleaned with extra force as much as possible, e.g. adjust overlapping sensor dates,
 // where it would otherwise return with an error.
 func (site *Site) ValidateAndClean(force bool) error {
@@ -433,6 +433,8 @@ func (site *Site) ValidateAndClean(force bool) error {
 	validate = validator.New()
 	return validate.Struct(site)
 }
+
+var recvTypeMap = map[string]string{"POLARX5": "SEPT POLARX5"}
 
 func (site *Site) cleanReceivers(force bool) error {
 	// Dates
@@ -453,6 +455,12 @@ func (site *Site) cleanReceivers(force bool) error {
 				return list[i+1]
 			}
 			return nil
+		}
+
+		// Try to correct receiver type naming
+		if val, exists := recvTypeMap[curr.Type]; exists {
+			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d REC TYPE corrected to %q", item, n, val))
+			curr.Type = val
 		}
 
 		// check date installed
