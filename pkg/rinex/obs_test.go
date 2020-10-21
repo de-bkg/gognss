@@ -79,6 +79,116 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	t.Logf("RINEX Header: %+v\n", dec)
 }
 
+func TestObsFile_parseFilename(t *testing.T) {
+	assert := assert.New(t)
+	rnx, err := NewObsFile("ALGO01CAN_R_20121601000_15M_01S_GO.rnx.gz")
+	assert.NoError(err)
+	assert.Equal("ALGO", rnx.FourCharID, "FourCharID")
+	assert.Equal(0, rnx.MonumentNumber, "MonumentNumber")
+	assert.Equal(1, rnx.ReceiverNumber, "ReceiverNumber")
+	assert.Equal("CAN", rnx.CountryCode, "CountryCode")
+	assert.Equal("R", rnx.DataSource, "DataSource")
+	assert.Equal(time.Date(2012, 6, 8, 10, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
+	assert.Equal("15M", rnx.FilePeriod, "FilePeriod")
+	assert.Equal("01S", rnx.DataFreq, "DataFreq")
+	assert.Equal("GO", rnx.DataType, "DataType")
+	assert.Equal("rnx", rnx.Format, "Format")
+	assert.Equal(false, rnx.IsHatanakaCompressed(), "Hatanaka")
+	assert.Equal("gz", rnx.Compression, "Compression")
+	t.Logf("RINEX: %+v\n", rnx)
+
+	// Rnx2
+	rnx, err = NewObsFile("abmf255u.19d.Z")
+	assert.NoError(err)
+	assert.Equal("ABMF", rnx.FourCharID, "FourCharID")
+	assert.Equal(time.Date(2019, 9, 12, 20, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
+	assert.Equal("01H", rnx.FilePeriod, "FilePeriod")
+	assert.Equal("crx", rnx.Format, "Format")
+	assert.Equal(true, rnx.IsHatanakaCompressed(), "Hatanaka")
+	assert.Equal("Z", rnx.Compression, "Compression")
+	t.Logf("RINEX: %+v\n", rnx)
+
+	rnx, err = NewObsFile("aggo237j.19n.Z ")
+	assert.NoError(err)
+	assert.Equal("AGGO", rnx.FourCharID, "FourCharID")
+	assert.Equal(time.Date(2019, 8, 25, 9, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
+	assert.Equal("01H", rnx.FilePeriod, "FilePeriod")
+	assert.Equal("rnx", rnx.Format, "Format")
+	assert.Equal(false, rnx.IsHatanakaCompressed(), "Hatanaka")
+	assert.Equal("Z", rnx.Compression, "Compression")
+	t.Logf("RINEX: %+v\n", rnx)
+
+	// highrates
+	rnx, err = NewObsFile("adis240e00.19d.Z ")
+	assert.NoError(err)
+	assert.Equal("ADIS", rnx.FourCharID, "FourCharID")
+	assert.Equal(time.Date(2019, 8, 28, 4, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
+	assert.Equal("15M", rnx.FilePeriod, "FilePeriod")
+	assert.Equal("crx", rnx.Format, "Format")
+	assert.Equal(true, rnx.IsHatanakaCompressed(), "Hatanaka")
+	assert.Equal("Z", rnx.Compression, "Compression")
+	t.Logf("RINEX: %+v\n", rnx)
+
+	rnx, err = NewObsFile("adis240e15.19d.Z ")
+	assert.NoError(err)
+	assert.Equal("ADIS", rnx.FourCharID, "FourCharID")
+	assert.Equal(time.Date(2019, 8, 28, 4, 15, 0, 0, time.UTC), rnx.StartTime, "StartTime")
+	assert.Equal("15M", rnx.FilePeriod, "FilePeriod")
+	assert.Equal("crx", rnx.Format, "Format")
+	assert.Equal(true, rnx.IsHatanakaCompressed(), "Hatanaka")
+	assert.Equal("Z", rnx.Compression, "Compression")
+	t.Logf("RINEX: %+v\n", rnx)
+}
+func TestBuildFilename(t *testing.T) {
+	assert := assert.New(t)
+
+	rnx := &ObsFile{RnxFil: &RnxFil{StartTime: time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC), DataSource: "R",
+		FilePeriod: "01H", DataFreq: "30S", DataType: "MO", Format: "rnx"}}
+
+	assert.NotNil(rnx)
+	rnx.SetStationName("WTZR")
+	assert.Equal("WTZR", rnx.FourCharID, "FourCharID")
+
+	rnx.SetStationName("BRUX00BEL")
+	assert.Equal("BRUX", rnx.FourCharID, "FourCharID")
+	assert.Equal(0, rnx.MonumentNumber, "MonumentNumber")
+	assert.Equal(0, rnx.ReceiverNumber, "ReceiverNumber")
+	assert.Equal("BEL", rnx.CountryCode, "CountryCode")
+
+	t.Logf("RINEX: %+v", rnx)
+
+	fn2, err := rnx.Rnx3Filename()
+	if err != nil {
+		t.Fatalf("Could not build Rnx filename: %v", err)
+	}
+	assert.Equal("BRUX00BEL_R_20183101900_01H_30S_MO.rnx", fn2, "Build RINEX3 filename")
+
+	rnx.Format = "crx"
+	fn4, err := rnx.Rnx3Filename()
+	if err != nil {
+		t.Fatalf("Could not build Rnx filename: %v", err)
+	}
+	assert.Equal("BRUX00BEL_R_20183101900_01H_30S_MO.crx", fn4, "Build RINEX3 Hatanaka comp filename")
+	t.Logf("filename: %s", fn4)
+}
+
+// Convert a filename from RINEX-2 to RINEX-3.
+func ExampleObsFile_Rnx3Filename() {
+	file, err := NewObsFile("testdata/white/brst155h.20o")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	file.CountryCode = "FRA"
+	file.DataSource = "R"
+
+	rnx3name, err := file.Rnx3Filename()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println(rnx3name)
+	// Output: BRST00FRA_R_20201550700_01H_30S_MO.rnx
+}
+
 func BenchmarkReadEpochs(b *testing.B) {
 	b.ReportAllocs()
 	filepath := "testdata/white/REYK00ISL_S_20192701000_01H_30S_MO.rnx"
@@ -189,7 +299,7 @@ func TestPrintEpochs(t *testing.T) {
 func TestStat(t *testing.T) {
 	assert := assert.New(t)
 	filepath := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
-	obsFil, err := NewObsFil(filepath)
+	obsFil, err := NewObsFile(filepath)
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -256,10 +366,10 @@ func TestDiff(t *testing.T) {
 	//filePath2 := filepath.Join(homeDir, "TEST07DEU_S_20192180000_01D_01S_MO.rnx")
 	filePath1 := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
 	filePath2 := "testdata/white/REYK00ISL_S_20192701000_01H_30S_MO.rnx"
-	obs1, err := NewObsFil(filePath1)
+	obs1, err := NewObsFile(filePath1)
 	assert.NotNil(obs1)
 	assert.NoError(err)
-	obs2, err := NewObsFil(filePath2)
+	obs2, err := NewObsFile(filePath2)
 	assert.NotNil(obs2)
 	assert.NoError(err)
 
@@ -321,7 +431,7 @@ func TestRnx2crx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx3Fil, err := NewObsFil(rnxFilePath)
+	rnx3Fil, err := NewObsFile(rnxFilePath)
 	assert.NoError(err)
 	err = rnx3Fil.Rnx2crx()
 	if err != nil {
@@ -334,7 +444,7 @@ func TestRnx2crx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx2Fil, err := NewObsFil(rnxFilePath)
+	rnx2Fil, err := NewObsFile(rnxFilePath)
 	assert.NoError(err)
 	err = rnx2Fil.Rnx2crx()
 	if err != nil {
@@ -352,7 +462,7 @@ func TestCrx2rnx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx3Fil, err := NewObsFil(crxFilePath)
+	rnx3Fil, err := NewObsFile(crxFilePath)
 	assert.NoError(err)
 	err = rnx3Fil.Crx2rnx()
 	if err != nil {
@@ -365,7 +475,7 @@ func TestCrx2rnx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx2Fil, err := NewObsFil(crxFilePath)
+	rnx2Fil, err := NewObsFile(crxFilePath)
 	assert.NoError(err)
 
 	err = rnx2Fil.Crx2rnx()

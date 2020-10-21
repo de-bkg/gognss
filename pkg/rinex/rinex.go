@@ -2,9 +2,13 @@
 package rinex
 
 import (
+	"bytes"
+	"compress/gzip"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -51,6 +55,15 @@ var (
 		"GN": "n", "RN": "g", "EN": "l", "JN": "q", "CN": "f", "SN": "h", "MN": "p", "MM": "m"}
 )
 
+// FilerHandler is the interface for RINEX files..
+type FilerHandler interface {
+	// Compress compresses the RINEX file dependend of its file type.
+	Compress() error
+
+	// Rnx3Filename returns the filename following the RINEX3 convention.
+	Rnx3Filename() (string, error)
+}
+
 /* // DataFrequency is a measurement of cycle per second, stored as an int64 micro Hertz.
 // Observation interval in seconds
 type DataFrequency int64
@@ -81,10 +94,25 @@ type RnxFil struct {
 }
 
 // NewFile returns a new RINEX file object.
-func NewFile(filepath string) (*RnxFil, error) {
-	fil := &RnxFil{Path: filepath}
-	err := fil.parseFilename()
-	return fil, err
+func NewFile(filepath string) (FilerHandler, error) {
+	rnx := &RnxFil{Path: filepath}
+	err := rnx.parseFilename()
+	if err != nil {
+		return nil, err
+	}
+
+	var f FilerHandler
+	if rnx.IsObsType() {
+		f = &ObsFile{RnxFil: rnx}
+	} else if rnx.IsNavType() {
+		f = &NavFile{RnxFil: rnx}
+	} else if rnx.IsMeteoType() {
+		f = &MeteoFile{RnxFil: rnx}
+	} else {
+		return nil, fmt.Errorf("No valid RINEX file: %s", filepath)
+	}
+
+	return f, nil
 }
 
 // SetStationName sets the station or project name.
@@ -103,139 +131,6 @@ func (f *RnxFil) SetStationName(name string) error {
 	}
 
 	return nil
-}
-
-// Rnx2Filename returns the filename following the RINEX2 convention.
-func (f *RnxFil) Rnx2Filename() (string, error) {
-	// Station Identifier
-	if len(f.FourCharID) != 4 {
-		return "", fmt.Errorf("FourCharID: %s", f.FourCharID)
-	}
-
-	var fn strings.Builder
-	fn.WriteString(strings.ToLower(f.FourCharID))
-	fn.WriteString(fmt.Sprintf("%03d", f.StartTime.YearDay()))
-	if f.FilePeriod == "01D" {
-		fn.WriteString("0")
-	} else {
-		fn.WriteString(getHourAsChar(f.StartTime.Hour()))
-	}
-
-	if f.FilePeriod == "15M" { // 15min highrates
-		d := time.Duration(f.StartTime.Minute()) * time.Minute
-		fn.WriteString(fmt.Sprintf("%02d", int(d.Truncate(15*time.Minute).Minutes())))
-	}
-
-	yyyy := strconv.Itoa(f.StartTime.Year())
-	fn.WriteString("." + yyyy[2:])
-
-	rnx2Typ, ok := rnxTypMap[f.DataType]
-	if !ok {
-		return "", fmt.Errorf("Could not map type %s to RINEX2", f.DataType)
-	}
-	if f.IsObsType() && f.Format == "crx" {
-		fn.WriteString("d")
-	} else {
-		fn.WriteString(rnx2Typ)
-	}
-
-	// Checks
-	shouldLength := 12
-	if f.FilePeriod == "15M" { // 15min highrates
-		shouldLength = 14
-	}
-
-	length := len(fn.String())
-	if length != shouldLength {
-		return "", fmt.Errorf("wrong filename length: %s: %d (should: %d)", fn.String(), length, shouldLength)
-	}
-
-	return fn.String(), nil
-}
-
-// Rnx3Filename returns the filename following the RINEX3 convention.
-// In most cases we must read the read the header. The countrycode must come from an external source.
-// DO NOT USE! Must parse header first!
-func (f *RnxFil) Rnx3Filename() (string, error) {
-	if f.IsObsType() {
-		if f.DataFreq == "" || f.FilePeriod == "" {
-			r, err := os.Open(f.Path)
-			if err != nil {
-				return "", err
-			}
-			defer r.Close()
-			dec, err := NewObsDecoder(r)
-			if err != nil {
-				return "", err
-			}
-
-			if dec.Header.Interval != 0 {
-				f.DataFreq = fmt.Sprintf("%02d%s", int(dec.Header.Interval), "S")
-			}
-
-			f.DataType = fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), "O")
-		}
-	} else {
-		return "", fmt.Errorf("nav and meteo not implemented yet")
-	}
-
-	// Station Identifier
-	if len(f.FourCharID) != 4 {
-		return "", fmt.Errorf("FourCharID: %s", f.FourCharID)
-	}
-
-	if len(f.CountryCode) != 3 {
-		return "", fmt.Errorf("CountryCode: %s", f.CountryCode)
-	}
-
-	var fn strings.Builder
-	fn.WriteString(f.FourCharID)
-	fn.WriteString(strconv.Itoa(f.MonumentNumber))
-	fn.WriteString(strconv.Itoa(f.ReceiverNumber))
-	fn.WriteString(f.CountryCode)
-
-	fn.WriteString("_")
-
-	if f.DataSource == "" {
-		fn.WriteString("U")
-	} else {
-		fn.WriteString(f.DataSource)
-	}
-
-	fn.WriteString("_")
-
-	// StartTime
-	//BRUX00BEL_R_20183101900_01H_30S_MO.rnx
-	fn.WriteString(strconv.Itoa(f.StartTime.Year()))
-	fn.WriteString(fmt.Sprintf("%03d", f.StartTime.YearDay()))
-	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Hour()))
-	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Minute()))
-	fn.WriteString("_")
-
-	fn.WriteString(f.FilePeriod)
-	fn.WriteString("_")
-
-	fn.WriteString(f.DataFreq)
-	fn.WriteString("_")
-
-	fn.WriteString(f.DataType)
-
-	if f.IsObsType() && f.Format == "crx" {
-		fn.WriteString(".crx")
-	} else {
-		fn.WriteString(".rnx")
-	}
-
-	// Checks
-	length := len(fn.String())
-	if f.IsObsType() {
-		if length != 38 {
-			return "", fmt.Errorf("wrong filename length: %s: %d", fn.String(), length)
-		}
-	}
-	// Rnx3 Filename: total: 41-42 obs, 37-38 eph.
-
-	return fn.String(), nil
 }
 
 // IsObsType returns true if the file is a RINEX observation file type.
@@ -356,6 +251,9 @@ func (f *RnxFil) parseFilename() error {
 				case "g":
 					f.DataType = "RN"
 					f.Format = "rnx"
+				case "m":
+					f.DataType = "MM"
+					f.Format = "rnx"
 				default:
 					return fmt.Errorf("could not determine the DATA TYPE")
 				}
@@ -366,6 +264,86 @@ func (f *RnxFil) parseFilename() error {
 	}
 
 	return nil
+}
+
+// Rnx3Filename returns the RTCM RINEX-3 compliant filename for the given RINEX-2 file.
+// The countryCode must be the 3 char ISO ?? code.
+// Datasource as option!?
+func Rnx3Filename(rnx2filepath string, countryCode string) (string, error) {
+	if len(countryCode) != 3 {
+		return "", fmt.Errorf("invalid countryCode %q", countryCode)
+	}
+	rnx := &RnxFil{Path: rnx2filepath, CountryCode: countryCode, DataSource: "R"}
+	err := rnx.parseFilename()
+	if err != nil {
+		return "", err
+	}
+
+	if rnx.IsObsType() {
+		f := &ObsFile{RnxFil: rnx}
+		return f.Rnx3Filename()
+	} else if rnx.IsNavType() {
+		f := &NavFile{RnxFil: rnx}
+		return f.Rnx3Filename()
+	} else if rnx.IsMeteoType() {
+		return "", fmt.Errorf("Meteo files not implemented yet")
+	}
+
+	return "", fmt.Errorf("No valid RINEX filename: %s", rnx2filepath)
+}
+
+// Rnx2Filename returns the filename following the RINEX2 convention.
+func Rnx2Filename(rnx3filepath string) (string, error) {
+	rnx := &RnxFil{Path: rnx3filepath}
+	err := rnx.parseFilename()
+	if err != nil {
+		return "", err
+	}
+
+	// Station Identifier
+	if len(rnx.FourCharID) != 4 {
+		return "", fmt.Errorf("FourCharID: %s", rnx.FourCharID)
+	}
+
+	var fn strings.Builder
+	fn.WriteString(strings.ToLower(rnx.FourCharID))
+	fn.WriteString(fmt.Sprintf("%03d", rnx.StartTime.YearDay()))
+	if rnx.FilePeriod == "01D" {
+		fn.WriteString("0")
+	} else {
+		fn.WriteString(getHourAsChar(rnx.StartTime.Hour()))
+	}
+
+	if rnx.FilePeriod == "15M" { // 15min highrates
+		d := time.Duration(rnx.StartTime.Minute()) * time.Minute
+		fn.WriteString(fmt.Sprintf("%02d", int(d.Truncate(15*time.Minute).Minutes())))
+	}
+
+	yyyy := strconv.Itoa(rnx.StartTime.Year())
+	fn.WriteString("." + yyyy[2:])
+
+	rnx2Typ, ok := rnxTypMap[rnx.DataType]
+	if !ok {
+		return "", fmt.Errorf("Could not map type %s to RINEX2", rnx.DataType)
+	}
+	if rnx.IsObsType() && rnx.Format == "crx" {
+		fn.WriteString("d")
+	} else {
+		fn.WriteString(rnx2Typ)
+	}
+
+	// Checks
+	shouldLength := 12
+	if rnx.FilePeriod == "15M" { // 15min highrates
+		shouldLength = 14
+	}
+
+	length := len(fn.String())
+	if length != shouldLength {
+		return "", fmt.Errorf("wrong filename length: %s: %d (should: %d)", fn.String(), length, shouldLength)
+	}
+
+	return fn.String(), nil
 }
 
 // ParseDoy returns the UTC-Time corresponding to the given year and day of year.
@@ -395,6 +373,53 @@ func getHourAsDigit(char rune) (int, error) {
 		return 0, fmt.Errorf("could not get hour for %c", char)
 	}
 	return hr, nil
+}
+
+func compressGzip(path string) (string, error) {
+	pathgz := path + ".gz"
+
+	// try with gzip first, if installed
+	if gzip, err := exec.LookPath("gzip"); err == nil {
+		cmd := exec.Command(gzip, "-f", path) // -n
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
+		err = cmd.Run()
+		if err != nil {
+			return "", fmt.Errorf("gzip failed: %v: %s", err, stderr.Bytes())
+		}
+		if _, err := os.Stat(pathgz); os.IsNotExist(err) {
+			return "", fmt.Errorf("gzip failed: %s: %s", "comressed file does not exist", pathgz)
+		}
+		return pathgz, nil
+	}
+
+	r, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer r.Close()
+
+	// writer
+	out, err := os.Create(pathgz)
+	if err != nil {
+		return "", err
+	}
+	defer out.Close()
+
+	zw := gzip.NewWriter(out)
+	_, err = io.Copy(zw, r)
+	if err := zw.Close(); err != nil {
+		return "", err
+	}
+
+	// check filesize > 0
+	if finfo, err := os.Stat(pathgz); !os.IsNotExist(err) {
+		if finfo.Size() < 1 {
+			return "", fmt.Errorf("compressed file is empty: %s", pathgz)
+		}
+	}
+
+	return pathgz, nil
 }
 
 /* func parseEpochTime(str string) (time.Time, error) {

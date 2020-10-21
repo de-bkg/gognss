@@ -245,6 +245,21 @@ func TestNavFile_Validate(t *testing.T) {
 	assert.NoError(err)
 }
 
+func TestNavFile_Rnx3Filename(t *testing.T) {
+	file, err := NewNavFile("testdata/white/brst155h.20n")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	file.CountryCode = "FRA"
+	file.DataSource = "R"
+
+	rnx3name, err := file.Rnx3Filename()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	assert.Equal(t, "BRST00FRA_R_20201550700_01H_GN.rnx", rnx3name)
+}
+
 func TestUnmarshalEph(t *testing.T) {
 	assert := assert.New(t)
 

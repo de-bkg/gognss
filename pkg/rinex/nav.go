@@ -696,6 +696,73 @@ func NewNavFile(filepath string) (*NavFile, error) {
 	return navFil, err
 }
 
+// Compress a navigation file using the gzip format.
+func (f *NavFile) Compress() error {
+	pathgz, err := compressGzip(f.Path)
+	if err != nil {
+		return err
+	}
+
+	f.Path = pathgz
+	f.Compression = "gz"
+	return nil
+}
+
+// Rnx3Filename returns the filename following the RINEX3 convention.
+// In most cases we must read the read the header. The countrycode must come from an external source.
+// DO NOT USE! Must parse header first!
+
+// Rnx3Filename returns the filename following the RINEX3 convention.
+// TODO !!!
+func (f *NavFile) Rnx3Filename() (string, error) {
+	// Station Identifier
+	if len(f.FourCharID) != 4 {
+		return "", fmt.Errorf("FourCharID: %s", f.FourCharID)
+	}
+
+	if len(f.CountryCode) != 3 {
+		return "", fmt.Errorf("CountryCode: %s", f.CountryCode)
+	}
+
+	var fn strings.Builder
+	fn.WriteString(f.FourCharID)
+	fn.WriteString(strconv.Itoa(f.MonumentNumber))
+	fn.WriteString(strconv.Itoa(f.ReceiverNumber))
+	fn.WriteString(f.CountryCode)
+
+	fn.WriteString("_")
+
+	if f.DataSource == "" {
+		fn.WriteString("U")
+	} else {
+		fn.WriteString(f.DataSource)
+	}
+
+	fn.WriteString("_")
+
+	// StartTime
+	// AREG00PER_R_20201690000_01D_MN.rnx
+
+	fn.WriteString(strconv.Itoa(f.StartTime.Year()))
+	fn.WriteString(fmt.Sprintf("%03d", f.StartTime.YearDay()))
+	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Hour()))
+	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Minute()))
+	fn.WriteString("_")
+
+	fn.WriteString(f.FilePeriod)
+	fn.WriteString("_")
+
+	fn.WriteString(f.DataType)
+	fn.WriteString(".rnx")
+
+	length := len(fn.String())
+	if length != 34 {
+		return "", fmt.Errorf("wrong filename length: %s: %d", fn.String(), length)
+	}
+
+	return fn.String(), nil
+}
+
 // Validate validates the RINEX Nav file. It is valid if no error is returned.
 func (f *NavFile) Validate() error {
 	r, err := os.Open(f.Path)

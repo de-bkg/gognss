@@ -537,26 +537,26 @@ func (dec *ObsDecoder) sync(dec2 *ObsDecoder) bool {
 	return false
 }
 
-// ObsFil contains fields and methods for RINEX observation files.
-// Use NewObsFil() to instantiate a new ObsFil.
-type ObsFil struct {
+// ObsFile contains fields and methods for RINEX observation files.
+// Use NewObsFil() to instantiate a new ObsFile.
+type ObsFile struct {
 	*RnxFil
 	Header ObsHeader
 	Opts   Options
 }
 
-// NewObsFil returns a new ObsFil.
-func NewObsFil(filepath string) (*ObsFil, error) {
+// NewObsFile returns a new ObsFile.
+func NewObsFile(filepath string) (*ObsFile, error) {
 	// must file exist?
-	obsFil := &ObsFil{RnxFil: &RnxFil{Path: filepath}, Opts: Options{}}
+	obsFil := &ObsFile{RnxFil: &RnxFil{Path: filepath}, Opts: Options{}}
 	err := obsFil.parseFilename()
 	return obsFil, err
 }
 
 // Diff compares two RINEX obs files.
-func (obsFil *ObsFil) Diff(obsFil2 *ObsFil) error {
+func (f *ObsFile) Diff(obsFil2 *ObsFile) error {
 	// file 1
-	r, err := os.Open(obsFil.Path)
+	r, err := os.Open(f.Path)
 	if err != nil {
 		return fmt.Errorf("open obs file: %v", err)
 	}
@@ -582,7 +582,7 @@ func (obsFil *ObsFil) Diff(obsFil2 *ObsFil) error {
 		nSyncEpochs++
 		syncEpo := dec.SyncEpoch()
 
-		diff := diffEpo(syncEpo, obsFil.Opts)
+		diff := diffEpo(syncEpo, f.Opts)
 		if diff != "" {
 			fmt.Printf("diff: %s\n", diff)
 		}
@@ -595,8 +595,8 @@ func (obsFil *ObsFil) Diff(obsFil2 *ObsFil) error {
 }
 
 // Stat gathers some observation statistics.
-func (obsFil *ObsFil) Stat() (stat ObsStat, err error) {
-	r, err := os.Open(obsFil.Path)
+func (f *ObsFile) Stat() (stat ObsStat, err error) {
+	r, err := os.Open(f.Path)
 	if err != nil {
 		return
 	}
@@ -641,9 +641,26 @@ func (obsFil *ObsFil) Stat() (stat ObsStat, err error) {
 	return
 }
 
+// Compress an observation file using Hatanaka first and then gzip.
+func (f *ObsFile) Compress() error {
+	err := f.Rnx2crx()
+	if err != nil {
+		return err
+	}
+
+	pathgz, err := compressGzip(f.Path)
+	if err != nil {
+		return err
+	}
+
+	f.Path = pathgz
+	f.Compression = "gz"
+	return nil
+}
+
 // IsHatanakaCompressed returns true if the obs file is Hatanaka compressed, otherwise false.
-func (obsFil *ObsFil) IsHatanakaCompressed() bool {
-	if obsFil.RnxFil.Format == "crx" || obsFil.RnxFil.Format == "d" {
+func (f *ObsFile) IsHatanakaCompressed() bool {
+	if f.RnxFil.Format == "crx" || f.RnxFil.Format == "d" {
 		return true
 	}
 
@@ -653,10 +670,10 @@ func (obsFil *ObsFil) IsHatanakaCompressed() bool {
 // Rnx2crx creates a copy of the file that is Hatanaka-compressed (compact RINEX).
 // Rnx2crx returns the filepath of the compressed file.
 // see http://terras.gsi.go.jp/ja/crx2rnx.html
-func (obsFil *ObsFil) Rnx2crx() error {
-	rnxFilePath := obsFil.Path
+func (f *ObsFile) Rnx2crx() error {
+	rnxFilePath := f.Path
 
-	if obsFil.IsHatanakaCompressed() {
+	if f.IsHatanakaCompressed() {
 		fmt.Printf("File is already Hatanaka compressed\n")
 		return nil
 	}
@@ -700,17 +717,18 @@ func (obsFil *ObsFil) Rnx2crx() error {
 		return fmt.Errorf("compressed file does not exist: %s", crxFilePath)
 	}
 
-	obsFil.Path = crxFilePath
+	f.Path = crxFilePath
+	f.Format = "crx"
 
 	return nil
 }
 
 // Crx2rnx decompresses a Hatanaka-compressed file. Crx2rnx returns the filepath of the decompressed file.
 // see http://terras.gsi.go.jp/ja/crx2rnx.html
-func (obsFil *ObsFil) Crx2rnx() error {
-	crxFilepath := obsFil.Path
+func (f *ObsFile) Crx2rnx() error {
+	crxFilepath := f.Path
 
-	if !obsFil.IsHatanakaCompressed() {
+	if !f.IsHatanakaCompressed() {
 		fmt.Printf("File is already Hatanaka uncompressed\n")
 		return nil
 	}
@@ -752,8 +770,88 @@ func (obsFil *ObsFil) Crx2rnx() error {
 		return fmt.Errorf("compressed file does not exist: %s", rnxFilePath)
 	}
 
-	obsFil.Path = rnxFilePath
+	f.Path = rnxFilePath
 	return nil
+}
+
+// Rnx3Filename returns the filename following the RINEX3 convention.
+// In most cases we must read the read the header. The countrycode must come from an external source.
+// DO NOT USE! Must parse header first!
+func (f *ObsFile) Rnx3Filename() (string, error) {
+	if f.DataFreq == "" || f.FilePeriod == "" {
+		r, err := os.Open(f.Path)
+		if err != nil {
+			return "", err
+		}
+		defer r.Close()
+		dec, err := NewObsDecoder(r)
+		if err != nil {
+			return "", err
+		}
+
+		if dec.Header.Interval != 0 {
+			f.DataFreq = fmt.Sprintf("%02d%s", int(dec.Header.Interval), "S")
+		}
+
+		f.DataType = fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), "O")
+	}
+
+	// Station Identifier
+	if len(f.FourCharID) != 4 {
+		return "", fmt.Errorf("FourCharID: %s", f.FourCharID)
+	}
+
+	if len(f.CountryCode) != 3 {
+		return "", fmt.Errorf("CountryCode: %s", f.CountryCode)
+	}
+
+	var fn strings.Builder
+	fn.WriteString(f.FourCharID)
+	fn.WriteString(strconv.Itoa(f.MonumentNumber))
+	fn.WriteString(strconv.Itoa(f.ReceiverNumber))
+	fn.WriteString(f.CountryCode)
+
+	fn.WriteString("_")
+
+	if f.DataSource == "" {
+		fn.WriteString("U")
+	} else {
+		fn.WriteString(f.DataSource)
+	}
+
+	fn.WriteString("_")
+
+	// StartTime
+	//BRUX00BEL_R_20183101900_01H_30S_MO.rnx
+	fn.WriteString(strconv.Itoa(f.StartTime.Year()))
+	fn.WriteString(fmt.Sprintf("%03d", f.StartTime.YearDay()))
+	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Hour()))
+	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Minute()))
+	fn.WriteString("_")
+
+	fn.WriteString(f.FilePeriod)
+	fn.WriteString("_")
+
+	fn.WriteString(f.DataFreq)
+	fn.WriteString("_")
+
+	fn.WriteString(f.DataType)
+
+	if f.Format == "crx" {
+		fn.WriteString(".crx")
+	} else {
+		fn.WriteString(".rnx")
+	}
+
+	// Checks
+	length := len(fn.String())
+	if length != 38 {
+		return "", fmt.Errorf("wrong filename length: %s: %d", fn.String(), length)
+	}
+
+	// Rnx3 Filename: total: 41-42 obs, 37-38 eph.
+
+	return fn.String(), nil
 }
 
 func parseFlag(str string) (int, error) {
