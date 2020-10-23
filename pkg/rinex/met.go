@@ -2,8 +2,11 @@ package rinex
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
+
+	"github.com/mholt/archiver/v3"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
@@ -41,13 +44,18 @@ func NewMeteoFile(filepath string) (*MeteoFile, error) {
 }
 
 // Compress a meteo file using the gzip format.
+// The source file will be removed if the compression finishes without errors.
 func (f *MeteoFile) Compress() error {
-	pathgz, err := compressGzip(f.Path)
+	if IsCompressed(f.Path) {
+		return nil
+	}
+
+	err := archiver.CompressFile(f.Path, f.Path+".gz")
 	if err != nil {
 		return err
 	}
-
-	f.Path = pathgz
+	os.Remove(f.Path)
+	f.Path = f.Path + ".gz"
 	f.Compression = "gz"
 	return nil
 }
@@ -92,9 +100,8 @@ func (f *MeteoFile) Rnx3Filename() (string, error) {
 	fn.WriteString(f.DataType)
 	fn.WriteString(".rnx")
 
-	length := len(fn.String())
-	if length != 38 {
-		return "", fmt.Errorf("wrong filename length: %s: %d", fn.String(), length)
+	if len(fn.String()) != 38 {
+		return "", fmt.Errorf("invalid filename: %s", fn.String())
 	}
 
 	return fn.String(), nil

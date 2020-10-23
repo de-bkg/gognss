@@ -2,13 +2,8 @@
 package rinex
 
 import (
-	"bytes"
-	"compress/gzip"
 	"errors"
 	"fmt"
-	"io"
-	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -16,6 +11,7 @@ import (
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
+	"github.com/mholt/archiver/v3"
 )
 
 const (
@@ -240,8 +236,8 @@ func (f *RnxFil) parseFilename() error {
 			case 7:
 				switch strings.ToLower(v) {
 				case "o":
-					f.Format = "rnx"
 					f.DataType = "MO"
+					f.Format = "rnx"
 				case "d":
 					f.DataType = "MO"
 					f.Format = "crx"
@@ -253,6 +249,12 @@ func (f *RnxFil) parseFilename() error {
 					f.Format = "rnx"
 				case "m":
 					f.DataType = "MM"
+					f.Format = "rnx"
+				case "f":
+					f.DataType = "CN"
+					f.Format = "rnx"
+				case "l":
+					f.DataType = "EN"
 					f.Format = "rnx"
 				default:
 					return fmt.Errorf("could not determine the DATA TYPE")
@@ -346,6 +348,25 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 	return fn.String(), nil
 }
 
+// IsCompressed returns true if the src is compressed, otherwise false.
+func IsCompressed(src string) bool {
+	ext := filepath.Ext(src)
+	if ext == "" {
+		return false
+	}
+
+	if ext == ".z" || ext == ".Z" {
+		return true
+	}
+
+	_, err := archiver.ByExtension(src)
+	if err == nil {
+		return true
+	}
+
+	return false
+}
+
 // ParseDoy returns the UTC-Time corresponding to the given year and day of year.
 // Added in Go 1.13 !!!
 func ParseDoy(year, doy int) time.Time {
@@ -373,53 +394,6 @@ func getHourAsDigit(char rune) (int, error) {
 		return 0, fmt.Errorf("could not get hour for %c", char)
 	}
 	return hr, nil
-}
-
-func compressGzip(path string) (string, error) {
-	pathgz := path + ".gz"
-
-	// try with gzip first, if installed
-	if gzip, err := exec.LookPath("gzip"); err == nil {
-		cmd := exec.Command(gzip, "-f", path) // -n
-		var stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		err = cmd.Run()
-		if err != nil {
-			return "", fmt.Errorf("gzip failed: %v: %s", err, stderr.Bytes())
-		}
-		if _, err := os.Stat(pathgz); os.IsNotExist(err) {
-			return "", fmt.Errorf("gzip failed: %s: %s", "comressed file does not exist", pathgz)
-		}
-		return pathgz, nil
-	}
-
-	r, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer r.Close()
-
-	// writer
-	out, err := os.Create(pathgz)
-	if err != nil {
-		return "", err
-	}
-	defer out.Close()
-
-	zw := gzip.NewWriter(out)
-	_, err = io.Copy(zw, r)
-	if err := zw.Close(); err != nil {
-		return "", err
-	}
-
-	// check filesize > 0
-	if finfo, err := os.Stat(pathgz); !os.IsNotExist(err) {
-		if finfo.Size() < 1 {
-			return "", fmt.Errorf("compressed file is empty: %s", pathgz)
-		}
-	}
-
-	return pathgz, nil
 }
 
 /* func parseEpochTime(str string) (time.Time, error) {

@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mholt/archiver/v3"
+
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
@@ -642,25 +644,34 @@ func (f *ObsFile) Stat() (stat ObsStat, err error) {
 }
 
 // Compress an observation file using Hatanaka first and then gzip.
+// The source file will be removed if the compression finishes without errors.
 func (f *ObsFile) Compress() error {
+	if f.Format == "crx" && f.Compression == "gz" {
+		return nil
+	}
+	if f.Format == "rnx" && f.Compression != "" {
+		return fmt.Errorf("compressed file is not Hatanaka compressed: %s", f.Path)
+	}
+
 	err := f.Rnx2crx()
 	if err != nil {
 		return err
 	}
 
-	pathgz, err := compressGzip(f.Path)
+	err = archiver.CompressFile(f.Path, f.Path+".gz")
 	if err != nil {
 		return err
 	}
-
-	f.Path = pathgz
+	os.Remove(f.Path)
+	f.Path = f.Path + ".gz"
 	f.Compression = "gz"
+
 	return nil
 }
 
 // IsHatanakaCompressed returns true if the obs file is Hatanaka compressed, otherwise false.
 func (f *ObsFile) IsHatanakaCompressed() bool {
-	if f.RnxFil.Format == "crx" || f.RnxFil.Format == "d" {
+	if f.Format == "crx" {
 		return true
 	}
 
@@ -674,7 +685,6 @@ func (f *ObsFile) Rnx2crx() error {
 	rnxFilePath := f.Path
 
 	if f.IsHatanakaCompressed() {
-		fmt.Printf("File is already Hatanaka compressed\n")
 		return nil
 	}
 
@@ -702,7 +712,7 @@ func (f *ObsFile) Rnx2crx() error {
 	}
 
 	// Run compression tool
-	cmd := exec.Command(tool, rnxFilePath, "-f")
+	cmd := exec.Command(tool, rnxFilePath, "-d", "-f")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
@@ -755,7 +765,7 @@ func (f *ObsFile) Crx2rnx() error {
 	}
 
 	// Run compression tool
-	cmd := exec.Command(tool, crxFilepath, "-f")
+	cmd := exec.Command(tool, crxFilepath, "-d", "-f")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
@@ -843,10 +853,8 @@ func (f *ObsFile) Rnx3Filename() (string, error) {
 		fn.WriteString(".rnx")
 	}
 
-	// Checks
-	length := len(fn.String())
-	if length != 38 {
-		return "", fmt.Errorf("wrong filename length: %s: %d", fn.String(), length)
+	if len(fn.String()) != 38 {
+		return "", fmt.Errorf("invalid filename: %s", fn.String())
 	}
 
 	// Rnx3 Filename: total: 41-42 obs, 37-38 eph.

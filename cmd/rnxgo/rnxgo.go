@@ -6,9 +6,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/rinex"
+	"github.com/mholt/archiver/v3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -156,18 +158,41 @@ func compressRINEXFiles(rootdir string) error {
 			return err
 		}
 		if info.IsDir() {
-			log.Printf("visited dir: %q", path)
+			log.Printf("check dir: %q", path)
 			return nil
 		}
-		fmt.Printf("visited file: %q\n", path)
+
 		rnxFil, err := rinex.NewFile(path)
 		if err != nil {
-			log.Printf("ERROR: %s: %v", path, err)
+			log.Printf("ERROR: %v", err)
+			return nil
 		}
-		log.Printf("compress file %q", path)
+		log.Printf("compress file %s", path)
+		if strings.HasSuffix(path, "O.rnx.gz") {
+			log.Printf("file is not Hatanaka compressed, decompress first: %s", path)
+			ext := filepath.Ext(path)
+			tmpPath := strings.TrimSuffix(path, ext)
+			err := archiver.DecompressFile(path, tmpPath)
+			if err != nil {
+				log.Printf("decompress file: %v", err)
+				return nil
+			}
+			err = os.Remove(path)
+			if err != nil {
+				log.Printf("remove origin: %s: %v", path, err)
+				return nil
+			}
+			rnxFil, err = rinex.NewFile(tmpPath)
+			if err != nil {
+				log.Printf("ERROR: %s: %v", path, err)
+				return nil
+			}
+		}
+
 		err = rnxFil.Compress()
 		if err != nil {
-			log.Printf("ERROR: %s: %v", path, err)
+			log.Printf("ERROR compress file: %v", err)
+			return nil
 		}
 
 		return nil
