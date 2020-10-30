@@ -23,26 +23,26 @@ type Site struct {
 	Receivers []*Receiver `json:"gnssReceivers" validate:"required,min=1,dive,required"`
 	Antennas  []*Antenna  `json:"gnssAntennas" validate:"required,min=1,dive,required"`
 
-	LocalTies                   []LocalTies             `json:"surveyedLocalTies"`
-	FrequencyStandards          []FrequencyStandard     `json:"frequencyStandards"`
-	Collocations                []Collocation           `json:"collocationInformation"`
-	HumiditySensors             []HumiditySensor        `json:"humiditySensors"`
-	PressureSensors             []PressureSensor        `json:"pressureSensors"`
-	TemperatureSensors          []TemperatureSensor     `json:"temperatureSensors"`
-	WaterVaporSensors           []WaterVaporSensor      `json:"waterVaporSensors"`
-	OtherInstrumentationLogItem []interface{}           `json:"otherInstrumentationLogItem"` // 8.5 Other Instrumentation
-	RadioInterferences          []interface{}           `json:"radioInterferences"`          // 9.1
-	MultipathSourceLogItems     []interface{}           `json:"multipathSourceLogItems"`     // 9.2
-	SignalObstructionLogItems   []interface{}           `json:"signalObstructionLogItems"`   // 9.3
-	LocalEpisodicEffectLogItems []LocalEpisodicEffect   `json:"localEpisodicEffectLogItems"` // 10
-	Contacts                    []Contact               `json:"siteContacts"`                // 11. On-Site, Point of Contact Agency Information
-	ResponsibleAgencies         []ResponsibleAgency     `json:"responsibleParties"`          // 12. Responsible Agency
-	MoreInformation             MoreInformation         `json:"moreInformation"`             // 13
-	SiteMetadataCustodians      []SiteMetadataCustodian `json:"siteMetadataCustodians"`
+	LocalTies                   []LocalTies           `json:"surveyedLocalTies"`
+	FrequencyStandards          []FrequencyStandard   `json:"frequencyStandards"`
+	Collocations                []Collocation         `json:"collocationInformation"`
+	HumiditySensors             []HumiditySensor      `json:"humiditySensors"`
+	PressureSensors             []PressureSensor      `json:"pressureSensors"`
+	TemperatureSensors          []TemperatureSensor   `json:"temperatureSensors"`
+	WaterVaporSensors           []WaterVaporSensor    `json:"waterVaporSensors"`
+	OtherInstrumentationLogItem []interface{}         `json:"otherInstrumentationLogItem"` // 8.5 Other Instrumentation
+	RadioInterferences          []interface{}         `json:"radioInterferences"`          // 9.1
+	MultipathSourceLogItems     []interface{}         `json:"multipathSourceLogItems"`     // 9.2
+	SignalObstructionLogItems   []interface{}         `json:"signalObstructionLogItems"`   // 9.3
+	LocalEpisodicEffectLogItems []LocalEpisodicEffect `json:"localEpisodicEffectLogItems"` // 10
+	Contacts                    []Contact             `json:"siteContacts"`                // 11. On-Site, Point of Contact Agency Information
+	ResponsibleAgencies         []ResponsibleAgency   `json:"responsibleParties"`          // 12. Responsible Agency
+	MoreInformation             MoreInformation       `json:"moreInformation"`             // 13
+	MetadataCustodians          []MetadataCustodian   `json:"siteMetadataCustodians"`
 	//EquipmentLogItems         []EquipmentLogItems      `json:"equipmentLogItems"` // ??
 	//Links                     Links                    `json:"_links"`
 
-	Warnings []error
+	Warnings []error `json:"-"`
 }
 
 // FormInformation stores sitelog metdadata.
@@ -362,7 +362,9 @@ type Contact struct {
 	ContactTypeID int   `json:"contactTypeId"`
 	Party         Party `json:"party"`
 }
-type SiteMetadataCustodian struct {
+
+// The MetadataCustodian is responsible for the sites' metadata.
+type MetadataCustodian struct {
 	ContactTypeID int   `json:"contactTypeId"`
 	Party         Party `json:"party"`
 }
