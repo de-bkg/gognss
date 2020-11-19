@@ -1,0 +1,1372 @@
+
+     WTZR00DEU Site Information Form (site log)
+     International GNSS Service
+     See Instructions at:
+       ftp://igs.org/pub/station/general/sitelog_instr.txt
+
+0.   Form
+
+     Prepared by (full name)  : Mr. Uwe Hessels
+     Date Prepared            : 2020-06-02
+     Report Type              : UPDATE
+     If Update:
+      Previous Site Log       : wtzr00deu_20190403.log
+      Modified/Added Sections : 11
+
+
+1.   Site Identification of the GNSS Monument
+
+     Site Name                : Wettzell / Germany
+     Four Character ID        : WTZR
+     Monument Inscription     : Pillar 1202
+     IERS DOMES Number        : 14201M010
+     CDP Number               : 
+     Monument Description     : STEEL PLATE ON CONCRETE SURVEY TOWER
+       Height of the Monument : 0.8 m
+       Monument Foundation    : SCREW ANCHORED TO CONCRETE SURVEY TOWER
+       Foundation Depth       : 
+     Marker Description       : STEEL REFERENCE SURVEY MARKER 1202
+     Date Installed           : 1995-02-09T00:00Z
+     Geologic Characteristic  : Bedrock
+       Bedrock Type           : 
+       Bedrock Condition      : WEATHERED
+       Fracture Spacing       : 
+       Fault zones nearby     : NO
+         Distance/activity    : 
+     Additional Information   : The antenna is 7.5 m above
+                              : the ground.
+                              : IGS Reference Frame Station in the
+                              : Geodetical Observatory Wettzell.
+                              : In addition and parallel an
+                              : ASHTECH Z12T Metronome GPS Receiver,
+                              : Four character ID WTZA, on pillar 1204,
+                              : Domes No. 14201M013, a JAVAD TRE_G3TH DELTA
+                              : GPS+GLONASS Receiver, Four character
+                              : ID WTZZ, on pillar 1205, Domes No.
+                              : 14201M014, a JPS LEGACY GPS+GLONASS
+                              : Receiver, Four character ID WT21,
+                              : on pillar 21, DOMES No. 14201M021,
+                              : and a SEPT POLARX2 GPS Receiver,
+                              : Four character ID WTZS, DOMES No.
+                              : 14201M015 are observing.
+                              : Prior we observed here in the
+                              : Geodetical Observatory Wettzell with a
+                              : TI-4100, a MiniMac 2816 AT, a
+                              : Rogue SNR-800, our # 1200, Four Character
+                              : ID WETT, Domes No. 14201M009,
+                              : a 3SNAV R101 GPS+GLONASS
+                              : Receiver, Four character ID WTZG,
+                              : on pillar 1203, Domes No.
+                              : 14201M012, a TRIMBLE 4000 SSI,
+                              : Four character ID WTZT, on pillar 1201,
+                              : Domes No. 14201M011, a JPS LEGACY
+                              : GPS+GLONASS Receiver, Four character
+                              : ID WTZJ,on pillar 1203, DOMES No.
+                              : 14201M012, a TPS NETG3 GPS+GLONASS Receiver
+                              : Four character ID WTZL, on pillar 1206,
+                              : Domes No. 14201M022.
+                              : Further informations and effective
+                              : dates see section 5 and 7.
+
+
+2.   Site Location Information
+
+     City or Town             : Bad Koetzting
+     State or Province        : Bavaria
+     Country                  : Germany
+     Tectonic Plate           : EURASIAN
+     Approximate Position (ITRF)
+       X coordinate (m)       : 4075580.685
+       Y coordinate (m)       : 931853.660
+       Z coordinate (m)       : 4801568.054
+       Latitude (N is +)      : +490839.11
+       Longitude (E is +)     : +0125244.07
+       Elevation (m,ellips.)  : 666.0
+     Additional Information   : 
+
+
+3.   GNSS Receiver Information
+
+3.1  Receiver Type            : ROGUE SNR-8000
+     Satellite System         : GPS
+     Serial Number            : T313
+     Firmware Version         : 3.0
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 1995-02-09T00:00Z
+     Date Removed             : 1995-04-04T00:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.2  Receiver Type            : ROGUE SNR-8000
+     Satellite System         : GPS
+     Serial Number            : T322
+     Firmware Version         : 3.0
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 1995-04-04T00:00Z
+     Date Removed             : 1996-01-15T09:05Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.3  Receiver Type            : ROGUE SNR-8000
+     Satellite System         : GPS
+     Serial Number            : T322
+     Firmware Version         : 3.2
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 1996-01-15T09:15Z
+     Date Removed             : 1998-06-25T10:45Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.4  Receiver Type            : ROGUE SNR-8000
+     Satellite System         : GPS
+     Serial Number            : T322
+     Firmware Version         : 3.2.32.4
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 1998-06-25T10:45Z
+     Date Removed             : 1999-04-15T09:15Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.5  Receiver Type            : ROGUE SNR-8000
+     Satellite System         : GPS
+     Serial Number            : T322
+     Firmware Version         : 3.2.32.9
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 1999-04-15T09:15Z
+     Date Removed             : 1999-06-17T08:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.6  Receiver Type            : AOA SNR-8000 ACT
+     Satellite System         : GPS
+     Serial Number            : T318-U
+     Firmware Version         : 3.3.32.2
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 1999-06-17T08:00Z
+     Date Removed             : 2001-08-17T07:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.7  Receiver Type            : AOA SNR-8000 ACT
+     Satellite System         : GPS
+     Serial Number            : T-398U
+     Firmware Version         : 3.3.32.4
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2001-08-17T07:00Z
+     Date Removed             : 2002-06-24T13:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.8  Receiver Type            : AOA SNR-8000 ACT
+     Satellite System         : GPS
+     Serial Number            : T-317U
+     Firmware Version         : 3.3.32.5
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2002-06-24T13:10Z
+     Date Removed             : 2005-05-04T06:30Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.9  Receiver Type            : TPS E_GGD
+     Satellite System         : GPS+GLO
+     Serial Number            : AFY49G7RSHS
+     Firmware Version         : 2.3 Jun,24,2004 p5b1
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2005-05-04T06:30Z
+     Date Removed             : 2005-05-17T06:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Number
+                              : LGGD SN 0244 on the
+                              : type level
+
+3.10 Receiver Type            : TPS E_GGD
+     Satellite System         : GPS+GLO
+     Serial Number            : AFY49G7RSHS
+     Firmware Version         : 2.3 Jun,24,2004 p5b1
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2005-05-17T06:00Z
+     Date Removed             : 2005-11-30T13:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Number
+                              : LGGD SN 0244 on the
+                              : type level.
+                              : No actual change took
+                              : place.
+                              : /par/lock/notvis switched
+                              : to 'on' for 'all in view'.
+
+3.11 Receiver Type            : TPS E_GGD
+     Satellite System         : GPS+GLO
+     Serial Number            : AFY49G7RSHS
+     Firmware Version         : 2.5 Jun,22,2005 p1
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2005-11-30T13:00Z
+     Date Removed             : 2007-05-23T09:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Number
+                              : LGGD SN 0244 on the
+                              : type level.
+                              : /par/lock/notvis switched
+                              : to 'on' for 'all in view'.
+
+3.12 Receiver Type            : TPS E_GGD
+     Satellite System         : GPS+GLO
+     Serial Number            : AFY49G7RSHS
+     Firmware Version         : 2.6.0 Apr,18,2007
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2007-05-23T10:00Z
+     Date Removed             : 2007-05-29T12:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Number
+                              : LGGD SN 0244 on the
+                              : type level.
+                              : /par/lock/notvis switched
+                              : to 'on' for 'all in view'.
+
+3.13 Receiver Type            : TPS NETG3
+     Satellite System         : GPS+GLO
+     Serial Number            : Q84LKRDL3WG
+     Firmware Version         : 3.1 Jan,24,2007 p1
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2007-05-29T13:00Z
+     Date Removed             : 2007-05-29T14:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Serial Number
+                              : 401-01058 on the type level.
+
+3.14 Receiver Type            : TPS NETG3
+     Satellite System         : GPS+GLO
+     Serial Number            : Q84LKRDL3WG
+     Firmware Version         : 3.1 Mar,13,2007 p2
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2007-05-29T14:30Z
+     Date Removed             : 2007-09-03T13:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Serial Number
+                              : 401-01058 on the type level.
+
+3.15 Receiver Type            : TPS NETG3
+     Satellite System         : GPS+GLO
+     Serial Number            : Q84LKRDL3WG
+     Firmware Version         : 3.1 Jun,28,2007 p3
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2007-09-03T14:00Z
+     Date Removed             : 2007-12-14T08:14Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Serial Number
+                              : 401-01058 on the type level.
+                              : /par/lock/notvis switched
+                              : to 'on' for 'all in view'.
+
+3.16 Receiver Type            : TPS NETG3
+     Satellite System         : GPS+GLO
+     Serial Number            : Q84LKRDL3WG
+     Firmware Version         : 3.2 Dec,07,2007 b6
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2007-12-14T08:15Z
+     Date Removed             : 2008-01-25T07:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Additional Serial Number
+                              : 401-01058 on the type level.
+                              : /par/lock/notvis switched
+                              : to 'on' for 'all in view'.
+
+3.17 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 5.60
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2008-01-25T08:00Z
+     Date Removed             : 2008-01-28T12:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.18 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 5.62
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2008-01-28T13:00Z
+     Date Removed             : 2008-07-22T11:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.19 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 6.00/3.015
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2008-07-22T12:00Z
+     Date Removed             : 2009-02-03T11:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Prior 2009-01-29 the
+                              : Receiver identified the
+                              : Firmware Version with 6.00
+                              : in the RINEX Headers.
+                              : After 2009-01-29 the
+                              : Receiver identified the
+                              : Firmware Version with
+                              : 6.00/3.015.
+
+3.20 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.00/3.015
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2009-02-03T12:00Z
+     Date Removed             : 2009-02-04T08:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.21 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.00/3.016
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2009-02-04T09:00Z
+     Date Removed             : 2009-02-04T13:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.22 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.01/3.016
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2009-02-04T13:30Z
+     Date Removed             : 2009-04-22T06:14Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.23 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.01/3.017
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2009-04-22T06:15Z
+     Date Removed             : 2009-04-28T14:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.24 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.50/3.017
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2009-04-28T14:30Z
+     Date Removed             : 2009-06-30T14:14Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.25 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.53/3.017
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2009-06-30T14:15Z
+     Date Removed             : 2010-01-29T12:23Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.26 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.53/3.018
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2010-01-29T12:24Z
+     Date Removed             : 2010-02-08T14:14Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.27 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.80/3.018
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2010-02-08T14:15Z
+     Date Removed             : 2010-10-04T08:09Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.28 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 7.80/3.019
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2010-10-04T08:10Z
+     Date Removed             : 2011-03-10T09:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.29 Receiver Type            : LEICA GRX1200GGPRO
+     Satellite System         : GPS+GLO
+     Serial Number            : 355315
+     Firmware Version         : 8.10/3.019
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2011-03-10T09:30Z
+     Date Removed             : 2011-04-14T06:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.30 Receiver Type            : LEICA GRX1200+GNSS
+     Satellite System         : GPS+GLO
+     Serial Number            : 495086
+     Firmware Version         : 8.10/4.007
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2011-04-14T07:00Z
+     Date Removed             : 2012-12-13T08:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.31 Receiver Type            : LEICA GRX1200+GNSS
+     Satellite System         : GPS+GLO+GAL+SBAS
+     Serial Number            : 495086
+     Firmware Version         : 8.51/6.111
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2012-12-13T08:30Z
+     Date Removed             : 2013-06-07T11:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.32 Receiver Type            : LEICA GRX1200+GNSS
+     Satellite System         : GPS+GLO+GAL+SBAS
+     Serial Number            : 495086
+     Firmware Version         : 8.71/6.112
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2013-06-07T11:30Z
+     Date Removed             : 2014-02-13T11:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.33 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.03/6.214
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-02-13T12:00Z
+     Date Removed             : 2014-06-17T11:14Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.34 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.10/6.401
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-06-17T11:15Z
+     Date Removed             : 2014-06-22T23:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : Beta Firmware 3.10B1589/6.401
+                              : upgraded, but LEICA GR25 display
+                              : 3.10/6.401 in the raw data and in
+                              : the RINEX V2 Header.
+
+3.35 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.10.B1589/6.401
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-06-23T00:00Z
+     Date Removed             : 2014-09-08T12:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.36 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.10/6.403
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-09-08T13:00Z
+     Date Removed             : 2014-09-10T23:59Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.37 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.10.1633/6.403
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-09-11T00:00Z
+     Date Removed             : 2014-11-03T10:29Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.38 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.11.1639/6.403
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2014-11-03T10:30Z
+     Date Removed             : 2015-11-24T10:09Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.39 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.22/6.521
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2015-11-24T10:10Z
+     Date Removed             : 2016-04-07T15:09Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.40 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 3.22/6.522
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2016-04-07T15:10Z
+     Date Removed             : 2016-11-11T07:09Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.41 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 4.02/6.522
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2016-11-11T07:13Z
+     Date Removed             : 2017-05-04T11:57Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.42 Receiver Type            : LEICA GR25
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831022
+     Firmware Version         : 4.11/6.523
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2017-05-04T12:04Z
+     Date Removed             : 2017-10-24T16:00Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.43 Receiver Type            : LEICA GR50
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831551
+     Firmware Version         : 4.11/7.001
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2017-10-24T16:01Z
+     Date Removed             : 2018-07-06T06:15Z
+     Temperature Stabiliz.    : 
+     Additional Information   : 
+
+3.44 Receiver Type            : LEICA GR50
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831551
+     Firmware Version         : 4.20/7.300
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2018-07-06T06:20Z
+     Date Removed             : 2018-12-06T15:25Z
+     Temperature Stabiliz.    : none
+     Additional Information   : 
+
+3.45 Receiver Type            : LEICA GR50
+     Satellite System         : GPS+GLO+GAL+BDS+SBAS
+     Serial Number            : 1831551
+     Firmware Version         : 4.31/7.403
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2018-12-06T15:35Z
+     Date Removed             : 2019-04-03T13:30Z
+     Temperature Stabiliz.    : none
+     Additional Information   : 
+
+3.46 Receiver Type            : LEICA GR50
+     Satellite System         : GPS+GLO+GAL+BDS+IRNSS+SBAS
+     Serial Number            : 1831551
+     Firmware Version         : 4.31/7.403
+     Elevation Cutoff Setting : 0 deg
+     Date Installed           : 2019-04-03T13:35Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Temperature Stabiliz.    : none
+     Additional Information   : IRNSS added
+
+3.x  Receiver Type            : (A20, from rcvr_ant.tab; see instructions)
+     Satellite System         : (GPS+GLO+GAL+BDS+QZSS+SBAS)
+     Serial Number            : (A20, but note the first A5 is used in SINEX)
+     Firmware Version         : (A11)
+     Elevation Cutoff Setting : (deg)
+     Date Installed           : (CCYY-MM-DDThh:mmZ)
+     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Temperature Stabiliz.    : (none or tolerance in degrees C)
+     Additional Information   : (multiple lines)
+
+
+4.   GNSS Antenna Information
+
+4.1  Antenna Type             : AOAD/M_T        NONE
+     Serial Number            : 400
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.0710
+     Marker->ARP North Ecc(m) : 0.0000
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : RG 214
+     Antenna Cable Length     : 30 m
+     Date Installed           : 1995-02-09T00:00Z
+     Date Removed             : 2002-07-02T08:04Z
+     Additional Information   : 
+
+4.2  Antenna Type             : AOAD/M_T        NONE
+     Serial Number            : 404
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.0710
+     Marker->ARP North Ecc(m) : 0.0000
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : NONE
+     Radome Serial Number     : 
+     Antenna Cable Type       : RG 214
+     Antenna Cable Length     : 30 m
+     Date Installed           : 2002-07-02T08:04Z
+     Date Removed             : 2009-01-19T09:02Z
+     Additional Information   : Antenna calibrated absolute
+                              : by IFE Institut fuer Erdmessung
+                              : University of Hannover 2000-05-DD
+                              : and Antenna calibrated absolute
+                              : by Geo+++ GmbH Garbsen 2000-05-28
+
+4.3  Antenna Type             : LEIAR25         LEIT
+     Serial Number            : 08430019
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.0710
+     Marker->ARP North Ecc(m) : 0.0000
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : LEIT
+     Radome Serial Number     : 
+     Antenna Cable Type       : RG 214
+     Antenna Cable Length     : 30 m
+     Date Installed           : 2009-01-19T09:48Z
+     Date Removed             : 2010-06-30T07:59Z
+     Additional Information   : Antenna calibrated absolute
+                              : by Geo+++ GmbH Garbsen, 2008-12-01.
+                              : Microwave absorber plate,
+                              : size 60 cm x 60 cm, installed
+                              : underneath the BCR of the
+                              : LEIAR25 from 2009-12-15T15:00Z
+                              : until 2010-06-30T07:59Z.
+
+4.4  Antenna Type             : LEIAR25.R3      LEIT
+     Serial Number            : 10020031
+     Antenna Reference Point  : BPA
+     Marker->ARP Up Ecc. (m)  : 0.0710
+     Marker->ARP North Ecc(m) : 0.0000
+     Marker->ARP East Ecc(m)  : 0.0000
+     Alignment from True N    : 0 deg
+     Antenna Radome Type      : LEIT
+     Radome Serial Number     : 
+     Antenna Cable Type       : RG 214
+     Antenna Cable Length     : 30 m
+     Date Installed           : 2010-06-30T08:00Z
+     Date Removed             : CCYY-MM-DDThh:mmZ
+     Additional Information   : Antenna calibrated absolute
+                              : by Geo+++ GmbH Garbsen, 2010-04-29.
+
+4.x  Antenna Type             : (A20, from rcvr_ant.tab; see instructions)
+     Serial Number            : (A*, but note the first A5 is used in SINEX)
+     Antenna Reference Point  : (BPA/BCR/XXX from "antenna.gra"; see instr.)
+     Marker->ARP Up Ecc. (m)  : (F8.4)
+     Marker->ARP North Ecc(m) : (F8.4)
+     Marker->ARP East Ecc(m)  : (F8.4)
+     Alignment from True N    : (deg; + is clockwise/east)
+     Antenna Radome Type      : (A4 from rcvr_ant.tab; see instructions)
+     Radome Serial Number     : 
+     Antenna Cable Type       : (vendor & type number)
+     Antenna Cable Length     : (m)
+     Date Installed           : (CCYY-MM-DDThh:mmZ)
+     Date Removed             : (CCYY-MM-DDThh:mmZ)
+     Additional Information   : (multiple lines)
+
+
+5.   Surveyed Local Ties
+
+5.1  Tied Marker Name         : VLBI Ref Point
+     Tied Marker Usage        : VLBI
+     Tied Marker CDP Number   : 7224
+     Tied Marker DOMES Number : 14201S004
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -40.797
+       dy (m)                 : -118.396
+       dz (m)                 : 61.321
+     Accuracy (mm)            : 1.3 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : 
+
+5.2  Tied Marker Name         : SLR WLRS
+     Tied Marker Usage        : SLR
+     Tied Marker CDP Number   : 8834
+     Tied Marker DOMES Number : 14201S018
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -3.824
+       dy (m)                 : -68.202
+       dz (m)                 : 15.518
+     Accuracy (mm)            : 0.6 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : 
+
+5.3  Tied Marker Name         : TIGO VLBI
+     Tied Marker Usage        : VLBI
+     Tied Marker CDP Number   : 7593
+     Tied Marker DOMES Number : 14201S100
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -8.897
+       dy (m)                 : -98.742
+       dz (m)                 : 15.251
+     Accuracy (mm)            : 0.9 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : The complete CDP number is 759324012
+
+5.4  Tied Marker Name         : TIGO SLR
+     Tied Marker Usage        : SLR
+     Tied Marker CDP Number   : 7594
+     Tied Marker DOMES Number : 14201M200
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : 14.357
+       dy (m)                 : -120.708
+       dz (m)                 : -0.482
+     Accuracy (mm)            : 1.5 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : The complete CDP number is 75947901
+
+5.5  Tied Marker Name         : 1200 ROGUE SNR-800 = WETT
+     Tied Marker Usage        : GPS
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 14201M009
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -2.105
+       dy (m)                 : -0.981
+       dz (m)                 : 1.994
+     Accuracy (mm)            : 1 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 1995-02-13T15:00Z
+     Additional Information   : 
+
+5.6  Tied Marker Name         : 1201 TRIMBLE 4000SSI = WTZT
+     Tied Marker Usage        : GPS
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 14201M011
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -3.071
+       dy (m)                 : 1.622
+       dz (m)                 : 2.157
+     Accuracy (mm)            : 0.4 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : 
+
+5.7  Tied Marker Name         : 1203 JPS LEGACY = WTZJ
+     Tied Marker Usage        : GPS+GLONASS
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 14201M012
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -0.666
+       dy (m)                 : 1.569
+       dz (m)                 : 0.128
+     Accuracy (mm)            : 0.4 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : Also a 3SNAV R 101 GPS+GLONASS 1998
+                              : and 1999
+
+5.8  Tied Marker Name         : 1204 ASHTECH Z-XII3T = WTZA
+     Tied Marker Usage        : GPS
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 14201M013
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -2.191
+       dy (m)                 : -1.002
+       dz (m)                 : 1.892
+     Accuracy (mm)            : 0.4 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : Prior an ASHTECH Z-XII3
+                              : operated
+
+5.9  Tied Marker Name         : 1205 JAVAD TRE_G3TH DELTA = WTZZ
+     Tied Marker Usage        : GPS+GLO+GAL+BDS+SBAS
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 14201M014
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -1.123
+       dy (m)                 : -0.687
+       dz (m)                 : 0.906
+     Accuracy (mm)            : 0.4 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : Prior an ASHTECH Z18,a JPS LEGACY,
+                              : a JPS E_GGD, a TPS E_GGD operated
+
+5.10 Tied Marker Name         : 1206 TPS NETG3 = WTZL
+     Tied Marker Usage        : GPS+GLONASS
+     Tied Marker CDP Number   : 
+     Tied Marker DOMES Number : 14201M022
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : -2.643
+       dy (m)                 : 0.307
+       dz (m)                 : 2.026
+     Accuracy (mm)            : 0.4 mm
+     Survey method            : TRIANGULATION
+     Date Measured            : 2004-10-01T10:00Z
+     Additional Information   : 
+
+5.x  Tied Marker Name         : 
+     Tied Marker Usage        : (SLR/VLBI/LOCAL CONTROL/FOOTPRINT/etc)
+     Tied Marker CDP Number   : (A4)
+     Tied Marker DOMES Number : (A9)
+     Differential Components from GNSS Marker to the tied monument (ITRS)
+       dx (m)                 : (m)
+       dy (m)                 : (m)
+       dz (m)                 : (m)
+     Accuracy (mm)            : (mm)
+     Survey method            : (GPS CAMPAIGN/TRILATERATION/TRIANGULATION/etc)
+     Date Measured            : (CCYY-MM-DDThh:mmZ)
+     Additional Information   : (multiple lines)
+
+
+6.   Frequency Standard
+
+6.1  Standard Type            : EXTERNAL H-MASER
+       Input Frequency        : 5 MHz
+       Effective Dates        : 1983-01-01/2002-06-24
+       Notes                  : Rogue SNR-8000 and AOA SNR-8000 ACT
+                              : used H-Maser for external input
+                              : reference oscillator. H-Masers
+                              : EFOS 1 or EFOS 3 or EFOS 13.
+
+6.2  Standard Type            : EXTERNAL H-MASER EFOS 13
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2002-06-24/2002-11-13
+       Notes                  : AOA SNR-8000 ACT used H-Maser
+                              : for external input reference
+                              : oscillator. H-Maser EFOS 13.
+
+6.3  Standard Type            : EXTERNAL H-MASER EFOS 1
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2002-11-13/2002-12-19
+       Notes                  : AOA SNR-8000 ACT used H-Maser
+                              : for external input reference
+                              : oscillator. H-Maser EFOS 1.
+
+6.4  Standard Type            : EXTERNAL H-MASER EFOS 18
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2002-12-19/2005-12-01
+       Notes                  : AOA SNR-8000 ACT use H-Maser
+                              : for external input reference
+                              : oscillator. H-Maser EFOS 18.
+
+6.5  Standard Type            : INTERNAL
+       Input Frequency        : 
+       Effective Dates        : 2005-12-01/2006-05-24
+       Notes                  : 
+
+6.6  Standard Type            : EXTERNAL H-MASER EFOS 18
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2006-05-24/2008-09-16
+       Notes                  : Use H-Maser for external
+                              : input reference oscillator.
+                              : H-Maser EFOS 18.
+
+6.7  Standard Type            : EXTERNAL H-MASER EFOS 39
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2008-09-16/2009-01-26
+       Notes                  : Use H-Maser for external
+                              : input reference oscillator.
+                              : H-Maser EFOS 39.
+
+6.8  Standard Type            : EXTERNAL H-MASER EFOS 18
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2009-01-26/2010-04-30
+       Notes                  : Use H-Maser for external
+                              : input reference oscillator.
+                              : H-Maser EFOS 18.
+
+6.9  Standard Type            : INTERNAL
+       Input Frequency        : 
+       Effective Dates        : 2010-04-30/2010-07-07
+       Notes                  : 
+
+6.10 Standard Type            : EXTERNAL H-MASER EFOS 18
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2010-07-07/2013-03-04
+       Notes                  : 
+
+6.11 Standard Type            : INTERNAL
+       Input Frequency        : 
+       Effective Dates        : 2013-03-04/2013-05-13
+       Notes                  : 
+
+6.12 Standard Type            : EXTERNAL H-MASER EFOS 18
+       Input Frequency        : 5 MHz
+       Effective Dates        : 2013-05-13/CCYY-MM-DD
+       Notes                  : 
+
+6.x  Standard Type            : (INTERNAL or EXTERNAL H-MASER/CESIUM/etc)
+       Input Frequency        : (if external)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+
+7.   Collocation Information
+
+7.1  Instrumentation Type     : SLR WLRS 8834
+       Status                 : PERMANENT
+       Effective Dates        : 1988-01-01/CCYY-MM-DD
+       Notes                  : 
+
+7.2  Instrumentation Type     : SLR 7834
+       Status                 : PERMANENT
+       Effective Dates        : 1977-01-01/1991-12-31
+       Notes                  : 
+
+7.3  Instrumentation Type     : SLR MTLRS 1
+       Status                 : MOBILE
+       Effective Dates        : 1984-01-01/1997-12-31
+       Notes                  : 
+
+7.4  Instrumentation Type     : VLBI 7224
+       Status                 : PERMANENT
+       Effective Dates        : 1983-01-01/CCYY-MM-DD
+       Notes                  : 
+
+7.5  Instrumentation Type     : LLR WLRS
+       Status                 : PERMANENT
+       Effective Dates        : 1991-01-01/CCYY-MM-DD
+       Notes                  : 
+
+7.6  Instrumentation Type     : TIGO VLBI
+       Status                 : MOBILE
+       Effective Dates        : 1997-01-01/2001-12-01
+       Notes                  : TIGO Transportable Integrated Geodetic
+                              : Observatory
+
+7.7  Instrumentation Type     : TIGO SLR
+       Status                 : MOBILE
+       Effective Dates        : 1997-01-01/2001-12-01
+       Notes                  : TIGO Transportable Integrated Geodetic
+                              : Observatory
+
+7.8  Instrumentation Type     : PRARE
+       Status                 : PERMANENT
+       Effective Dates        : 1994-01-01/CCYY-MM-DD
+       Notes                  : 
+
+7.9  Instrumentation Type     : SUPER CONDUCTING GRAVIMETER
+       Status                 : PERMANENT
+       Effective Dates        : 1989-01-01/CCYY-MM-DD
+       Notes                  : 
+
+7.10 Instrumentation Type     : VERY BROAD BAND SEISMOGRAPH
+       Status                 : PERMANENT
+       Effective Dates        : 1991-01-01/CCYY-MM-DD
+       Notes                  : 
+
+7.11 Instrumentation Type     : TRANSIT NNSS-DMA DOPPLER
+       Status                 : PERMANENT
+       Effective Dates        : 1984-01-01/1993-12-31
+       Notes                  : 
+
+7.12 Instrumentation Type     : TI-4100 GPS
+       Status                 : PERMANENT
+       Effective Dates        : 1987-11-12/1989-07-27
+       Notes                  : CIGNET GPS Station
+
+7.13 Instrumentation Type     : MINIMAC 2816 AT GPS
+       Status                 : PERMANENT
+       Effective Dates        : 1989-05-23/1991-07-23
+       Notes                  : CIGNET GPS Station
+
+7.14 Instrumentation Type     : ROGUE SNR-800 GPS WETT # 1200
+       Status                 : PERMANENT
+       Effective Dates        : 1991-07-23/1997-02-02
+       Notes                  : CIGNET / CORE / IGS Station
+
+7.15 Instrumentation Type     : TRIMBLE 4000 SSI GPS WTZT # 1201
+       Status                 : PERMANENT
+       Effective Dates        : 1997-02-06/2005-05-17
+       Notes                  : 
+
+7.16 Instrumentation Type     : 3SNAV R101 OLD GPS+GLONASS WTZG # 1203
+       Status                 : PERMANENT
+       Effective Dates        : 1998-10-14/1999-09-04
+       Notes                  : 
+
+7.17 Instrumentation Type     : JPS LEGACY GPS+GLONASS WTZJ #1203
+       Status                 : PERMANENT
+       Effective Dates        : 2001-07-03/2010-10-27
+       Notes                  : 
+
+7.18 Instrumentation Type     : ASHTECH Z-XII3 GPS WTZA # 1204
+       Status                 : PERMANENT
+       Effective Dates        : 1997-11-25/2001-11-08
+       Notes                  : 
+
+7.19 Instrumentation Type     : ASHTECH Z-XII3T GPS WTZA # 1204
+       Status                 : PERMANENT
+       Effective Dates        : 2001-11-08/CCYY-MM-DD
+       Notes                  : 
+
+7.20 Instrumentation Type     : ASHTECH Z-18 GPS+GLONASS WTZZ #1205
+       Status                 : PERMANENT
+       Effective Dates        : 1999-02-01/2003-06-10
+       Notes                  : 
+
+7.21 Instrumentation Type     : JPS LEGACY GPS+GLONASS WTZZ #1205
+       Status                 : PERMANENT
+       Effective Dates        : 2003-06-10/2003-11-06
+       Notes                  : 
+
+7.22 Instrumentation Type     : JPS E_GGD GPS+GLONASS WTZZ #1205
+       Status                 : PERMANENT
+       Effective Dates        : 2003-11-06/2005-05-04
+       Notes                  : 
+
+7.23 Instrumentation Type     : TPS E_GGD GPS+GLONASS WTZZ #1205
+       Status                 : PERMANENT
+       Effective Dates        : 2005-05-04/2011-02-15
+       Notes                  : 
+
+7.24 Instrumentation Type     : JAVAD TRE_G3TH DELTA GPS+GLONASS WTZZ #1205
+       Status                 : PERMANENT
+       Effective Dates        : 2011-02-15/CCYY-MM-DD
+       Notes                  : 
+
+7.25 Instrumentation Type     : LEICA GRX1200PRO GPS WTZL #1206
+       Status                 : PERMANENT
+       Effective Dates        : 2004-03-23/2007-09-05
+       Notes                  : 
+
+7.26 Instrumentation Type     : LEICA GRX1200GGPRO GPS+GLONASS WTZL #1206
+       Status                 : PERMANENT
+       Effective Dates        : 2007-09-05/2008-01-25
+       Notes                  : 
+
+7.27 Instrumentation Type     : TPS NETG3 GPS+GLONASS WTZL #1206
+       Status                 : PERMANENT
+       Effective Dates        : 2008-01-25/2008-09-18
+       Notes                  : 
+
+7.28 Instrumentation Type     : SEPT POLARX2 GPS WTZS
+       Status                 : PERMANENT
+       Effective Dates        : 2005-07-27/2016-03-03
+       Notes                  : 
+
+7.29 Instrumentation Type     : SEPT POLARX4TR GPS+GLO+GAL+SBAS WTZS
+       Status                 : PERMANENT
+       Effective Dates        : 2016-03-03/CCYY-MM-DD
+       Notes                  : 
+
+7.30 Instrumentation Type     : ASHTECH Z-XII3 GPS WT21 #21
+       Status                 : PERMANENT
+       Effective Dates        : 2003-10-14/2009-05-12
+       Notes                  : 
+
+7.31 Instrumentation Type     : JPS LEGACY GPS+GLONASS WT21 #21
+       Status                 : PERMANENT
+       Effective Dates        : 2009-05-12/2009-05-25
+       Notes                  : 
+
+7.32 Instrumentation Type     : TPS NETG3 GPS+GLONASS WT21 #21
+       Status                 : PERMANENT
+       Effective Dates        : 2009-05-25/2010-10-27
+       Notes                  : 
+
+7.33 Instrumentation Type     : JPS LEGACY GPS+GLONASS WT21 #21
+       Status                 : PERMANENT
+       Effective Dates        : 2010-10-27/2015-04-27
+       Notes                  : 
+
+7.34 Instrumentation Type     : RINGLASER GYROSCOPE
+       Status                 : PERMANENT
+       Effective Dates        : 2001-09-01/CCYY-MM-DD
+       Notes                  : 
+
+7.35 Instrumentation Type     : DORIS
+       Status                 : PERMANENT
+       Effective Dates        : 2016-09-27/CCYY-MM-DD
+       Notes                  : 
+
+7.x  Instrumentation Type     : (GPS/GLONASS/DORIS/PRARE/SLR/VLBI/TIME/etc)
+       Status                 : (PERMANENT/MOBILE)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+
+8.   Meteorological Instrumentation
+
+8.1.1  Humidity Sensor Model  : 809
+       Manufacturer           : Lamprecht, Goettingen
+       Serial Number          : 
+       Data Sampling Interval : 900 sec
+       Accuracy (% rel h)     : 1.5
+       Aspiration             : PERNIX element
+       Height Diff to Ant     : 0 m
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : 1987-01-01/2008-07-22
+       Notes                  : 
+
+8.1.2  Humidity Sensor Model  : MP 400A
+       Manufacturer           : Lamprecht
+       Serial Number          : 
+       Data Sampling Interval : 900 sec
+       Accuracy (% rel h)     : 1.5
+       Aspiration             : PERNIX element
+       Height Diff to Ant     : 0 m
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : 2008-07-22/CCYY-MM-DD
+       Notes                  : 
+
+8.1.x  Humidity Sensor Model  : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy (% rel h)     : (% rel h)
+       Aspiration             : (UNASPIRATED/NATURAL/FAN/etc)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.2.1  Pressure Sensor Model  : DIGIQUARZ MODEL 740
+       Manufacturer           : Parascientific Inc.
+       Serial Number          : 
+       Data Sampling Interval : 900 sec
+       Accuracy               : 0.1 hPa
+       Height Diff to Ant     : 10.5 m
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : 1987-01-01/2008-07-22
+       Notes                  : The Pressure Sensor is
+                              : 10.5 m below the antenna.
+
+8.2.2  Pressure Sensor Model  : 740
+       Manufacturer           : Parascientific Inc. / Digiquarz
+       Serial Number          : 
+       Data Sampling Interval : 900 sec
+       Accuracy               : 0.1 hPa
+       Height Diff to Ant     : 10.5 m
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : 2008-07-22/CCYY-MM-DD
+       Notes                  : The Pressure Sensor is
+                              : 10.5 m below the antenna.
+
+8.2.x  Pressure Sensor Model  : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy               : (hPa)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.3.1  Temp. Sensor Model     : 809
+       Manufacturer           : Lamprecht, Goettingen
+       Serial Number          : 
+       Data Sampling Interval : 900 sec
+       Accuracy               : 0.3 deg C
+       Aspiration             : PLATINUM PROBE
+       Height Diff to Ant     : 0 m
+       Calibration date       : 
+       Effective Dates        : 1987-01-01/2008-07-22
+       Notes                  : 
+
+8.3.2  Temp. Sensor Model     : 809 L 0-100
+       Manufacturer           : Lamprecht, Goettingen
+       Serial Number          : 
+       Data Sampling Interval : 900 sec
+       Accuracy               : 0.3 deg C
+       Aspiration             : PLATINUM PROBE
+       Height Diff to Ant     : 0 m
+       Calibration date       : 
+       Effective Dates        : 2008-07-22/CCYY-MM-DD
+       Notes                  : 
+
+8.3.x  Temp. Sensor Model     : 
+       Manufacturer           : 
+       Serial Number          : 
+       Data Sampling Interval : (sec)
+       Accuracy               : (deg C)
+       Aspiration             : (UNASPIRATED/NATURAL/FAN/etc)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.4.1  Water Vapor Radiometer : CTGR129502
+       Manufacturer           : Captec, Bern / ETH, Zuerich
+       Serial Number          : 
+       Distance to Antenna    : 27 m
+       Height Diff to Ant     : 1 m
+       Calibration date       : 
+       Effective Dates        : 1997-04-01/CCYY-MM-DD
+       Notes                  : 
+
+8.4.x  Water Vapor Radiometer : 
+       Manufacturer           : 
+       Serial Number          : 
+       Distance to Antenna    : (m)
+       Height Diff to Ant     : (m)
+       Calibration date       : (CCYY-MM-DD)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Notes                  : (multiple lines)
+
+8.5.x  Other Instrumentation  : (multiple lines)
+
+
+9.   Local Ongoing Conditions Possibly Affecting Computed Position
+
+9.1.x  Radio Interferences    : (TV/CELL PHONE ANTENNA/RADAR/etc)
+       Observed Degradations  : (SN RATIO/DATA GAPS/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+9.2.x  Multipath Sources      : (METAL ROOF/DOME/VLBI ANTENNA/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+9.3.x  Signal Obstructions    : (TREES/BUILDINGS/etc)
+       Effective Dates        : (CCYY-MM-DD/CCYY-MM-DD)
+       Additional Information : (multiple lines)
+
+
+10.  Local Episodic Effects Possibly Affecting Data Quality
+
+10.x Date                     : (CCYY-MM-DD/CCYY-MM-DD)
+     Event                    : (TREE CLEARING/CONSTRUCTION/etc)
+
+11.  On-Site, Point of Contact Agency Information
+
+     Agency                   : Bundesamt fuer Kartograhie und Geodaesie
+                              : Geodetic Observatory Wettzell
+     Preferred Abbreviation   : FSW
+     Mailing Address          : Sackenrieder Strasse 25
+                              : D-93444 Bad Koetzting
+                              : Germany
+     Primary Contact
+       Contact Name           : Mr. Uwe Hessels
+       Telephone (primary)    : +49 9941 603208
+       Telephone (secondary)  : +49 9941 6030
+       Fax                    : +49 9941 603222
+       E-mail                 : uwe.hessels@bkg.bund.de
+     Secondary Contact
+       Contact Name           : Ms. Swetlana Maehler
+       Telephone (primary)    : +49 9941 603201
+       Telephone (secondary)  : +49 9941 6030
+       Fax                    : +49 9941 603222
+       E-mail                 : swetlana.maehler@bkg.bund.de
+     Additional Information   : 
+
+
+12.  Responsible Agency (if different from 11.)
+
+     Agency                   : 
+     Preferred Abbreviation   : 
+     Mailing Address          : 
+     Primary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Secondary Contact
+       Contact Name           : 
+       Telephone (primary)    : 
+       Telephone (secondary)  : 
+       Fax                    : 
+       E-mail                 : 
+     Additional Information   : 
+
+13.  More Information
+
+     Primary Data Center      : BKG
+     Secondary Data Center    : BEV
+     URL for More Information : http://www.ifag.de http://wettzell.ifag.de
+     Hardcopy on File
+       Site Map               : 
+       Site Diagram           : Y
+       Horizon Mask           : Y
+       Monument Description   : Y
+       Site Pictures          : Y
+     Additional Information   : 
+     Antenna Graphics with Dimensions
+
+AOAD/M_T
+from 1995-02-09 until 2009-01-19
+
+                      +---------+
+                     /     +                             <--  0.1280 L2
+                    |      +      |                       <--  0.1100 L1
+  +-----------------+-------------+------------------+    <--  0.1020 TCR
+  |                                                  |
+  |                                                  |
+  |                                                  |
+  |                                                  |
++-+--------------------------------------------------+-+  <--  0.0380
++-------------------+-------------+--------------------+  <--  0.0350 BCR
+                    |             |
+                    |             |
+                    +------x------+                       <--  0.0000 BPA=ARP
+
+<--                      0.3810                      -->
+
+
+
+LEIAR25
+from 2009-01-19 until 2010-06-30
+
+                         +-------+                          <-- 0.1995
+                       /     +
+                      |      +      |
+                  |---+-------------+----|                  <-- 0.1614 TCR
+              |------------------------------|
+          |--------------------------------------|
+      |----------------------------------------------|
+    +--------------------------------------------------+
+    |                                                  |
+    |                                                  |
+    |                                                  |
+  +-+--------------------------------------------------+-+
+  +-------------------+-------------+--------------------+  <-- 0.0320 BCR
+                      |             |
+                      |             |
+                      +------x------+                       <-- 0.0000 BPA=ARP
+
+  <--                      0.3802                      -->
+
+
+
+LEIAR25.R3
+from 2010-06-30
+
+                       +-------+                          <--  0.1995
+                      /
+                +---+-------------+---+                   <--  0.1606  TCR
+                |                     |
+             |---------------------------|
+          |---------------------------------|
+       |---------------------------------------|
+    +---------------------------------------------+
+    |                                             |
+    |                                             |
+  +-+---------------------------------------------+-+
+  +-----------------+-------------+-----------------+     <--  0.0320  BCR
+                    |             |
+                    |             |
+                    +------x------+                       <--  0.0000  BPA=ARP
+
+  <--                    0.3802                   -->
+
+
+   ARP: Antenna Reference Point
+   L1 : L1 Phase Center                   L2 : L2 Phase Center
+   TCR: Top of Chokering                  BCR: Bottom of Chokering
+   TGP: Top of Ground Plane               BGP: Bottom of Ground Plane
+   TPA: Top of Preamplifier               BPA: Bottom of Preamplifier
+   TOP: Top of Pole                       BAM: Bottom of antenna mount
+
