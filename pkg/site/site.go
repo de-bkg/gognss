@@ -3,6 +3,9 @@ package site
 
 import (
 	"fmt"
+	"html/template"
+	"io"
+	"regexp"
 	"strings"
 	"time"
 
@@ -110,6 +113,13 @@ type Receiver struct {
 	   	} */
 }
 
+// Equal reports whether two receivers have the same values for the significant parameters.
+// Note for STATION INFOTMATION files: Some generators do not consider the receiver firmware
+// for this comparision, e.g. EUREF.STA.
+func (recv Receiver) Equal(recv2 *Receiver) bool {
+	return recv.Type == recv2.Type && recv.SerialNum == recv2.SerialNum && recv.Firmware == recv2.Firmware
+}
+
 // Antenna is a GNSS antenna.
 type Antenna struct {
 	Type                   string    `json:"type" validate:"required"`
@@ -134,6 +144,11 @@ type Antenna struct {
 	   	  "from": "2003-06-15T03:30:00Z",
 	   	  "to": "2011-07-20T00:00:00Z"
 	   	} */
+}
+
+// Equal reports whether two antennas have the same values for the significant parameters.
+func (ant Antenna) Equal(ant2 *Antenna) bool {
+	return ant.Type == ant2.Type && ant.Radome == ant2.Radome && ant.SerialNum == ant2.SerialNum && ant.EccNorth == ant2.EccNorth && ant.EccEast == ant2.EccEast && ant.EccUp == ant2.EccUp
 }
 
 // CartesianPosition is a point specified by its XYZ-coordinates.
@@ -421,29 +436,29 @@ var validate *validator.Validate
 // With input data often being lousy, the values are cleaned as much as possible before, missing fields e.g. dates are set if possible.
 // With force being true, corrupt data will be cleaned with extra force as much as possible, e.g. adjust overlapping sensor dates,
 // where it would otherwise return with an error.
-func (site *Site) ValidateAndClean(force bool) error {
-	err := site.cleanReceivers(force)
+func (s *Site) ValidateAndClean(force bool) error {
+	err := s.cleanReceivers(force)
 	if err != nil {
 		return err
 	}
 
-	err = site.cleanAntennas(force)
+	err = s.cleanAntennas(force)
 	if err != nil {
 		return err
 	}
 
 	validate = validator.New()
-	return validate.Struct(site)
+	return validate.Struct(s)
 }
 
 var recvTypeMap = map[string]string{"POLARX5": "SEPT POLARX5"}
 
-func (site *Site) cleanReceivers(force bool) error {
+func (s *Site) cleanReceivers(force bool) error {
 	// Dates
 	item := "receiver"
-	list := site.Receivers
+	list := s.Receivers
 	nReceivers := len(list)
-	for i, curr := range site.Receivers {
+	for i, curr := range s.Receivers {
 		n := i + 1 // receiver number
 
 		prev := func() *Receiver {
@@ -453,7 +468,7 @@ func (site *Site) cleanReceivers(force bool) error {
 			return nil
 		}
 		next := func() *Receiver {
-			if n+1 <= nReceivers {
+			if n+1 < nReceivers {
 				return list[i+1]
 			}
 			return nil
@@ -461,13 +476,13 @@ func (site *Site) cleanReceivers(force bool) error {
 
 		// Try to correct receiver type naming
 		if val, exists := recvTypeMap[curr.Type]; exists {
-			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d REC TYPE corrected to %q", item, n, val))
+			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d REC TYPE corrected to %q", item, n, val))
 			curr.Type = val
 		}
 
 		// check date installed
 		if curr.DateInstalled.IsZero() {
-			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Installed"))
+			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Installed"))
 			if prev() == nil { // first one
 				return fmt.Errorf("%s %d with empty %q", item, n, "Date Installed")
 			}
@@ -480,7 +495,7 @@ func (site *Site) cleanReceivers(force bool) error {
 
 		// check date removed
 		if curr.DateRemoved.IsZero() && next() != nil {
-			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
+			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
 			nextRecv := next()
 			if nextRecv.DateInstalled.IsZero() {
 				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
@@ -494,7 +509,7 @@ func (site *Site) cleanReceivers(force bool) error {
 				if !force {
 					return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
 				}
-				site.Warnings = append(site.Warnings, fmt.Errorf("%s %d adjust %q", item, n-1, "Date Removed"))
+				s.Warnings = append(s.Warnings, fmt.Errorf("%s %d adjust %q", item, n-1, "Date Removed"))
 				prevRecv.DateRemoved = curr.DateInstalled.Add(timeShift * -1)
 			} else if prevRecv.DateRemoved.Equal(curr.DateInstalled) {
 				// dates must be unique, so we introduce a small shift
@@ -504,7 +519,7 @@ func (site *Site) cleanReceivers(force bool) error {
 	}
 
 	// Other checks
-	/* 	for i, recv := range site.Receivers {
+	/* 	for i, recv := range s.Receivers {
 		if err := recv.validate(); err != nil {
 			return fmt.Errorf("Block 3.%d: %v", i+1, err)
 		}
@@ -513,11 +528,11 @@ func (site *Site) cleanReceivers(force bool) error {
 	return nil
 }
 
-func (site *Site) cleanAntennas(force bool) error {
+func (s *Site) cleanAntennas(force bool) error {
 	item := "antenna"
-	list := site.Antennas
+	list := s.Antennas
 	nAntennas := len(list)
-	for i, curr := range site.Antennas {
+	for i, curr := range s.Antennas {
 		n := i + 1 // antenna number
 
 		prev := func() *Antenna {
@@ -527,7 +542,7 @@ func (site *Site) cleanAntennas(force bool) error {
 			return nil
 		}
 		next := func() *Antenna {
-			if n+1 <= nAntennas {
+			if n+1 < nAntennas {
 				return list[i+1]
 			}
 			return nil
@@ -552,7 +567,7 @@ func (site *Site) cleanAntennas(force bool) error {
 
 		// check date installed
 		if curr.DateInstalled.IsZero() {
-			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Installed"))
+			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Installed"))
 			if prev() == nil { // first one
 				return fmt.Errorf("%s %d with empty %q", item, n, "Date Installed")
 			}
@@ -565,7 +580,7 @@ func (site *Site) cleanAntennas(force bool) error {
 
 		// check date removed
 		if curr.DateRemoved.IsZero() && next() != nil {
-			site.Warnings = append(site.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
+			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
 			nextAnt := next()
 			if nextAnt.DateInstalled.IsZero() {
 				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
@@ -579,7 +594,7 @@ func (site *Site) cleanAntennas(force bool) error {
 				if !force {
 					return fmt.Errorf("%s %d and %d are not chronological", item, n-1, n)
 				}
-				site.Warnings = append(site.Warnings, fmt.Errorf("%s %d adjust %q", item, n-1, "Date Removed"))
+				s.Warnings = append(s.Warnings, fmt.Errorf("%s %d adjust %q", item, n-1, "Date Removed"))
 				prevAnt.DateRemoved = curr.DateInstalled.Add(timeShift * -1)
 			} else if prevAnt.DateRemoved.Equal(curr.DateInstalled) {
 				// dates must be unique, so we introduce a small shift
@@ -589,4 +604,162 @@ func (site *Site) cleanAntennas(force bool) error {
 	}
 
 	return nil
+}
+
+// StationInfo retuns the station information with all receiver and antenna
+// changes since the installation of the site, as it is used for the bernese
+// Station Information (STA file).
+func (s *Site) StationInfo() ([]StationInfo, error) {
+	descr := s.Location.City
+	dateInfinite := time.Date(2099, 12, 31, 0, 0, 0, 0, time.UTC)
+	nReceivers := len(s.Receivers)
+	nAntennas := len(s.Antennas)
+	var from time.Time // start time of every new line
+	var staHistory []StationInfo
+
+	for ir, recv := range s.Receivers {
+
+		nextRecv := func() *Receiver {
+			if ir+1 < nReceivers {
+				return s.Receivers[ir+1]
+			}
+			return nil
+		}
+
+		if from.IsZero() {
+			from = recv.DateInstalled
+		}
+
+		recvEnd := recv.DateRemoved
+		if recvEnd.IsZero() {
+			recvEnd = dateInfinite
+		}
+
+		for ia, ant := range s.Antennas {
+
+			antEnd := ant.DateRemoved
+			if antEnd.IsZero() {
+				antEnd = dateInfinite
+			}
+
+			if antEnd.Before(from) { // ant loop begins always with first ant
+				continue
+			}
+
+			//log.Printf("%s %s - %s %s", recv.DateInstalled, recv.DateRemoved, ant.DateInstalled, ant.DateRemoved)
+
+			if recvEnd.Before(ant.DateInstalled) {
+				break
+			}
+
+			nextAnt := func() *Antenna {
+				if ia+1 < nAntennas {
+					return s.Antennas[ia+1]
+				}
+				return nil
+			}
+
+			if from.IsZero() {
+				return staHistory, fmt.Errorf("internal error: empty start date")
+			}
+
+			if recvEnd.After(antEnd) { // next change by antenna
+				next := nextAnt()
+				if next == nil || !ant.Equal(next) {
+					staHistory = append(staHistory, StationInfo{Description: descr, FourCharacterID: s.Ident.FourCharacterID,
+						DOMESNumber: s.Ident.DOMESNumber, Flag: "001", Recv: recv, Ant: ant, From: from, To: antEnd})
+					if next != nil {
+						from = next.DateInstalled
+					}
+				}
+			} else { // next change by receiver
+				next := nextRecv()
+				if next == nil || !recv.Equal(next) {
+					staHistory = append(staHistory, StationInfo{Description: descr, FourCharacterID: s.Ident.FourCharacterID,
+						DOMESNumber: s.Ident.DOMESNumber, Flag: "001", Recv: recv, Ant: ant, From: from, To: recvEnd})
+					if next != nil {
+						from = next.DateInstalled
+					}
+				}
+			}
+		}
+	}
+
+	return staHistory, nil
+}
+
+// StationInfo represents the receiver and antenna state for a time range.
+type StationInfo struct {
+	Description     string // usually the city or town
+	FourCharacterID string
+	DOMESNumber     string
+	Flag            string //  "001"
+	From, To        time.Time
+	Recv            *Receiver
+	Ant             *Antenna
+	Remark          string // could be the Recv.Firmware if not otherwise used
+}
+
+var sinexSerialNumPattern = regexp.MustCompile(`\D`)
+
+// String returns the StationInfo in the Bernese STATION INFORMATION format.
+func (sta StationInfo) String() string {
+	printDate := func(t time.Time) string {
+		if t.IsZero() {
+			t = time.Date(2099, 12, 31, 0, 0, 0, 0, time.UTC)
+		}
+		return t.Format("2006 01 02 15 04 05")
+	}
+
+	// Rec# and Ant# for SINEX files have only digits and are 6 resp. 5 digits long, from the end.
+	recvSerialSnx := sinexSerialNumPattern.ReplaceAllString(sta.Recv.SerialNum, "")
+	antSerialSnx := sinexSerialNumPattern.ReplaceAllString(sta.Ant.SerialNum, "")
+	if len(recvSerialSnx) > 6 {
+		recvSerialSnx = recvSerialSnx[len(recvSerialSnx)-6:]
+	}
+	if len(antSerialSnx) > 6 {
+		antSerialSnx = antSerialSnx[len(antSerialSnx)-5:]
+	}
+
+	return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-20.20s  %6.6s  %-15.15s %4.4s  %-20.20s  %6.6s  %8.4f  %8.4f  %8.4f  %-22.22s  %-24.24s",
+		sta.FourCharacterID, sta.DOMESNumber, sta.Flag, printDate(sta.From), printDate(sta.To),
+		sta.Recv.Type, sta.Recv.SerialNum, recvSerialSnx, sta.Ant.Type, sta.Ant.Radome, sta.Ant.SerialNum,
+		antSerialSnx, sta.Ant.EccNorth, sta.Ant.EccEast, sta.Ant.EccUp, sta.Description, sta.Recv.Firmware)
+}
+
+// EncodeSTAfile encodes all sites into a single Bernese STA-file.
+func EncodeSTAfile(w io.Writer, sites []*Site) error {
+	printDate := func(t time.Time) string {
+		if t.IsZero() {
+			return ""
+		}
+		return t.Format("2006 01 02 15 04 05")
+	}
+
+	funcMap := template.FuncMap{
+		"creationTime": func() string {
+			return time.Now().Format("02-Jan-06 15:04")
+		},
+		"encodeTyp1": func(s *Site) string {
+			from := s.Antennas[0].DateInstalled
+			to := s.Antennas[len(s.Antennas)-1].DateRemoved
+			return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-24.24s",
+				s.Ident.FourCharacterID, s.Ident.DOMESNumber, "001", printDate(from), printDate(to),
+				s.Ident.FourCharacterID+"*", "")
+		},
+		"encodeTyp2": func(s *Site) string {
+			staInfo, err := s.StationInfo()
+			if err != nil {
+				panic(err)
+			}
+			var b strings.Builder
+			for _, sta := range staInfo {
+				b.WriteString(sta.String() + "\n")
+			}
+			return b.String()
+		},
+	}
+
+	t := template.Must(template.New("stafile").Funcs(funcMap).Parse(bern52StaTempl))
+	return t.Execute(w, sites)
 }
