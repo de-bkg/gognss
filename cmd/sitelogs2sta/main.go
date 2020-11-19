@@ -1,4 +1,4 @@
-// This package reads IGS sitelog files and uses them to generate a Bernese
+// sitelog2sta reads IGS sitelog files and uses them to generate a Bernese
 // Station Information (STA) file.
 package main
 
