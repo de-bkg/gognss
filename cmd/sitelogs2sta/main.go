@@ -48,6 +48,9 @@ EXAMPLES:
 			log.Printf("decoding sitelog %s: %v", slPath, err)
 			continue
 		}
+		for _, warn := range s.Warnings {
+			log.Printf("WARN: %s: %v", slPath, warn)
+		}
 
 		err = s.ValidateAndClean(false)
 		if err != nil {
