@@ -632,7 +632,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					}
 					subBlock = ""
 				default:
-					return nil, unknownKeyError()
+					site.Warnings = append(site.Warnings, unknownKeyError())
 				}
 			} else if strings.HasPrefix(subBlock, "8.2.") {
 
@@ -672,7 +672,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					}
 					subBlock = ""
 				default:
-					return nil, unknownKeyError()
+					site.Warnings = append(site.Warnings, unknownKeyError())
 				}
 			} else if strings.HasPrefix(subBlock, "8.3.") {
 
@@ -714,7 +714,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					}
 					subBlock = ""
 				default:
-					return nil, unknownKeyError()
+					site.Warnings = append(site.Warnings, unknownKeyError())
 				}
 			} else if strings.HasPrefix(subBlock, "8.4.") {
 
@@ -750,7 +750,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					}
 					subBlock = ""
 				default:
-					return nil, unknownKeyError()
+					site.Warnings = append(site.Warnings, unknownKeyError())
 				}
 			}
 		} else if blockNumber == 10 {

@@ -1,8 +1,7 @@
 package site
 
 // bern52StaTempl is the template for Bernese 52 STA-files.
-const bern52StaTempl = `
-STATION INFORMATION FILE FOR BERNESE GNSS SOFTWARE 5.2           {{creationTime}}
+const bern52StaTempl = `STATION INFORMATION FILE FOR BERNESE GNSS SOFTWARE 5.2           {{creationTime}}
 --------------------------------------------------------------------------------
 
 FORMAT VERSION: 1.01
