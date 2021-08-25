@@ -19,6 +19,7 @@ const (
 )
 
 func (sys System) String() string {
+	// TODO change to NavIC or NAVIC
 	return [...]string{"", "GPS", "GLO", "GAL", "QZSS", "BDS", "IRNSS", "SBAS", "MIXED"}[sys]
 }
 

@@ -442,7 +442,7 @@ func NewNavDecoder(r io.Reader) (*NavDecoder, error) {
 	/* 	rc, ok := r.(io.ReadCloser)
 	   	if !ok && r != nil {
 	   		fmt.Println("WARN: new nav decoder: could not convert underlying reader to io.ReadCloser")
-	   		rc = ioutil.NopCloser(r)
+	   		rc = io.NopCloser(r)
 	   	}
 	   	dec := &NavDecoder{r: rc} */
 	dec := &NavDecoder{sc: bufio.NewScanner(r)}

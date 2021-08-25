@@ -417,14 +417,10 @@ func TestSyncEpochs(t *testing.T) {
 func TestRnx2crx(t *testing.T) {
 	assert := assert.New(t)
 	tempDir := t.TempDir()
-	/* 	tempDir, err := ioutil.TempDir("testdata/tmp", "obs_*")
-	   	if err != nil {
-	   		t.Fatal(err)
-	   	}
-	   	t.Cleanup(func() {
-	   		t.Logf("clean up dir %s", tempDir)
-	   		os.RemoveAll(tempDir)
-	   	}) */
+	/* 	t.Cleanup(func() {
+		t.Logf("clean up dir %s", tempDir)
+		os.RemoveAll(tempDir)
+	}) */
 
 	// Rnx3
 	rnxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx", tempDir)

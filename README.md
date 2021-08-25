@@ -5,6 +5,7 @@ Golang packages for
 * **ntrip**: connect to an NtripCaster, get status information from a BKG NtripCaster, run commands against a BKG NtripCaster
 * **rinex**: read RINEX3 files
 * **site**: handle metadata for a GNSS site/station, read and write IGS sitelog files
+  * generate a Bernese Station Information (STA) file from IGS sitelog files
 
 
 
