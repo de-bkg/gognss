@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	version = "0.0.1"
+	version = "0.0.2"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	fs.Usage = func() {
 		fmt.Println("sitelog2sta - create a Bernese STA-File based on IGS sitelog formated files")
 		fmt.Println("")
-		fmt.Println("USAGE: sitelog2sta [flags] <sitelogs>")
+		fmt.Println("USAGE: sitelog2sta [OPTIONS] FILE...")
 		//fmt.Printf("\nFLAGS:\n")
 		//fs.PrintDefaults()
 

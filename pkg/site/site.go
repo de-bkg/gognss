@@ -488,7 +488,7 @@ func (s *Site) cleanReceivers(force bool) error {
 			}
 
 			if prev().DateRemoved.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
+				return fmt.Errorf("empty %q from %s %d could not be corrected", "Date Installed", item, n)
 			}
 			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
 		}
@@ -498,7 +498,7 @@ func (s *Site) cleanReceivers(force bool) error {
 			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
 			nextRecv := next()
 			if nextRecv.DateInstalled.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
+				return fmt.Errorf("empty %q from %s %d could not be corrected", "Date Removed", item, n)
 			}
 			curr.DateRemoved = nextRecv.DateInstalled.Add(timeShift * -1)
 		}
@@ -573,7 +573,7 @@ func (s *Site) cleanAntennas(force bool) error {
 			}
 
 			if prev().DateRemoved.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Installed", item, n)
+				return fmt.Errorf("empty %q from %s %d could not be corrected", "Date Installed", item, n)
 			}
 			curr.DateInstalled = prev().DateRemoved.Add(timeShift)
 		}
@@ -583,7 +583,7 @@ func (s *Site) cleanAntennas(force bool) error {
 			s.Warnings = append(s.Warnings, fmt.Errorf("%s %d with empty %q", item, n, "Date Removed"))
 			nextAnt := next()
 			if nextAnt.DateInstalled.IsZero() {
-				return fmt.Errorf("Empty %q from %s %d could not be corrected", "Date Removed", item, n)
+				return fmt.Errorf("empty %q from %s %d could not be corrected", "Date Removed", item, n)
 			}
 			curr.DateRemoved = nextAnt.DateInstalled.Add(timeShift * -1)
 		}

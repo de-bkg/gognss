@@ -198,8 +198,8 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			case "Monument Inscription":
 				ident.MonumentDescription = val
 			case "IERS DOMES Number":
-				if len(val) != 9 {
-					site.Warnings = append(site.Warnings, fmt.Errorf("%q should have format A9: %q", key, val))
+				if len(val) > 0 && len(val) != 9 {
+					site.Warnings = append(site.Warnings, fmt.Errorf("%q should be 9 character long: %q", key, val))
 				}
 				ident.DOMESNumber = val
 			case "CDP Number":
@@ -283,8 +283,12 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					site.Warnings = append(site.Warnings, parseError())
 				}
 			case "Elevation (m,ellips.)":
-				if geodPos.Coordinates[2], err = parseFloat(val); err != nil {
-					return nil, parseError()
+				if val == "(F7.1)" {
+					geodPos.Coordinates[2] = float64(0)
+				} else {
+					if geodPos.Coordinates[2], err = parseFloat(val); err != nil {
+						return nil, parseError()
+					}
 				}
 			case "Additional Information":
 				location.Notes = addMultipleLine(location.Notes, val)
@@ -493,7 +497,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				// check if block is unique
 				subBlock = strings.Fields(key)[0]
 				if _, ok := blocks[subBlock]; ok {
-					return nil, fmt.Errorf("Frequency Standard block exists twice: %q", subBlock)
+					return nil, fmt.Errorf("block %q exists twice: %q", "Frequency Standard", subBlock)
 				}
 				blocks[subBlock] = 1
 				continue
@@ -569,7 +573,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				}
 				// check if block is unique
 				if _, ok := blocks[subBlock]; ok {
-					return nil, fmt.Errorf("Meteo Sensor block exists twice: %q", subBlock)
+					return nil, fmt.Errorf("meteo Sensor block exists twice: %q", subBlock)
 				}
 				blocks[subBlock] = 1
 
@@ -765,7 +769,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				// check if block is unique
 				subBlock = strings.Fields(key)[0]
 				if _, ok := blocks[subBlock]; ok {
-					return nil, fmt.Errorf("Local Episodic Effect block exists twice: %q", subBlock)
+					return nil, fmt.Errorf("block %q exists twice: %q", "Local Episodic Effect", subBlock)
 				}
 				blocks[subBlock] = 1
 				continue
@@ -900,6 +904,11 @@ func parseFloat(s string) (float64, error) {
 	if strings.ToLower(s) == "unknown" {
 		return 0, nil
 	}
+
+	if s == "(+/-DDDMMSS.SS)" || s == "(+/-DDMMSS.SS)" { // Block 2 Longitude, Latitude
+		return 0, nil
+	}
+
 	//r := strings.NewReplacer("(", "",")", "","deg", "","%", "","rel h", "","sec", "","m", "")
 	r := strings.NewReplacer(",", ".")
 	s = r.Replace(s)
@@ -927,7 +936,7 @@ func parseDate(s string) (t time.Time, err error) {
 
 	s = strings.TrimSuffix(s, "Thh:mmZ")
 
-	s = strings.Trim(s, " ()NONE")
+	s = strings.Trim(s, " ()NOE")
 	if s == "" {
 		return t, nil
 	}
