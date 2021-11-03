@@ -711,13 +711,13 @@ func (sta StationInfo) String() string {
 		return t.Format("2006 01 02 15 04 05")
 	}
 
-	// Rec# and Ant# for SINEX files have only digits and are 6 resp. 5 digits long, from the end.
+	// Rec# and Ant# for SINEX files have only digits and are 5 digits long, from the end.
 	recvSerialSnx := sinexSerialNumPattern.ReplaceAllString(sta.Recv.SerialNum, "")
 	antSerialSnx := sinexSerialNumPattern.ReplaceAllString(sta.Ant.SerialNum, "")
-	if len(recvSerialSnx) > 6 {
-		recvSerialSnx = recvSerialSnx[len(recvSerialSnx)-6:]
+	if len(recvSerialSnx) > 5 {
+		recvSerialSnx = recvSerialSnx[len(recvSerialSnx)-5:]
 	}
-	if len(antSerialSnx) > 6 {
+	if len(antSerialSnx) > 5 {
 		antSerialSnx = antSerialSnx[len(antSerialSnx)-5:]
 	}
 
