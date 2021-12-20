@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/rinex"
-	"github.com/mholt/archiver/v3"
 	"github.com/urfave/cli/v2"
 )
 
@@ -101,42 +98,6 @@ func main() {
 					return err
 				},
 			},
-			{
-				Name: "compress",
-				//Category:    "motion",
-				Usage:     "compress RINEX files using Hatanaka and gzip",
-				UsageText: "rnxgo compress [path]",
-				Description: `Compress all RINEX files recursively starting by the given path. 
-		Gzip format is used for compression. RINEX observation files are furthermore Hatanaka compressed.`,
-				ArgsUsage: "[arrrgh]",
-				// Flags: []cli.Flag{
-				// 	&cli.BoolFlag{Name: "forever", Aliases: []string{"forevvarr"}},
-				// },
-				// Subcommands: []*cli.Command{
-				// 	&cli.Command{
-				// 		Name:   "wop",
-				// 		Action: wopAction,
-				// 	},
-				// },
-				SkipFlagParsing: false,
-				HelpName:        "rnxgo compress",
-				BashComplete: func(c *cli.Context) {
-					fmt.Fprintf(c.App.Writer, "--better\n")
-				},
-				Action: func(c *cli.Context) error {
-					if c.NArg() != 1 {
-						fmt.Fprintf(c.App.Writer, "ERROR: missing root path as argument\n\n")
-						cli.ShowCommandHelpAndExit(c, "compress", 1)
-					}
-					rootPath := c.Args().First()
-					err := compressRINEXFiles(rootPath)
-					return err
-				},
-				OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
-					fmt.Fprintf(c.App.Writer, "for shame\n")
-					return err
-				},
-			},
 		},
 	}
 
@@ -146,7 +107,7 @@ func main() {
 	}
 }
 
-func compressRINEXFiles(rootdir string) error {
+/* func compressRINEXFiles(rootdir string) error {
 	err := os.Chdir(rootdir)
 	if err != nil {
 		return err
@@ -203,4 +164,4 @@ func compressRINEXFiles(rootdir string) error {
 	}
 
 	return nil
-}
+} */
