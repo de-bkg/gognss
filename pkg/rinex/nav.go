@@ -10,8 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mholt/archiver/v3"
-
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
@@ -700,7 +698,7 @@ func NewNavFile(filepath string) (*NavFile, error) {
 
 // Compress a navigation file using the gzip format.
 // The source file will be removed if the compression finishes without errors.
-func (f *NavFile) Compress() error {
+/* func (f *NavFile) Compress() error {
 	if IsCompressed(f.Path) {
 		return nil
 	}
@@ -712,7 +710,7 @@ func (f *NavFile) Compress() error {
 	f.Path = f.Path + ".gz"
 	f.Compression = "gz"
 	return nil
-}
+} */
 
 // Rnx3Filename returns the filename following the RINEX3 convention.
 // In most cases we must read the read the header. The countrycode must come from an external source.

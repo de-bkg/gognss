@@ -2,11 +2,8 @@ package rinex
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
-
-	"github.com/mholt/archiver/v3"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
@@ -45,7 +42,7 @@ func NewMeteoFile(filepath string) (*MeteoFile, error) {
 
 // Compress a meteo file using the gzip format.
 // The source file will be removed if the compression finishes without errors.
-func (f *MeteoFile) Compress() error {
+/* func (f *MeteoFile) Compress() error {
 	if IsCompressed(f.Path) {
 		return nil
 	}
@@ -58,7 +55,7 @@ func (f *MeteoFile) Compress() error {
 	f.Path = f.Path + ".gz"
 	f.Compression = "gz"
 	return nil
-}
+} */
 
 // Rnx3Filename returns the filename following the RINEX3 convention.
 // TODO !!!

@@ -1,13 +1,6 @@
 package rinex
 
-import (
-	"path/filepath"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestMeteoFile_Compress(t *testing.T) {
+/* func TestMeteoFile_Compress(t *testing.T) {
 	assert := assert.New(t)
 	tempDir := t.TempDir()
 
@@ -23,4 +16,4 @@ func TestMeteoFile_Compress(t *testing.T) {
 		t.Fatalf("Could not Hatanaka compress file %s: %v", rnxFilePath, err)
 	}
 	assert.Equal(filepath.Join(tempDir, "DIEP00DEU_R_20202941900_01H_10S_MM.rnx.gz"), rnx3Fil.Path, "crx.gz file")
-}
+} */
