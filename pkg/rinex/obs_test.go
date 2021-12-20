@@ -427,26 +427,22 @@ func TestRnx2crx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx3Fil, err := NewObsFile(rnxFilePath)
-	assert.NoError(err)
-	err = rnx3Fil.Rnx2crx()
+	crxFilePath, err := Rnx2crx(rnxFilePath)
 	if err != nil {
-		t.Fatalf("Could not Hatanaka compress file %s: %v", rnxFilePath, err)
+		t.Fatalf("Could not Hatanaka compress file %s: %v", crxFilePath, err)
 	}
-	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20183101900_01H_30S_MO.crx"), rnx3Fil.Path, "crx file")
+	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20183101900_01H_30S_MO.crx"), crxFilePath, "rnx3 crx file")
 
 	// Rnx2
 	rnxFilePath, err = copyToTempDir("testdata/white/brst155h.20o", tempDir)
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx2Fil, err := NewObsFile(rnxFilePath)
-	assert.NoError(err)
-	err = rnx2Fil.Rnx2crx()
+	crxFilePath, err = Rnx2crx(rnxFilePath)
 	if err != nil {
 		t.Fatalf("Could not Hatanaka compress file: %v", err)
 	}
-	assert.Equal(filepath.Join(tempDir, "brst155h.20d"), rnx2Fil.Path, "crx file")
+	assert.Equal(filepath.Join(tempDir, "brst155h.20d"), crxFilePath, "rnx3 crx file")
 }
 
 func TestCrx2rnx(t *testing.T) {
@@ -458,27 +454,24 @@ func TestCrx2rnx(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx3Fil, err := NewObsFile(crxFilePath)
-	assert.NoError(err)
-	err = rnx3Fil.Crx2rnx()
+
+	rnxFilePath, err := Crx2rnx(crxFilePath)
 	if err != nil {
 		t.Fatalf("Could not Hatanaka decompress file: %v", err)
 	}
-	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20202302000_01H_30S_MO.rnx"), rnx3Fil.Path, "rnx file")
+	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20202302000_01H_30S_MO.rnx"), rnxFilePath, "rnx2 file")
 
 	// Rnx2
 	crxFilePath, err = copyToTempDir("testdata/white/brst155h.20d", tempDir)
 	if err != nil {
 		t.Fatalf("Could not copy to temp dir: %v", err)
 	}
-	rnx2Fil, err := NewObsFile(crxFilePath)
-	assert.NoError(err)
 
-	err = rnx2Fil.Crx2rnx()
+	rnxFilePath, err = Crx2rnx(crxFilePath)
 	if err != nil {
 		t.Fatalf("Could not Hatanaka decompress file: %v", err)
 	}
-	assert.Equal(filepath.Join(tempDir, "brst155h.20o"), rnx2Fil.Path, "rnx file")
+	assert.Equal(filepath.Join(tempDir, "brst155h.20o"), rnxFilePath, "rnx2 file")
 }
 
 func copyToTempDir(src, targetDir string) (string, error) {

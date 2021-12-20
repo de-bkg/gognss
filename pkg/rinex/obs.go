@@ -14,8 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mholt/archiver/v3"
-
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
@@ -59,7 +57,7 @@ func newPRN(sys gnss.System, num int8) (PRN, error) {
 		return PRN{}, fmt.Errorf("Invalid satellite system: '%v'", sys)
 	} */
 	if num < 1 || num > 60 {
-		return PRN{}, fmt.Errorf("Check satellite number '%v%d'", sys, num)
+		return PRN{}, fmt.Errorf("check satellite number '%v%d'", sys, num)
 	}
 	return PRN{Sys: sys, Num: num}, nil
 }
@@ -213,7 +211,7 @@ read:
 		//fmt.Print(line)
 
 		if dec.lineNum > maxLines {
-			return hdr, fmt.Errorf("Reading header failed: line %d reached without finding end of header", maxLines)
+			return hdr, fmt.Errorf("reading header failed: line %d reached without finding end of header", maxLines)
 		}
 		if len(line) < 60 {
 			continue
@@ -643,147 +641,6 @@ func (f *ObsFile) Stat() (stat ObsStat, err error) {
 	return
 }
 
-// Compress an observation file using Hatanaka first and then gzip.
-// The source file will be removed if the compression finishes without errors.
-func (f *ObsFile) Compress() error {
-	if f.Format == "crx" && f.Compression == "gz" {
-		return nil
-	}
-	if f.Format == "rnx" && f.Compression != "" {
-		return fmt.Errorf("compressed file is not Hatanaka compressed: %s", f.Path)
-	}
-
-	err := f.Rnx2crx()
-	if err != nil {
-		return err
-	}
-
-	err = archiver.CompressFile(f.Path, f.Path+".gz")
-	if err != nil {
-		return err
-	}
-	os.Remove(f.Path)
-	f.Path = f.Path + ".gz"
-	f.Compression = "gz"
-
-	return nil
-}
-
-// IsHatanakaCompressed returns true if the obs file is Hatanaka compressed, otherwise false.
-func (f *ObsFile) IsHatanakaCompressed() bool {
-	if f.Format == "crx" {
-		return true
-	}
-
-	return false
-}
-
-// Rnx2crx creates a copy of the file that is Hatanaka-compressed (compact RINEX).
-// Rnx2crx returns the filepath of the compressed file.
-// see http://terras.gsi.go.jp/ja/crx2rnx.html
-func (f *ObsFile) Rnx2crx() error {
-	rnxFilePath := f.Path
-
-	if f.IsHatanakaCompressed() {
-		return nil
-	}
-
-	tool, err := exec.LookPath("RNX2CRX")
-	if err != nil {
-		return err
-	}
-
-	dir, rnxFil := filepath.Split(rnxFilePath)
-
-	// Build name of target file
-	crxFil := ""
-	if Rnx2FileNamePattern.MatchString(rnxFil) {
-		crxFil = Rnx2FileNamePattern.ReplaceAllString(rnxFil, "${2}${3}${4}${5}.${6}d")
-	} else if Rnx3FileNamePattern.MatchString(rnxFil) {
-		crxFil = Rnx3FileNamePattern.ReplaceAllString(rnxFil, "${2}.crx")
-	} else {
-		return fmt.Errorf("file %s with no standard RINEX extension", rnxFil)
-	}
-
-	//fmt.Printf("rnxFil: %s - crxFil: %s\n", rnxFil, crxFil)
-
-	if crxFil == "" || rnxFil == crxFil {
-		return fmt.Errorf("Could not build compressed filename for %s", rnxFil)
-	}
-
-	// Run compression tool
-	cmd := exec.Command(tool, rnxFilePath, "-d", "-f")
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("cmd %s failed: %v: %s", tool, err, stderr.Bytes())
-	}
-
-	// Return filepath
-	crxFilePath := filepath.Join(dir, crxFil)
-	if _, err := os.Stat(crxFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("compressed file does not exist: %s", crxFilePath)
-	}
-
-	f.Path = crxFilePath
-	f.Format = "crx"
-
-	return nil
-}
-
-// Crx2rnx decompresses a Hatanaka-compressed file. Crx2rnx returns the filepath of the decompressed file.
-// see http://terras.gsi.go.jp/ja/crx2rnx.html
-func (f *ObsFile) Crx2rnx() error {
-	crxFilepath := f.Path
-
-	if !f.IsHatanakaCompressed() {
-		fmt.Printf("File is already Hatanaka uncompressed\n")
-		return nil
-	}
-
-	tool, err := exec.LookPath("CRX2RNX")
-	if err != nil {
-		return err
-	}
-
-	dir, crxFil := filepath.Split(crxFilepath)
-
-	// Build name of target file
-	rnxFil := ""
-	if Rnx2FileNamePattern.MatchString(crxFil) {
-		rnxFil = Rnx2FileNamePattern.ReplaceAllString(crxFil, "${2}${3}${4}${5}.${6}o")
-	} else if Rnx3FileNamePattern.MatchString(crxFil) {
-		rnxFil = Rnx3FileNamePattern.ReplaceAllString(crxFil, "${2}.rnx")
-	} else {
-		return fmt.Errorf("file %s with no standard RINEX extension", crxFil)
-	}
-
-	if rnxFil == "" || rnxFil == crxFil {
-		return fmt.Errorf("Could not build uncompressed filename for %s", crxFil)
-	}
-
-	// Run compression tool
-	cmd := exec.Command(tool, crxFilepath, "-d", "-f")
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("cmd %s failed: %v: %s", tool, err, stderr.Bytes())
-	}
-
-	// Return filepath
-	rnxFilePath := filepath.Join(dir, rnxFil)
-	if _, err := os.Stat(rnxFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("compressed file does not exist: %s", rnxFilePath)
-	}
-
-	f.Path = rnxFilePath
-	return nil
-}
-
 // Rnx3Filename returns the filename following the RINEX3 convention.
 // In most cases we must read the read the header. The countrycode must come from an external source.
 // DO NOT USE! Must parse header first!
@@ -862,11 +719,143 @@ func (f *ObsFile) Rnx3Filename() (string, error) {
 	return fn.String(), nil
 }
 
+// Compress an observation file using Hatanaka first and then gzip.
+// The source file will be removed if the compression finishes without errors.
+/* func (f *ObsFile) Compress() error {
+	if f.Format == "crx" && f.Compression == "gz" {
+		return nil
+	}
+	if f.Format == "rnx" && f.Compression != "" {
+		return fmt.Errorf("compressed file is not Hatanaka compressed: %s", f.Path)
+	}
+
+	err := f.Rnx2crx()
+	if err != nil {
+		return err
+	}
+
+	err = archiver.CompressFile(f.Path, f.Path+".gz")
+	if err != nil {
+		return err
+	}
+	os.Remove(f.Path)
+	f.Path = f.Path + ".gz"
+	f.Compression = "gz"
+
+	return nil
+} */
+
+// IsHatanakaCompressed returns true if the obs file is Hatanaka compressed, otherwise false.
+func (f *ObsFile) IsHatanakaCompressed() bool {
+	return f.Format == "crx"
+}
+
+// Rnx2crx Hatanaka compresses a RINEX obs file (compact RINEX) and returns the compressed filename.
+// The rnxFilename must be a valid RINEX filename.
+// see http://terras.gsi.go.jp/ja/crx2rnx.html
+func Rnx2crx(rnxFilename string) (string, error) {
+	ext := strings.ToLower(filepath.Ext(rnxFilename))
+
+	// Check if file is already Hata decompressed
+	if ext == "crx" || ext == "d" {
+		return rnxFilename, nil
+	}
+
+	tool, err := exec.LookPath("RNX2CRX")
+	if err != nil {
+		return "", err
+	}
+
+	dir, rnxFil := filepath.Split(rnxFilename)
+
+	// Build name of target file
+	crxFil := ""
+	if Rnx2FileNamePattern.MatchString(rnxFil) {
+		crxFil = Rnx2FileNamePattern.ReplaceAllString(rnxFil, "${2}${3}${4}${5}.${6}d")
+	} else if Rnx3FileNamePattern.MatchString(rnxFil) {
+		crxFil = Rnx3FileNamePattern.ReplaceAllString(rnxFil, "${2}.crx")
+	} else {
+		return "", fmt.Errorf("file %s with no standard RINEX extension", rnxFil)
+	}
+
+	//fmt.Printf("rnxFil: %s - crxFil: %s\n", rnxFil, crxFil)
+
+	if crxFil == "" || rnxFil == crxFil {
+		return "", fmt.Errorf("could not build compressed filename for %s", rnxFil)
+	}
+
+	// Run compression tool
+	cmd := exec.Command(tool, rnxFilename, "-d", "-f")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return "", fmt.Errorf("cmd %s failed: %v: %s", tool, err, stderr.Bytes())
+	}
+
+	// Return filepath
+	crxFilePath := filepath.Join(dir, crxFil)
+	if _, err := os.Stat(crxFilePath); os.IsNotExist(err) {
+		return "", fmt.Errorf("compressed file does not exist: %s", crxFilePath)
+	}
+	return crxFilePath, nil
+}
+
+// Crx2rnx decompresses a Hatanaka-compressed RINEX obs file and returns the decompressed filename.
+// The crxFilename must be a valid RINEX filename.
+// see http://terras.gsi.go.jp/ja/crx2rnx.html
+func Crx2rnx(crxFilename string) (string, error) {
+	ext := strings.ToLower(filepath.Ext(crxFilename))
+
+	// Check if file is already Hata decompressed
+	if ext == "rnx" || ext == "o" {
+		return crxFilename, nil
+	}
+
+	tool, err := exec.LookPath("CRX2RNX")
+	if err != nil {
+		return "", err
+	}
+
+	dir, crxFil := filepath.Split(crxFilename)
+
+	// Build name of target file
+	rnxFil := ""
+	if Rnx2FileNamePattern.MatchString(crxFil) {
+		rnxFil = Rnx2FileNamePattern.ReplaceAllString(crxFil, "${2}${3}${4}${5}.${6}o")
+	} else if Rnx3FileNamePattern.MatchString(crxFil) {
+		rnxFil = Rnx3FileNamePattern.ReplaceAllString(crxFil, "${2}.rnx")
+	} else {
+		return "", fmt.Errorf("file %s with no standard RINEX extension", crxFil)
+	}
+
+	if rnxFil == "" || rnxFil == crxFil {
+		return "", fmt.Errorf("could not build uncompressed filename for %s", crxFil)
+	}
+
+	// Run compression tool
+	cmd := exec.Command(tool, crxFilename, "-d", "-f")
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err = cmd.Run()
+	if err != nil {
+		return "", fmt.Errorf("cmd %s failed: %v: %s", tool, err, stderr.Bytes())
+	}
+
+	// Return filepath
+	rnxFilePath := filepath.Join(dir, rnxFil)
+	if _, err := os.Stat(rnxFilePath); os.IsNotExist(err) {
+		return "", fmt.Errorf("compressed file does not exist: %s", rnxFilePath)
+	}
+	return rnxFilePath, nil
+}
+
 func parseFlag(str string) (int, error) {
 	if str == " " {
 		return 0, nil
 	}
-
 	return strconv.Atoi(str)
 }
 
@@ -922,7 +911,7 @@ func getObsByPRN(obslist []SatObs, prn PRN) (SatObs, error) {
 		}
 	}
 
-	return SatObs{}, fmt.Errorf("No oberservations found for prn %v", prn)
+	return SatObs{}, fmt.Errorf("no oberservations found for prn %v", prn)
 }
 
 func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
