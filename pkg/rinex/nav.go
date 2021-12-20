@@ -165,7 +165,7 @@ func (eph *EphGPS) unmarshal(data []byte) (err error) {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysGPS, int8(snum))
 	if err != nil {
@@ -174,7 +174,7 @@ func (eph *EphGPS) unmarshal(data []byte) (err error) {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	eph.ClockBias, err = parseFloat(line[23 : 23+19])
@@ -266,7 +266,7 @@ func (eph *EphGLO) unmarshal(data []byte) error {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysGLO, int8(snum))
 	if err != nil {
@@ -275,7 +275,7 @@ func (eph *EphGLO) unmarshal(data []byte) error {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	return nil
@@ -288,7 +288,7 @@ func (eph *EphGAL) unmarshal(data []byte) error {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysGAL, int8(snum))
 	if err != nil {
@@ -297,7 +297,7 @@ func (eph *EphGAL) unmarshal(data []byte) error {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	return nil
@@ -310,7 +310,7 @@ func (eph *EphQZSS) unmarshal(data []byte) error {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysQZSS, int8(snum))
 	if err != nil {
@@ -319,7 +319,7 @@ func (eph *EphQZSS) unmarshal(data []byte) error {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	return nil
@@ -332,7 +332,7 @@ func (eph *EphBDS) unmarshal(data []byte) error {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysBDS, int8(snum))
 	if err != nil {
@@ -341,7 +341,7 @@ func (eph *EphBDS) unmarshal(data []byte) error {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	return nil
@@ -354,7 +354,7 @@ func (eph *EphIRNSS) unmarshal(data []byte) error {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysIRNSS, int8(snum))
 	if err != nil {
@@ -363,7 +363,7 @@ func (eph *EphIRNSS) unmarshal(data []byte) error {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	return nil
@@ -376,7 +376,7 @@ func (eph *EphSBAS) unmarshal(data []byte) error {
 
 	snum, err := strconv.Atoi(line[1:3])
 	if err != nil {
-		return fmt.Errorf("Could not parse sat num: %q: %v", line, err)
+		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
 	}
 	eph.PRN, err = newPRN(gnss.SysSBAS, int8(snum))
 	if err != nil {
@@ -385,7 +385,7 @@ func (eph *EphSBAS) unmarshal(data []byte) error {
 
 	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
 	if err != nil {
-		return fmt.Errorf("Could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
 	}
 
 	return nil
@@ -529,7 +529,7 @@ read:
 			}
 		}
 		if dec.lineNum > maxLines {
-			return hdr, fmt.Errorf("Reading header failed: line %d reached without finding end of header", maxLines)
+			return hdr, fmt.Errorf("reading header failed: line %d reached without finding end of header", maxLines)
 		}
 		if len(line) < 60 {
 			continue
@@ -546,7 +546,7 @@ read:
 			if f64, err := strconv.ParseFloat(strings.TrimSpace(val[:20]), 32); err == nil {
 				hdr.RINEXVersion = float32(f64)
 			} else {
-				return hdr, fmt.Errorf("Could not parse RINEX VERSION: %v", err)
+				return hdr, fmt.Errorf("could not parse RINEX VERSION: %v", err)
 			}
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
 
