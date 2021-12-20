@@ -141,24 +141,6 @@ func TestRnx2Filename(t *testing.T) {
 	}
 }
 
-func TestCompress(t *testing.T) {
-	assert := assert.New(t)
-	tempDir := t.TempDir()
-
-	// Rnx3
-	rnxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx", tempDir)
-	if err != nil {
-		t.Fatalf("Could not copy to temp dir: %v", err)
-	}
-	rnx, err := NewFile(rnxFilePath)
-	assert.NoError(err)
-	err = rnx.Compress()
-	if err != nil {
-		t.Fatalf("Could not Hatanaka compress file %s: %v", rnxFilePath, err)
-	}
-	//assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20183101900_01H_30S_MO.crx.gz"), rnx.Path, "crx.gz file")
-}
-
 func TestParseDoy(t *testing.T) {
 	assert := assert.New(t)
 	assert.Equal(time.Date(2001, 12, 31, 0, 0, 0, 0, time.UTC), ParseDoy(2001, 365))

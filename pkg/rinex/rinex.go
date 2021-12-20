@@ -54,7 +54,7 @@ var (
 // FilerHandler is the interface for RINEX files..
 type FilerHandler interface {
 	// Compress compresses the RINEX file dependend of its file type.
-	Compress() error
+	//Compress() error
 
 	// Rnx3Filename returns the filename following the RINEX3 convention.
 	Rnx3Filename() (string, error)
@@ -105,7 +105,7 @@ func NewFile(filepath string) (FilerHandler, error) {
 	} else if rnx.IsMeteoType() {
 		f = &MeteoFile{RnxFil: rnx}
 	} else {
-		return nil, fmt.Errorf("No valid RINEX file: %s", filepath)
+		return nil, fmt.Errorf("no valid RINEX file: %s", filepath)
 	}
 
 	return f, nil
@@ -131,26 +131,17 @@ func (f *RnxFil) SetStationName(name string) error {
 
 // IsObsType returns true if the file is a RINEX observation file type.
 func (f *RnxFil) IsObsType() bool {
-	if strings.HasSuffix(f.DataType, "O") {
-		return true
-	}
-	return false
+	return strings.HasSuffix(f.DataType, "O")
 }
 
 // IsNavType returns true if the file is a RINEX navigation file type.
 func (f *RnxFil) IsNavType() bool {
-	if strings.HasSuffix(f.DataType, "N") {
-		return true
-	}
-	return false
+	return strings.HasSuffix(f.DataType, "N")
 }
 
 // IsMeteoType returns true if the file is a RINEX meteo file type.
 func (f *RnxFil) IsMeteoType() bool {
-	if strings.HasSuffix(f.DataType, "M") {
-		return true
-	}
-	return false
+	return strings.HasSuffix(f.DataType, "M")
 }
 
 // parseFilename parses the specified filename, which must be a valid RINEX filename,
@@ -288,10 +279,10 @@ func Rnx3Filename(rnx2filepath string, countryCode string) (string, error) {
 		f := &NavFile{RnxFil: rnx}
 		return f.Rnx3Filename()
 	} else if rnx.IsMeteoType() {
-		return "", fmt.Errorf("Meteo files not implemented yet")
+		return "", fmt.Errorf("meteo files not implemented yet")
 	}
 
-	return "", fmt.Errorf("No valid RINEX filename: %s", rnx2filepath)
+	return "", fmt.Errorf("no valid RINEX filename: %s", rnx2filepath)
 }
 
 // Rnx2Filename returns the filename following the RINEX2 convention.
@@ -326,7 +317,7 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 
 	rnx2Typ, ok := rnxTypMap[rnx.DataType]
 	if !ok {
-		return "", fmt.Errorf("Could not map type %s to RINEX2", rnx.DataType)
+		return "", fmt.Errorf("could not map type %s to RINEX2", rnx.DataType)
 	}
 	if rnx.IsObsType() && rnx.Format == "crx" {
 		fn.WriteString("d")
@@ -360,11 +351,7 @@ func IsCompressed(src string) bool {
 	}
 
 	_, err := archiver.ByExtension(src)
-	if err == nil {
-		return true
-	}
-
-	return false
+	return err == nil
 }
 
 // ParseDoy returns the UTC-Time corresponding to the given year and day of year.
