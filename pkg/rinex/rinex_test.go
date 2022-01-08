@@ -12,12 +12,14 @@ import (
 func TestFileNamePattern(t *testing.T) {
 	// Rnx2
 	res := Rnx2FileNamePattern.FindStringSubmatch("adar335t.18d.Z") // obs hourly
+	assert.Greater(t, len(res), 7)
 	for k, v := range res {
 		fmt.Printf("%d. %s\n", k, v)
 	}
 	fmt.Println("----------------------------")
 
 	res = Rnx2FileNamePattern.FindStringSubmatch("bcln332d15.18o") // obs highrate
+	assert.Greater(t, len(res), 7)
 	for k, v := range res {
 		fmt.Printf("%d. %s\n", k, v)
 	}
@@ -25,12 +27,14 @@ func TestFileNamePattern(t *testing.T) {
 
 	// Rnx3
 	res = Rnx3FileNamePattern.FindStringSubmatch("ALGO00CAN_R_20121601000_15M_01S_GO.rnx") // obs highrate
+	assert.Greater(t, len(res), 7)
 	for k, v := range res {
 		fmt.Printf("%d. %s\n", k, v)
 	}
 	fmt.Println("----------------------------")
 
 	res = Rnx3FileNamePattern.FindStringSubmatch("ALGO00CAN_R_20121600000_01D_MN.rnx.gz") // nav
+	assert.Greater(t, len(res), 7)
 	for k, v := range res {
 		fmt.Printf("%d. %s\n", k, v)
 	}

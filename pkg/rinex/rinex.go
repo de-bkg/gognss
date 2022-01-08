@@ -30,10 +30,10 @@ var (
 
 var (
 	// Rnx2FileNamePattern is the regex for RINEX2 filenames.
-	Rnx2FileNamePattern = regexp.MustCompile(`(([a-z0-9]{4})(\d{3})([a-x0])(\d{2})?\.(\d{2})([domnglqfph]))\.?([a-zA-Z0-9]+)?`)
+	Rnx2FileNamePattern = regexp.MustCompile(`(?i)(([a-z0-9]{4})(\d{3})([a-x0])(\d{2})?\.(\d{2})([domnglqfph]))\.?([a-zA-Z0-9]+)?`)
 
 	// Rnx3FileNamePattern is the regex for RINEX3 filenames.
-	Rnx3FileNamePattern = regexp.MustCompile(`((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCSM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
+	Rnx3FileNamePattern = regexp.MustCompile(`(?i)((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCSM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
 
 	sysPerAbbr = map[string]gnss.System{
 		"G": gnss.SysGPS,
@@ -75,17 +75,17 @@ func (f DataFrequency) String() string {
 type RnxFil struct {
 	Path string
 
-	FourCharID     string
-	MonumentNumber int
-	ReceiverNumber int
-	CountryCode    string // ISO 3char
-	StartTime      time.Time
-	DataSource     string // [RSU]
-	FilePeriod     string // 15M, 01D
-	DataFreq       string // 30S, not for nav files // TODO make type frequency!!
-	DataType       string // The data type abbreviations GO, RO, MN, MM, ...
-	Format         string // rnx, crx, etc. Attention: Format and Hatanaka are dependent!
-	Compression    string // gz, ...
+	FourCharID     string    // The 4char ID of the file or site.
+	MonumentNumber int       // The site monument number.
+	ReceiverNumber int       // The site receiver number.
+	CountryCode    string    // ISO 3char
+	StartTime      time.Time // StartTime is the nominal start time derived from the filename.
+	DataSource     string    // [RSU]
+	FilePeriod     string    // 15M, 01D
+	DataFreq       string    // 30S, not for nav files // TODO make type frequency!!
+	DataType       string    // The data type abbreviations GO, RO, MN, MM, ...
+	Format         string    // rnx, crx, etc. Attention: Format and Hatanaka are dependent!
+	Compression    string    // gz, ...
 	//IsHatanaka     bool   // true if file is Hatanaka compressed
 }
 
