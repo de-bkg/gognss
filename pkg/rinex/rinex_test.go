@@ -168,3 +168,13 @@ func TestParseDoy(t *testing.T) {
 		fmt.Printf("epoch: %s\n", t)
 	}
 }
+
+func TestRnxFil_StationName(t *testing.T) {
+	fil1, err := NewObsFile("BRUX00BEL_R_20183101900_01H_30S_MO.rnx")
+	assert.NoError(t, err)
+	assert.Equal(t, "BRUX00BEL", fil1.StationName())
+
+	fil2, err := NewObsFile("brux310t.18o")
+	assert.NoError(t, err)
+	assert.Equal(t, "BRUX", fil2.StationName())
+}

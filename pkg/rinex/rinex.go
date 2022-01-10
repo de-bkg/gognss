@@ -129,6 +129,15 @@ func (f *RnxFil) SetStationName(name string) error {
 	return nil
 }
 
+// StationName returns the long 9-char station name if possible, otherwiese - mainly for RINEX-2 files - it returns the fourCharID.
+// The returned name is uppercase.
+func (f *RnxFil) StationName() string {
+	if f.CountryCode != "" {
+		return f.FourCharID + strconv.Itoa(f.MonumentNumber) + strconv.Itoa(f.ReceiverNumber) + f.CountryCode
+	}
+	return f.FourCharID
+}
+
 // IsObsType returns true if the file is a RINEX observation file type.
 func (f *RnxFil) IsObsType() bool {
 	return strings.HasSuffix(f.DataType, "O")
