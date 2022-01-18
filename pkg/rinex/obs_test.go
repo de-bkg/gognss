@@ -304,7 +304,7 @@ func TestStat(t *testing.T) {
 		t.Fatalf("%v", err)
 	}
 	assert.NotNil(obsFil)
-	stat, err := obsFil.Stat()
+	stat, err := obsFil.Meta()
 	assert.NoError(err)
 	t.Logf("%+v", stat)
 }

@@ -123,8 +123,8 @@ func (epo *Epoch) PrintTab(opts Options) {
 	}
 }
 
-// ObsStat stores observation statistics.
-type ObsStat struct {
+// ObsMeta stores some metadata about a RINEX obs file.
+type ObsMeta struct {
 	NumEpochs      int       `json:"numEpochs"`
 	Sampling       int       `json:"sampling"`
 	TimeOfFirstObs time.Time `json:"timeOfFirstObs"`
@@ -594,8 +594,8 @@ func (f *ObsFile) Diff(obsFil2 *ObsFile) error {
 	return nil
 }
 
-// Stat gathers some observation statistics.
-func (f *ObsFile) Stat() (stat ObsStat, err error) {
+// Meta reads the file and returns some metadata.
+func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 	r, err := os.Open(f.Path)
 	if err != nil {
 		return
@@ -630,7 +630,7 @@ func (f *ObsFile) Stat() (stat ObsStat, err error) {
 	stat.TimeOfLastObs = epoPrev.Time
 	stat.NumEpochs = numOfEpochs
 
-	// check sampling rate
+	// TODO check sampling rate
 	// for _, dur := range intervals {
 	// 	dur.Seconds()
 	// }
