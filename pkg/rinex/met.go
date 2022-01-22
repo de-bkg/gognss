@@ -29,8 +29,6 @@ type MeteoHeader struct {
 	Observer, Agency string
 
 	Comments []string
-
-	warnings []string
 }
 
 // NewMeteoFile returns a new RINEX Meteo file.

@@ -162,8 +162,7 @@ type ObsHeader struct {
 	LeapSeconds        int // The current number of leap seconds
 	NSatellites        int // Number of satellites, for which observations are stored in the file
 
-	labels   []string // all Header Labels found
-	warnings []string
+	labels []string // all Header Labels found
 }
 
 // ObsDecoder reads and decodes header and data records from a RINEX Obs input stream.
@@ -629,6 +628,16 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 
 	stat.TimeOfLastObs = epoPrev.Time
 	stat.NumEpochs = numOfEpochs
+
+	// Some checks (TODO make a separate function for checks)
+	if types, exists := f.Header.ObsTypes[gnss.SysGPS]; exists {
+		for _, typ := range types {
+			if typ == "L2P" || typ == "C2P" {
+				f.Warnings = append(f.Warnings, "observation types 'L2P' and 'C2P' are not reasonable for GPS")
+				break
+			}
+		}
+	}
 
 	// TODO check sampling rate
 	// for _, dur := range intervals {

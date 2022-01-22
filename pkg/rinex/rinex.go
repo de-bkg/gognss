@@ -87,6 +87,8 @@ type RnxFil struct {
 	Format         string    // rnx, crx, etc. Attention: Format and Hatanaka are dependent!
 	Compression    string    // gz, ...
 	//IsHatanaka     bool   // true if file is Hatanaka compressed
+
+	Warnings []string // List of warnings that might occur when reading the file.
 }
 
 // NewFile returns a new RINEX file object.

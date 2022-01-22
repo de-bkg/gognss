@@ -403,8 +403,7 @@ type NavHeader struct {
 
 	Comments []string // * comment lines
 
-	labels   []string // all Header Labels found
-	warnings []string
+	labels []string // all Header Labels found
 }
 
 // A headerLabel is a RINEX Header Label.
@@ -782,7 +781,7 @@ func (f *NavFile) Validate() error {
 	f.Header = dec.Header
 
 	// TODO add checks
-	err = dec.Header.Validate()
+	err = f.validateHdr()
 	if err != nil {
 		return err
 	}
@@ -875,7 +874,8 @@ var navHeaderLables = map[float32][]headerLabel{
 }
 
 // Validate validates the RINEX Nav file. It is valid if no error is returned.
-func (hdr NavHeader) Validate() error {
+func (f *NavFile) validateHdr() error {
+	hdr := f.Header
 	if hdr.RINEXVersion >= 3 {
 		if hdr.RINEXType != "N" {
 			return fmt.Errorf("invalid RINEX TYPE: %q", hdr.RINEXType)
@@ -898,10 +898,10 @@ func (hdr NavHeader) Validate() error {
 		}
 
 		ok := false
-		for _, f := range hLablesMust {
-			if !f.optional {
-				if _, ok = hlpmap[f.label]; !ok {
-					hdr.warnings = append(hdr.warnings, fmt.Sprintf("mandatory header label does not exist: %s", f.label))
+		for _, lab := range hLablesMust {
+			if !lab.optional {
+				if _, ok = hlpmap[lab.label]; !ok {
+					f.Warnings = append(f.Warnings, fmt.Sprintf("mandatory header label does not exist: %s", lab.label))
 				}
 			}
 		}
@@ -913,7 +913,7 @@ func (hdr NavHeader) Validate() error {
 		}
 		for _, l := range hdr.labels {
 			if _, ok = hlpmap[l]; !ok {
-				hdr.warnings = append(hdr.warnings, fmt.Sprintf("invalid RINEX %.2f header label: %s", hdr.RINEXVersion, l))
+				f.Warnings = append(f.Warnings, fmt.Sprintf("invalid RINEX %.2f header label: %s", hdr.RINEXVersion, l))
 			}
 		}
 
