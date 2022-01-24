@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -125,10 +126,10 @@ func (epo *Epoch) PrintTab(opts Options) {
 
 // ObsMeta stores some metadata about a RINEX obs file.
 type ObsMeta struct {
-	NumEpochs      int       `json:"numEpochs"`
-	Sampling       int       `json:"sampling"`
-	TimeOfFirstObs time.Time `json:"timeOfFirstObs"`
-	TimeOfLastObs  time.Time `json:"timeOfLastObs"`
+	NumEpochs      int           `json:"numEpochs"`
+	Sampling       time.Duration `json:"sampling"`
+	TimeOfFirstObs time.Time     `json:"timeOfFirstObs"`
+	TimeOfLastObs  time.Time     `json:"timeOfLastObs"`
 }
 
 // A ObsHeader provides the RINEX Observation Header information.
@@ -630,6 +631,7 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 	stat.NumEpochs = numOfEpochs
 
 	// Some checks (TODO make a separate function for checks)
+	// Check observation types, see #637
 	if types, exists := f.Header.ObsTypes[gnss.SysGPS]; exists {
 		for _, typ := range types {
 			if typ == "L2P" || typ == "C2P" {
@@ -639,12 +641,10 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 		}
 	}
 
-	// TODO check sampling rate
-	// for _, dur := range intervals {
-	// 	dur.Seconds()
-	// }
+	// Sampling rate
+	sort.Slice(intervals, func(i, j int) bool { return intervals[i] < intervals[j] })
+	stat.Sampling = intervals[int(len(intervals)/2)]
 
-	// sampling
 	// LLIs
 
 	return
