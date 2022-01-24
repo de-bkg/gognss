@@ -859,17 +859,17 @@ var navHeaderLables = map[float32][]headerLabel{
 	3.02: rnx3HeaderLables,
 	3.03: rnx3HeaderLables,
 	3.04: rnx3HeaderLables,
-	4: {
-		// unofficial CNAV files
-		// mandatory
+	4.00: {
 		headerLabel{label: "RINEX VERSION / TYPE", optional: false},
 		headerLabel{label: "PGM / RUN BY / DATE", optional: false},
+		headerLabel{label: "LEAP SECONDS", optional: false},
 		headerLabel{label: "END OF HEADER", optional: false},
-		// optional
 		headerLabel{label: "COMMENT", optional: true},
-		headerLabel{label: "IONOSPHERIC CORR", optional: true},
-		headerLabel{label: "TIME SYSTEM CORR", optional: true},
-		headerLabel{label: "LEAP SECONDS", optional: true},
+		headerLabel{label: "REC # / TYPE / VERS", optional: true},
+		headerLabel{label: "MERGED FILE", optional: true},
+		headerLabel{label: "DOI", optional: true},
+		headerLabel{label: "LICENSE OF USE", optional: true},
+		headerLabel{label: "STATION INFORMATION", optional: true},
 	},
 }
 
