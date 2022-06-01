@@ -239,8 +239,8 @@ func ExampleObsDecoder_loop() {
 		log.Printf("reading epochs: %v", err)
 	}
 
-	fmt.Println(nEpochs)
-	// Output: 120
+	fmt.Printf("%d epochs found.", nEpochs)
+	// Output: 120 epochs found.
 }
 
 func TestReadEpochs(t *testing.T) {
@@ -307,6 +307,7 @@ func TestStat(t *testing.T) {
 	stat, err := obsFil.Meta()
 	assert.NoError(err)
 	t.Logf("%+v", stat)
+	assert.Equal("GR50 V4.31", obsFil.Header.Pgm)
 }
 
 func TestParseEpochTime(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 // MeteoFile contains fields and methods for Meteo RINEX files.
 type MeteoFile struct {
 	*RnxFil
-	Header MeteoHeader
+	Header *MeteoHeader
 }
 
 // A MeteoHeader provides the RINEX Meteo Header information.

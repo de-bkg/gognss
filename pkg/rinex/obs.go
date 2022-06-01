@@ -541,14 +541,14 @@ func (dec *ObsDecoder) sync(dec2 *ObsDecoder) bool {
 // Use NewObsFil() to instantiate a new ObsFile.
 type ObsFile struct {
 	*RnxFil
-	Header ObsHeader
-	Opts   Options
+	Header *ObsHeader
+	Opts   *Options
 }
 
 // NewObsFile returns a new ObsFile.
 func NewObsFile(filepath string) (*ObsFile, error) {
 	// must file exist?
-	obsFil := &ObsFile{RnxFil: &RnxFil{Path: filepath}, Opts: Options{}}
+	obsFil := &ObsFile{RnxFil: &RnxFil{Path: filepath}, Header: &ObsHeader{}, Opts: &Options{}}
 	err := obsFil.parseFilename()
 	return obsFil, err
 }
@@ -582,7 +582,7 @@ func (f *ObsFile) Diff(obsFil2 *ObsFile) error {
 		nSyncEpochs++
 		syncEpo := dec.SyncEpoch()
 
-		diff := diffEpo(syncEpo, f.Opts)
+		diff := diffEpo(syncEpo, *f.Opts)
 		if diff != "" {
 			fmt.Printf("diff: %s\n", diff)
 		}
@@ -605,6 +605,7 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 	if err != nil {
 		return
 	}
+	f.Header = &dec.Header
 
 	numOfEpochs := 0
 	intervals := make([]time.Duration, 0, 10)

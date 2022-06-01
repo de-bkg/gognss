@@ -685,7 +685,7 @@ func (dec *NavDecoder) setErr(err error) {
 // If you do not need these file-related features, use the NavDecoder instead.
 type NavFile struct {
 	*RnxFil
-	Header NavHeader
+	Header *NavHeader
 }
 
 // NewNavFile returns a new Navigation File object.
@@ -778,7 +778,7 @@ func (f *NavFile) Validate() error {
 	if err != nil {
 		return err
 	}
-	f.Header = dec.Header
+	f.Header = &dec.Header
 
 	// TODO add checks
 	err = f.validateHdr()
