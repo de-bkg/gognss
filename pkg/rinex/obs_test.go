@@ -6,10 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/de-bkg/gognss/pkg/gnss"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -77,6 +80,56 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.Equal(43, dec.Header.NSatellites, "number of satellites")
 	assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
 	t.Logf("RINEX Header: %+v\n", dec)
+}
+
+func TestObsDecoder_readRINEXHeaderV2(t *testing.T) {
+	const header = `     2.11           OBSERVATION DATA    M (MIXED)           RINEX VERSION / TYPE
+teqc  2019Feb25     IGN-RGP             20200603 08:03:25UTCPGM / RUN BY / DATE
+Linux 2.6.32-573.12.1.x86_64|x86_64|gcc|Linux 64|=+         COMMENT
+teqc  2019Feb25     Administrateur RGP  20200603 08:03:25UTCCOMMENT
+teqc  2019Feb25     IGN-RGP             20200603 08:03:20UTCCOMMENT
+teqc  2019Feb25     IGN-RGP             20200603 08:03:17UTCCOMMENT
+  2.0430      (antenna height)                              COMMENT
+ +48.38049068 (latitude)                                    COMMENT
+  -4.49659762 (longitude)                                   COMMENT
+0065.806      (elevation)                                   COMMENT
+BIT 2 OF LLI FLAGS DATA COLLECTED UNDER A/S CONDITION       COMMENT
+10004M004 (COGO code)                                       COMMENT
+BRST                                                        MARKER NAME
+10004M004                                                   MARKER NUMBER
+Automatic           IGN                                     OBSERVER / AGENCY
+5818R40023          TRIMBLE ALLOY       5.45                REC # / TYPE / VERS
+1441017048          TRM57971.00     NONE                    ANT # / TYPE
+  4231162.7880  -332746.9200  4745130.6890                  APPROX POSITION XYZ
+        2.0431        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+     1     1                                                WAVELENGTH FACT L1/2
+    22    L1    L2    C1    C2    P1    P2    D1    D2    S1# / TYPES OF OBSERV
+          S2    L5    C5    D5    S5    L7    C7    D7    S7# / TYPES OF OBSERV
+          L8    C8    D8    S8                              # / TYPES OF OBSERV
+    30.0000                                                 INTERVAL
+    18                                                      LEAP SECONDS
+ SNR is mapped to RINEX snr flag value [0-9]                COMMENT
+  L1 & L2: min(max(int(snr_dBHz/6), 0), 9)                  COMMENT
+Forced Modulo Decimation to 30 seconds                      COMMENT
+  2020     6     3     7     0    0.0000000     GPS         TIME OF FIRST OBS
+                                                            END OF HEADER
+`
+
+	assert := assert.New(t)
+	dec, err := NewObsDecoder(strings.NewReader(header))
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	assert.Equal("O", dec.Header.RINEXType, "RINEX Type")
+	assert.Equal("BRST", dec.Header.MarkerName, "Markername")
+	assert.Equal("10004M004", dec.Header.MarkerNumber, "Markernumber")
+	assert.Equal("5818R40023", dec.Header.ReceiverNumber, "ReceiverNumber")
+	assert.Equal("TRIMBLE ALLOY", dec.Header.ReceiverType, "ReceiverType")
+	assert.Equal("5.45", dec.Header.ReceiverVersion, "ReceiverVersion")
+	assert.Equal(time.Date(2020, 6, 3, 7, 0, 0, 0, time.UTC), dec.Header.TimeOfFirstObs, "TimeOfFirstObs")
+	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
+	//assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
+	t.Logf("RINEX Header: %+v\n", dec.Header)
 }
 
 func TestObsFile_parseFilename(t *testing.T) {
@@ -257,6 +310,62 @@ func TestReadEpochs(t *testing.T) {
 	assert.NoError(err)
 	assert.NotNil(dec)
 
+	firstEpo := &Epoch{}
+
+	numOfEpochs := 0
+	for dec.NextEpoch() {
+		numOfEpochs++
+		epo := dec.Epoch()
+		//fmt.Printf("%v\n", epo)
+		if numOfEpochs == 1 {
+			firstEpo = epo
+		}
+	}
+	if err := dec.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+	for _, obsPerSat := range firstEpo.ObsList {
+		prn := obsPerSat.Prn
+		if prn.Sys == gnss.SysGPS && prn.Num == 11 {
+			wanted := SatObs{Prn: prn, Obss: map[string]Obs{
+				"C1C": {Val: 20182171.481, LLI: 0, SNR: 0},
+				"C2S": {Val: 0, LLI: 0, SNR: 0},
+				"C2W": {Val: 2.0182168741e+07, LLI: 0, SNR: 0},
+				"C5Q": {Val: 0, LLI: 0, SNR: 0},
+				"D1C": {Val: 708.563, LLI: 0, SNR: 0},
+				"D2S": {Val: 0, LLI: 0, SNR: 0},
+				"D2W": {Val: 552.127, LLI: 0, SNR: 0},
+				"D5Q": {Val: 0, LLI: 0, SNR: 0},
+				"L1C": {Val: 1.06058033736e+08, LLI: 0, SNR: 8},
+				"L2S": {Val: 0, LLI: 0, SNR: 0},
+				"L2W": {Val: 8.2642616517e+07, LLI: 0, SNR: 8},
+				"L5Q": {Val: 0, LLI: 0, SNR: 0},
+				"S1C": {Val: 51.45, LLI: 0, SNR: 0},
+				"S2S": {Val: 0, LLI: 0, SNR: 0},
+				"S2W": {Val: 48.95, LLI: 0, SNR: 0},
+				"S5Q": {Val: 0, LLI: 0, SNR: 0},
+			}}
+			assert.Equal(wanted, obsPerSat, "1st epoch G11")
+		}
+	}
+
+	assert.Equal(120, numOfEpochs, "# epochs")
+	t.Logf("got all epochs: %d", numOfEpochs)
+}
+
+func TestReadEpochsRINEX2(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/white/brst155h.20o"
+	r, err := os.Open(filepath)
+	assert.NoError(err)
+	defer r.Close()
+
+	dec, err := NewObsDecoder(r)
+	assert.NoError(err)
+	assert.NotNil(dec)
+	t.Logf("%+v", dec.Header)
+
 	numOfEpochs := 0
 	for dec.NextEpoch() {
 		numOfEpochs++
@@ -306,8 +415,28 @@ func TestStat(t *testing.T) {
 	assert.NotNil(obsFil)
 	stat, err := obsFil.Meta()
 	assert.NoError(err)
-	t.Logf("%+v", stat)
+	//t.Logf("%+v", stat)
 	assert.Equal("GR50 V4.31", obsFil.Header.Pgm)
+	assert.Equal(120, stat.NumEpochs)
+	assert.Equal(49, obsFil.Header.NSatellites, "number of satellites (header)")
+	assert.Equal(49, stat.NumSatellites, "number of satellites (data)")
+	assert.Equal(time.Second*30, stat.Sampling)
+	assert.Equal(time.Date(2019, 9, 27, 10, 0, 0, 0, time.UTC), stat.TimeOfFirstObs)
+	assert.Equal(time.Date(2019, 9, 27, 10, 59, 30, 0, time.UTC), stat.TimeOfLastObs)
+
+	prns := make([]PRN, 0, len(stat.Obsstats))
+	for k := range stat.Obsstats {
+		prns = append(prns, k)
+	}
+	sort.Sort(ByPRN(prns))
+	for _, prn := range prns {
+		fmt.Printf("%s: %+v\n", prn, stat.Obsstats[prn])
+	}
+	assert.Equal(map[string]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.Obsstats[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
+	assert.Equal(map[string]int{"C1C": 120, "C2S": 0, "C2W": 120, "C5Q": 0, "D1C": 120, "D2S": 0, "D2W": 120, "D5Q": 0, "L1C": 120, "L2S": 0, "L2W": 120, "L5Q": 0, "S1C": 120, "S2S": 0, "S2W": 120, "S5Q": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["G"], Num: 11}], "obs G11")
+	assert.Equal(map[string]int{"C5A": 119, "D5A": 119, "L5A": 72, "S5A": 119}, stat.Obsstats[PRN{Sys: sysPerAbbr["I"], Num: 6}], "obs I06")
+	assert.Equal(map[string]int{"C1C": 94, "C2C": 94, "C2P": 94, "D1C": 94, "D2C": 94, "D2P": 94, "L1C": 92, "L2C": 92, "L2P": 92, "S1C": 94, "S2C": 94, "S2P": 94}, stat.Obsstats[PRN{Sys: sysPerAbbr["R"], Num: 19}], "obs R19")
+	assert.Equal(map[string]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
 }
 
 func TestParseEpochTime(t *testing.T) {
@@ -324,6 +453,20 @@ func TestParseEpochTime(t *testing.T) {
 		epTime, err := time.Parse(epochTimeFormat, k)
 		assert.NoError(err)
 		assert.Equal(v, epTime)
+		fmt.Printf("epoch: %s\n", epTime)
+	}
+
+	// RINEX version 2
+	tests = map[string]time.Time{
+		"20  6  3  7  0 30.0000000": time.Date(2020, 6, 3, 7, 0, 30, 0, time.UTC),
+		"20 06 03 07 59 30.0000000": time.Date(2020, 6, 3, 7, 59, 30, 0, time.UTC),
+		"99 12  3  0  1  0.0000000": time.Date(1999, 12, 3, 0, 1, 0, 0, time.UTC),
+	}
+
+	for k, v := range tests {
+		epTime, err := time.Parse(epochTimeFormatv2, k)
+		assert.NoError(err)
+		assert.Equal(v, epTime, "RINEX-2 epoch")
 		fmt.Printf("epoch: %s\n", epTime)
 	}
 }
@@ -525,3 +668,30 @@ func copyFile(src, dst string) (int64, error) {
 	}
 	return homeDir
 } */
+
+func Test_decodeObs(t *testing.T) {
+	tests := []struct {
+		name    string
+		s       string
+		wantObs Obs
+		wantErr bool
+	}{
+		{name: "t1", s: " 204471670.07007", wantObs: Obs{Val: float64(204471670.07), LLI: int8(0), SNR: int8(7)}, wantErr: false},
+		{name: "t2", s: " 204471670.07017", wantObs: Obs{Val: float64(204471670.07), LLI: int8(1), SNR: int8(7)}, wantErr: false},
+		{name: "t3", s: "        43.600", wantObs: Obs{Val: float64(43.6), LLI: int8(0), SNR: int8(0)}, wantErr: false},
+		{name: "t4", s: "      -105.814  ", wantObs: Obs{Val: float64(-105.814), LLI: int8(0), SNR: int8(0)}, wantErr: false},
+		{name: "t5", s: "      -105.814a_", wantObs: Obs{Val: float64(-105.814)}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotObs, err := decodeObs(tt.s)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("decodeObs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotObs, tt.wantObs) {
+				t.Errorf("decodeObs() = %v, want %v", gotObs, tt.wantObs)
+			}
+		})
+	}
+}
