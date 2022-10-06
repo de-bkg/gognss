@@ -185,8 +185,9 @@ type ObsHeader struct {
 	Interval           float64 // Observation interval in seconds
 	TimeOfFirstObs     time.Time
 	TimeOfLastObs      time.Time
-	LeapSeconds        int // The current number of leap seconds
-	NSatellites        int // Number of satellites, for which observations are stored in the file
+	GloSlots           map[PRN]int // GLONASS slot and frequency numbers.
+	LeapSeconds        int         // The current number of leap seconds
+	NSatellites        int         // Number of satellites, for which observations are stored in the file
 
 	labels []string // all Header Labels found
 }
@@ -358,6 +359,27 @@ read:
 			}
 			hdr.TimeOfLastObs = t
 		case "SYS / PHASE SHIFT": // optional. This header line is strongly deprecated and should be ignored by decoders.
+		case "GLONASS SLOT / FRQ #":
+			if strings.TrimSpace(val[:3]) != "" { // number of satellites
+				nSat, err := strconv.Atoi(strings.TrimSpace(val[:3]))
+				if err != nil {
+					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				}
+				hdr.GloSlots = make(map[PRN]int, nSat)
+			}
+			fields := strings.Fields(val[4:])
+			for i := 0; i < len(fields)-1; i++ {
+				prn, err := newPRN(fields[i])
+				if err != nil {
+					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				}
+				frq, err := strconv.Atoi(fields[i+1])
+				if err != nil {
+					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				}
+				hdr.GloSlots[prn] = frq
+				i++
+			}
 		case "LEAP SECONDS": // optional. not complete! TODO: extend
 			i, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 			if err != nil {

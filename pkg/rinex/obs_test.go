@@ -67,6 +67,10 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.NoError(err)
 	assert.NotNil(dec)
 
+	gloSlotsWanted := map[PRN]int{{Sys: gnss.SysGLO, Num: 3}: 5, {Sys: gnss.SysGLO, Num: 4}: 6, {Sys: gnss.SysGLO, Num: 5}: 1,
+		{Sys: gnss.SysGLO, Num: 6}: -4, {Sys: gnss.SysGLO, Num: 13}: -2, {Sys: gnss.SysGLO, Num: 14}: -7, {Sys: gnss.SysGLO, Num: 15}: 0,
+		{Sys: gnss.SysGLO, Num: 16}: -1, {Sys: gnss.SysGLO, Num: 22}: -3, {Sys: gnss.SysGLO, Num: 23}: 3, {Sys: gnss.SysGLO, Num: 24}: 2}
+
 	assert.Equal("O", dec.Header.RINEXType, "RINEX Type")
 	assert.Equal("BRUX", dec.Header.MarkerName, "Markername")
 	assert.Equal("3001376", dec.Header.ReceiverNumber, "ReceiverNumber")
@@ -78,6 +82,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.Equal(time.Date(2018, 11, 6, 19, 59, 30, 0, time.UTC), dec.Header.TimeOfLastObs, "TimeOfLastObs")
 	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
 	assert.Equal(43, dec.Header.NSatellites, "number of satellites")
+	assert.Equal(gloSlotsWanted, dec.Header.GloSlots)
 	assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
 	t.Logf("RINEX Header: %+v\n", dec)
 }
