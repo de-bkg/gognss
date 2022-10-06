@@ -3,6 +3,7 @@ package rinex
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"testing"
 	"time"
 
@@ -177,4 +178,24 @@ func TestRnxFil_StationName(t *testing.T) {
 	fil2, err := NewObsFile("brux310t.18o")
 	assert.NoError(t, err)
 	assert.Equal(t, "BRUX", fil2.StationName())
+}
+
+func Test_rinexNamedCaptures(t *testing.T) {
+	rnx3NamedPattern := regexp.MustCompile(`(?i)((([A-Z0-9]{4})(\d)(\d)(?P<countrycode>[A-Z]{3})_(?P<datasource>[RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCSM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
+	expNames := rnx3NamedPattern.SubexpNames()
+	fn := "BRUX00BEL_R_20183101900_01H_30S_MO.rnx"
+
+	res := rnx3NamedPattern.FindStringSubmatch(fn)
+	for k, v := range res {
+		fmt.Printf("%d. %s\n", k, v)
+	}
+
+	md := map[string]string{}
+	for i, n := range expNames {
+		fmt.Printf("%d. match=%q\tvalue=%q\n", i, n, res[i])
+		if n != "" {
+			md[n] = res[i]
+		}
+	}
+	fmt.Printf("%+v\n", md)
 }
