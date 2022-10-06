@@ -358,6 +358,7 @@ read:
 				return hdr, fmt.Errorf("parsing %q: %v", key, err)
 			}
 			hdr.TimeOfLastObs = t
+		case "RCV CLOCK OFFS APPL": // TODO implement (field is optional)
 		case "SYS / PHASE SHIFT": // optional. This header line is strongly deprecated and should be ignored by decoders.
 		case "GLONASS SLOT / FRQ #":
 			if strings.TrimSpace(val[:3]) != "" { // number of satellites
@@ -380,6 +381,7 @@ read:
 				hdr.GloSlots[prn] = frq
 				i++
 			}
+		case "GLONASS COD/PHS/BIS": // optional. This header line is strongly deprecated and should be ignored by decoders.
 		case "LEAP SECONDS": // optional. not complete! TODO: extend
 			i, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 			if err != nil {
@@ -473,73 +475,40 @@ func (dec *ObsDecoder) nextEpochv2() bool {
 		dec.epo = &Epoch{Time: epTime, Flag: int8(epochFlag), NumSat: uint8(numSat),
 			ObsList: make([]SatObs, 0, numSat)}
 
-		// Read observation records
-		for iSat := 0; iSat < numSat; iSat++ {
+		// Read observations
+		obsTypes := dec.Header.ObsTypes[dec.Header.SatSystem]
+		// for ii := 0; ii < numSat; ii++ {
+		for _, prn := range sats {
 			dec.sc.Scan()
 			dec.lineNum++
-			if err := dec.sc.Err(); err != nil {
-				dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
-				return false
-			}
 			line = dec.sc.Text()
+			linelen := len(line)
 
-			prn, err := newPRN(line[0:3])
-			if err != nil {
-				dec.setErr(fmt.Errorf("new PRN in line %d: %q: %v", dec.lineNum, line, err))
-				return false
-			}
-
-			if strings.TrimSpace(line[3:]) == "" { // ??
-				continue
-			}
-
-			sys := sysPerAbbr[line[0:1]]
-			obsPerTyp := make(map[string]Obs, 30) // cap
-			pos := 3                              // line position
-			for _, typ := range dec.Header.ObsTypes[sys] {
-				var val float64
-				if pos+14 > len(line) {
-					// error ??
-					dec.setErr(fmt.Errorf("obstype %s out of range in line %d: %q", typ, dec.lineNum, line))
-					return false
+			obsPerTyp := make(map[string]Obs, len(obsTypes))
+			pos := 0
+			for ityp, typ := range obsTypes {
+				if ityp > 0 && ityp%5 == 0 {
+					dec.sc.Scan()
+					dec.lineNum++
+					line = dec.sc.Text()
+					linelen = len(line)
+					pos = 0
 				}
-
-				//fmt.Printf("%q\n", line[pos:pos+14])
-				obsStr := strings.TrimSpace(line[pos : pos+14])
-				if obsStr != "" {
-					val, err = strconv.ParseFloat(obsStr, 64)
-					if err != nil {
-						dec.setErr(fmt.Errorf("parsing the %s observation in line %d: %q", typ, dec.lineNum, line))
-						return false
-					}
+				if pos >= linelen {
+					obsPerTyp[typ] = Obs{}
+					continue
 				}
-				pos += 14
-
-				// LLI
-				if pos+1 > len(line) {
-					obsPerTyp[typ] = Obs{Val: val}
-					break
+				end := pos + 16
+				if end > linelen {
+					end = linelen
 				}
-				pos++
-				lli, err := parseFlag(line[pos-1 : pos])
+				obs, err := decodeObs(line[pos:end])
 				if err != nil {
-					dec.setErr(fmt.Errorf("parsing the %s LLI in line %d: %q: %v", typ, dec.lineNum, line, err))
+					dec.setErr(fmt.Errorf("parsing the %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
 					return false
 				}
-
-				// SNR
-				if pos+1 > len(line) {
-					obsPerTyp[typ] = Obs{Val: val, LLI: int8(lli)}
-					break
-				}
-				pos++
-				snr, err := parseFlag(line[pos-1 : pos])
-				if err != nil {
-					dec.setErr(fmt.Errorf("parsing the %s SNR in line %d: %q: %v", typ, dec.lineNum, line, err))
-					return false
-				}
-
-				obsPerTyp[typ] = Obs{Val: val, LLI: int8(lli), SNR: int8(snr)}
+				obsPerTyp[typ] = obs
+				pos += 16
 			}
 			dec.epo.ObsList = append(dec.epo.ObsList, SatObs{Prn: prn, Obss: obsPerTyp})
 		}
@@ -593,10 +562,6 @@ func (dec *ObsDecoder) nextEpoch() bool {
 		for ii := 1; ii <= numSat; ii++ {
 			dec.sc.Scan()
 			dec.lineNum++
-			if err := dec.sc.Err(); err != nil {
-				dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
-				return false
-			}
 			line = dec.sc.Text()
 			linelen := len(line)
 
@@ -611,7 +576,8 @@ func (dec *ObsDecoder) nextEpoch() bool {
 			}
 
 			sys := sysPerAbbr[line[:1]]
-			obsPerTyp := make(map[string]Obs, 30)
+			ntypes := len(dec.Header.ObsTypes[sys])
+			obsPerTyp := make(map[string]Obs, ntypes)
 			for ityp, typ := range dec.Header.ObsTypes[sys] {
 				pos := 3 + 16*ityp
 				if pos >= linelen {

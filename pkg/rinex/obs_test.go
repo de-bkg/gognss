@@ -316,7 +316,6 @@ func TestReadEpochs(t *testing.T) {
 	assert.NotNil(dec)
 
 	firstEpo := &Epoch{}
-
 	numOfEpochs := 0
 	for dec.NextEpoch() {
 		numOfEpochs++
@@ -354,7 +353,6 @@ func TestReadEpochs(t *testing.T) {
 			assert.Equal(wanted, obsPerSat, "1st epoch G11")
 		}
 	}
-
 	assert.Equal(120, numOfEpochs, "# epochs")
 	t.Logf("got all epochs: %d", numOfEpochs)
 }
@@ -369,18 +367,22 @@ func TestReadEpochsRINEX2(t *testing.T) {
 	dec, err := NewObsDecoder(r)
 	assert.NoError(err)
 	assert.NotNil(dec)
-	t.Logf("%+v", dec.Header)
+	//t.Logf("%+v", dec.Header)
 
+	firstEpo := &Epoch{}
 	numOfEpochs := 0
 	for dec.NextEpoch() {
 		numOfEpochs++
 		epo := dec.Epoch()
-		fmt.Printf("%v\n", epo)
+		if numOfEpochs == 1 {
+			firstEpo = epo
+		}
 	}
 	if err := dec.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 
+	fmt.Printf("%+v\n", firstEpo)
 	assert.Equal(120, numOfEpochs, "# epochs")
 	t.Logf("got all epochs: %d", numOfEpochs)
 }
@@ -442,6 +444,39 @@ func TestStat(t *testing.T) {
 	assert.Equal(map[string]int{"C5A": 119, "D5A": 119, "L5A": 72, "S5A": 119}, stat.Obsstats[PRN{Sys: sysPerAbbr["I"], Num: 6}], "obs I06")
 	assert.Equal(map[string]int{"C1C": 94, "C2C": 94, "C2P": 94, "D1C": 94, "D2C": 94, "D2P": 94, "L1C": 92, "L2C": 92, "L2P": 92, "S1C": 94, "S2C": 94, "S2P": 94}, stat.Obsstats[PRN{Sys: sysPerAbbr["R"], Num: 19}], "obs R19")
 	assert.Equal(map[string]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
+}
+
+func TestStatV2(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/white/brst155h.20o"
+	obsFil, err := NewObsFile(filepath)
+	if err != nil {
+		t.Fatalf("%v", err)
+	}
+	assert.NotNil(obsFil)
+	stat, err := obsFil.Meta()
+	assert.NoError(err)
+	//t.Logf("%+v", stat)
+	assert.Equal("teqc  2019Feb25", obsFil.Header.Pgm)
+	assert.Equal(120, stat.NumEpochs)
+	//assert.Equal(49, stat.NumSatellites, "number of satellites (data)")
+	assert.Equal(time.Second*30, stat.Sampling)
+	assert.Equal(time.Date(2020, 6, 3, 7, 0, 0, 0, time.UTC), stat.TimeOfFirstObs)
+	assert.Equal(time.Date(2020, 6, 3, 7, 59, 30, 0, time.UTC), stat.TimeOfLastObs)
+
+	prns := make([]PRN, 0, len(stat.Obsstats))
+	for k := range stat.Obsstats {
+		prns = append(prns, k)
+	}
+	sort.Sort(ByPRN(prns))
+	for _, prn := range prns {
+		fmt.Printf("%s: %+v\n", prn, stat.Obsstats[prn])
+	}
+	//STP BRST G TYP    C1    C2    C5    D1    D2    D5    L1    L2    L5    P2    S1    S2    S5
+	//STO BRST G G02   120     0     0   120   119     0   120   119     0   119   120   119     0
+
+	//C1:120 C2:0 C5:0 C7:0 C8:0 D1:120 D2:119 D5:0 D7:0 D8:0 L1:120 L2:119 L5:0 L7:0 L8:0 P1:0 P2:119 S1:120 S2:119 S5:0 S7:0 S8:0
+	//assert.Equal(map[string]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.Obsstats[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
 }
 
 func TestParseEpochTime(t *testing.T) {
