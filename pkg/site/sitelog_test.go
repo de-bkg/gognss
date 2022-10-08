@@ -27,7 +27,7 @@ func TestEncodeSitelog(t *testing.T) {
 	s.Receivers = append(s.Receivers, &Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436", Firmware: "2.6.2",
 		ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"},
-		&Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysIRNSS, gnss.SysSBAS}, SerialNum: "3057609", Firmware: "5.3.2",
+		&Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysNavIC, gnss.SysSBAS}, SerialNum: "3057609", Firmware: "5.3.2",
 			ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2", DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC),
 			DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""})
 
@@ -85,7 +85,7 @@ func TestReadSitelog(t *testing.T) {
 	recvFirst := Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436",
 		Firmware: "2.6.2", ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"}
-	recvLast := Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysIRNSS, gnss.SysSBAS},
+	recvLast := Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysNavIC, gnss.SysSBAS},
 		SerialNum: "3057609", Firmware: "5.3.2", ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2",
 		DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""}
 	assert.Equal(recvFirst, *site.Receivers[0], "first receiver")

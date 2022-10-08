@@ -1005,12 +1005,13 @@ var sysPerAbbr = map[string]gnss.System{
 	"GAL":   gnss.SysGAL,
 	"QZSS":  gnss.SysQZSS,
 	"BDS":   gnss.SysBDS,
-	"IRNSS": gnss.SysIRNSS,
+	"IRNSS": gnss.SysNavIC,
+	"NavIC": gnss.SysNavIC,
 	"SBAS":  gnss.SysSBAS,
 }
 
 func parseSatSystems(s string) (gnss.Systems, error) {
-	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "NavIC", "IRNSS")
+	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "IRNSS", "NavIC")
 	s = r.Replace(s)
 
 	sysList := make([]gnss.System, 0, 5)
