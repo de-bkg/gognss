@@ -40,8 +40,8 @@ func NewEph(sys gnss.System) Eph {
 		eph = &EphQZSS{}
 	case gnss.SysBDS:
 		eph = &EphBDS{}
-	case gnss.SysIRNSS:
-		eph = &EphIRNSS{}
+	case gnss.SysNavIC:
+		eph = &EphNavIC{}
 	case gnss.SysSBAS:
 		eph = &EphSBAS{}
 	default:
@@ -129,8 +129,8 @@ type EphBDS struct {
 	TOC time.Time
 }
 
-// EphIRNSS describes an indian IRNSS/NavIC ephemeris.
-type EphIRNSS struct {
+// EphNavIC describes an indian IRNSS/NavIC ephemeris.
+type EphNavIC struct {
 	PRN PRN
 	TOC time.Time
 }
@@ -161,11 +161,7 @@ func (eph *EphGPS) unmarshal(data []byte) (err error) {
 		return
 	}
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysGPS, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -262,11 +258,7 @@ func (eph *EphGLO) unmarshal(data []byte) error {
 	r := bufio.NewReader(bytes.NewReader(data))
 	line, err := r.ReadString('\n')
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysGLO, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -284,11 +276,7 @@ func (eph *EphGAL) unmarshal(data []byte) error {
 	r := bufio.NewReader(bytes.NewReader(data))
 	line, err := r.ReadString('\n')
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysGAL, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -306,11 +294,7 @@ func (eph *EphQZSS) unmarshal(data []byte) error {
 	r := bufio.NewReader(bytes.NewReader(data))
 	line, err := r.ReadString('\n')
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysQZSS, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -328,11 +312,7 @@ func (eph *EphBDS) unmarshal(data []byte) error {
 	r := bufio.NewReader(bytes.NewReader(data))
 	line, err := r.ReadString('\n')
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysBDS, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -345,16 +325,12 @@ func (eph *EphBDS) unmarshal(data []byte) error {
 	return nil
 }
 
-func (EphIRNSS) Validate() error { return nil }
-func (eph *EphIRNSS) unmarshal(data []byte) error {
+func (EphNavIC) Validate() error { return nil }
+func (eph *EphNavIC) unmarshal(data []byte) error {
 	r := bufio.NewReader(bytes.NewReader(data))
 	line, err := r.ReadString('\n')
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysIRNSS, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -372,11 +348,7 @@ func (eph *EphSBAS) unmarshal(data []byte) error {
 	r := bufio.NewReader(bytes.NewReader(data))
 	line, err := r.ReadString('\n')
 
-	snum, err := strconv.Atoi(line[1:3])
-	if err != nil {
-		return fmt.Errorf("could not parse sat num: %q: %v", line, err)
-	}
-	eph.PRN, err = newPRN(gnss.SysSBAS, int8(snum))
+	eph.PRN, err = newPRN(line[0:3])
 	if err != nil {
 		return err
 	}
@@ -512,11 +484,9 @@ func (dec *NavDecoder) readHeader() (hdr NavHeader, err error) {
 
 	// Now we can read the header
 	maxLines := 300
-read:
-	for dec.sc.Scan() {
-		dec.lineNum++
-		line := dec.sc.Text()
-		//fmt.Print(line)
+readln:
+	for dec.readLine() {
+		line := dec.line()
 
 		// The header always begins with "RINEX VERSION / TYPE".
 		if dec.lineNum == 1 {
@@ -587,14 +557,14 @@ read:
 			// my @lsecs = split ( " ", trim($val) );
 			// $self->leapSecs( $lsecs[0] );    # ab Vers. 3 hier mehrere Werte moeglich!
 		case "END OF HEADER":
-			break read
+			break readln
 		default:
 			fmt.Printf("Header field %q not handled yet\n", key)
 		}
 	}
 
 	err = dec.sc.Err()
-	return
+	return hdr, err
 }
 
 // NextEphemeris reads the next Ephemeris into the buffer.
@@ -603,9 +573,8 @@ read:
 // If there is no header we suppose the format is RINEX3.
 // TODO: read all values
 func (dec *NavDecoder) NextEphemeris() bool {
-	for dec.sc.Scan() {
-		dec.lineNum++
-		//line := dec.sc.Text()
+readln:
+	for dec.readLine() {
 		line := dec.sc.Bytes()
 
 		// RINEX 3
@@ -635,11 +604,8 @@ func (dec *NavDecoder) NextEphemeris() bool {
 			//dec.ephLines = dec.ephLines[:0] // reuse
 			//dec.ephLines = append(dec.ephLines, string(line))
 			for ii := 1; ii < nLines; ii++ {
-				dec.sc.Scan()
-				dec.lineNum++
-				if err := dec.sc.Err(); err != nil {
-					dec.setErr(fmt.Errorf("read eph lines scanner error: %v", err))
-					return false
+				if ok := dec.readLine(); !ok {
+					break readln
 				}
 				//dec.ephLines = append(dec.ephLines, dec.sc.Text())
 				dec.buf.Write(dec.sc.Bytes())
@@ -677,6 +643,21 @@ func (dec *NavDecoder) setErr(err error) {
 	if dec.err == nil || dec.err == io.EOF {
 		dec.err = err
 	}
+}
+
+// readLine reads the next line into buffer. It returns false if an error
+// occurs or EOF was reached.
+func (dec *NavDecoder) readLine() bool {
+	if ok := dec.sc.Scan(); !ok {
+		return ok
+	}
+	dec.lineNum++
+	return true
+}
+
+// line returns the current line.
+func (dec *NavDecoder) line() string {
+	return dec.sc.Text()
 }
 
 // A NavFile contains fields and methods for RINEX navigation files and includes common methods for

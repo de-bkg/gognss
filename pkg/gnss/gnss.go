@@ -13,14 +13,13 @@ const (
 	SysGAL
 	SysQZSS
 	SysBDS
-	SysIRNSS
+	SysNavIC
 	SysSBAS
 	SysMIXED
 )
 
 func (sys System) String() string {
-	// TODO change to NavIC or NAVIC
-	return [...]string{"", "GPS", "GLO", "GAL", "QZSS", "BDS", "IRNSS", "SBAS", "MIXED"}[sys]
+	return [...]string{"", "GPS", "GLO", "GAL", "QZSS", "BDS", "NavIC", "SBAS", "MIXED"}[sys]
 }
 
 // Abbr returns the systems' abbreviation used in RINEX.

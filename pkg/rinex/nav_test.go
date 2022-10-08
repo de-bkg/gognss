@@ -119,9 +119,9 @@ func TestNavDecoder_EphemeridesFromFile(t *testing.T) {
 		case *EphBDS:
 			nBDS++
 			fmt.Printf("BDS Eph: %v\n", eph)
-		case *EphIRNSS:
+		case *EphNavIC:
 			nIRNSS++
-			fmt.Printf("IRNSS Eph: %v\n", eph)
+			fmt.Printf("NavIC Eph: %v\n", eph)
 		case *EphSBAS:
 			nSBAS++
 			fmt.Printf("SBAS payload: %v\n", eph)
@@ -138,7 +138,7 @@ func TestNavDecoder_EphemeridesFromFile(t *testing.T) {
 	assert.Equal(1728, nGAL, "number of GAL epemerides")
 	assert.Equal(0, nQZSS, "number of QZSS epemerides")
 	assert.Equal(226, nBDS, "number of BDS epemerides")
-	assert.Equal(0, nIRNSS, "number of IRNSS epemerides")
+	assert.Equal(0, nIRNSS, "number of NavIC epemerides")
 	assert.Equal(1015, nSBAS, "number of SBAS epemerides")
 }
 
@@ -188,8 +188,8 @@ E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
 			fmt.Printf("QZSS Eph: %v\n", eph)
 		case *EphBDS:
 			fmt.Printf("BDS Eph: %v\n", eph)
-		case *EphIRNSS:
-			fmt.Printf("IRNSS Eph: %v\n", eph)
+		case *EphNavIC:
+			fmt.Printf("NavIC Eph: %v\n", eph)
 		case *EphSBAS:
 			fmt.Printf("SBAS payload: %v\n", eph)
 		default:
@@ -333,7 +333,7 @@ func TestUnmarshalEph(t *testing.T) {
 			   			case *EphBDS:
 			   				//fmt.Printf("BDS Eph: %v\n", eph)
 			   			case *EphIRNSS:
-			   				//fmt.Printf("IRNSS Eph: %v\n", eph)
+			   				//fmt.Printf("NavIC Eph: %v\n", eph)
 			   			case *EphSBAS:
 			   				//fmt.Printf("SBAS payload: %v\n", eph)
 			   			default:
