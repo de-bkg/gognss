@@ -67,6 +67,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.NoError(err)
 	assert.NotNil(dec)
 
+	obsCodesGPSWanted := []ObsCode{"C1C", "L1C", "S1C", "C1W", "S1W", "C2W", "L2W", "S2W", "C2L", "L2L", "S2L", "C5Q", "L5Q", "S5Q"}
 	gloSlotsWanted := map[PRN]int{{Sys: gnss.SysGLO, Num: 3}: 5, {Sys: gnss.SysGLO, Num: 4}: 6, {Sys: gnss.SysGLO, Num: 5}: 1,
 		{Sys: gnss.SysGLO, Num: 6}: -4, {Sys: gnss.SysGLO, Num: 13}: -2, {Sys: gnss.SysGLO, Num: 14}: -7, {Sys: gnss.SysGLO, Num: 15}: 0,
 		{Sys: gnss.SysGLO, Num: 16}: -1, {Sys: gnss.SysGLO, Num: 22}: -3, {Sys: gnss.SysGLO, Num: 23}: 3, {Sys: gnss.SysGLO, Num: 24}: 2}
@@ -84,6 +85,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.Equal(43, dec.Header.NSatellites, "number of satellites")
 	assert.Equal(gloSlotsWanted, dec.Header.GloSlots)
 	assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
+	assert.Equal(obsCodesGPSWanted, dec.Header.ObsTypes[gnss.SysGPS], "observation types")
 	t.Logf("RINEX Header: %+v\n", dec)
 }
 
@@ -125,6 +127,8 @@ Forced Modulo Decimation to 30 seconds                      COMMENT
 	assert.NoError(err)
 	assert.NotNil(dec)
 
+	obsCodesWanted := []ObsCode{"L1", "L2", "C1", "C2", "P1", "P2", "D1", "D2", "S1", "S2", "L5", "C5", "D5", "S5", "L7", "C7", "D7", "S7", "L8", "C8", "D8", "S8"}
+
 	assert.Equal("O", dec.Header.RINEXType, "RINEX Type")
 	assert.Equal("BRST", dec.Header.MarkerName, "Markername")
 	assert.Equal("10004M004", dec.Header.MarkerNumber, "Markernumber")
@@ -133,7 +137,7 @@ Forced Modulo Decimation to 30 seconds                      COMMENT
 	assert.Equal("5.45", dec.Header.ReceiverVersion, "ReceiverVersion")
 	assert.Equal(time.Date(2020, 6, 3, 7, 0, 0, 0, time.UTC), dec.Header.TimeOfFirstObs, "TimeOfFirstObs")
 	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
-	//assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
+	assert.Equal(obsCodesWanted, dec.Header.ObsTypes[dec.Header.SatSystem], "observation types")
 	t.Logf("RINEX Header: %+v\n", dec.Header)
 }
 
@@ -264,8 +268,7 @@ func BenchmarkReadEpochs(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for dec.NextEpoch() {
-			epo := dec.Epoch()
-			fmt.Printf("%v\n", epo)
+			_ = dec.Epoch()
 		}
 		if err := dec.Err(); err != nil {
 			fmt.Fprintln(os.Stderr, "reading standard input:", err)
@@ -332,7 +335,7 @@ func TestReadEpochs(t *testing.T) {
 	for _, obsPerSat := range firstEpo.ObsList {
 		prn := obsPerSat.Prn
 		if prn.Sys == gnss.SysGPS && prn.Num == 11 {
-			wanted := SatObs{Prn: prn, Obss: map[string]Obs{
+			wanted := SatObs{Prn: prn, Obss: map[ObsCode]Obs{
 				"C1C": {Val: 20182171.481, LLI: 0, SNR: 0},
 				"C2S": {Val: 0, LLI: 0, SNR: 0},
 				"C2W": {Val: 2.0182168741e+07, LLI: 0, SNR: 0},
@@ -431,6 +434,7 @@ func TestStat(t *testing.T) {
 	assert.Equal(time.Date(2019, 9, 27, 10, 0, 0, 0, time.UTC), stat.TimeOfFirstObs)
 	assert.Equal(time.Date(2019, 9, 27, 10, 59, 30, 0, time.UTC), stat.TimeOfLastObs)
 
+	// Sort by PRNS
 	prns := make([]PRN, 0, len(stat.Obsstats))
 	for k := range stat.Obsstats {
 		prns = append(prns, k)
@@ -439,11 +443,12 @@ func TestStat(t *testing.T) {
 	for _, prn := range prns {
 		fmt.Printf("%s: %+v\n", prn, stat.Obsstats[prn])
 	}
-	assert.Equal(map[string]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.Obsstats[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
-	assert.Equal(map[string]int{"C1C": 120, "C2S": 0, "C2W": 120, "C5Q": 0, "D1C": 120, "D2S": 0, "D2W": 120, "D5Q": 0, "L1C": 120, "L2S": 0, "L2W": 120, "L5Q": 0, "S1C": 120, "S2S": 0, "S2W": 120, "S5Q": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["G"], Num: 11}], "obs G11")
-	assert.Equal(map[string]int{"C5A": 119, "D5A": 119, "L5A": 72, "S5A": 119}, stat.Obsstats[PRN{Sys: sysPerAbbr["I"], Num: 6}], "obs I06")
-	assert.Equal(map[string]int{"C1C": 94, "C2C": 94, "C2P": 94, "D1C": 94, "D2C": 94, "D2P": 94, "L1C": 92, "L2C": 92, "L2P": 92, "S1C": 94, "S2C": 94, "S2P": 94}, stat.Obsstats[PRN{Sys: sysPerAbbr["R"], Num: 19}], "obs R19")
-	assert.Equal(map[string]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
+
+	assert.Equal(map[ObsCode]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.Obsstats[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
+	assert.Equal(map[ObsCode]int{"C1C": 120, "C2S": 0, "C2W": 120, "C5Q": 0, "D1C": 120, "D2S": 0, "D2W": 120, "D5Q": 0, "L1C": 120, "L2S": 0, "L2W": 120, "L5Q": 0, "S1C": 120, "S2S": 0, "S2W": 120, "S5Q": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["G"], Num: 11}], "obs G11")
+	assert.Equal(map[ObsCode]int{"C5A": 119, "D5A": 119, "L5A": 72, "S5A": 119}, stat.Obsstats[PRN{Sys: sysPerAbbr["I"], Num: 6}], "obs I06")
+	assert.Equal(map[ObsCode]int{"C1C": 94, "C2C": 94, "C2P": 94, "D1C": 94, "D2C": 94, "D2P": 94, "L1C": 92, "L2C": 92, "L2P": 92, "S1C": 94, "S2C": 94, "S2P": 94}, stat.Obsstats[PRN{Sys: sysPerAbbr["R"], Num: 19}], "obs R19")
+	assert.Equal(map[ObsCode]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.Obsstats[PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
 }
 
 func TestStatV2(t *testing.T) {
@@ -476,7 +481,7 @@ func TestStatV2(t *testing.T) {
 	//STO BRST G G02   120     0     0   120   119     0   120   119     0   119   120   119     0
 
 	//C1:120 C2:0 C5:0 C7:0 C8:0 D1:120 D2:119 D5:0 D7:0 D8:0 L1:120 L2:119 L5:0 L7:0 L8:0 P1:0 P2:119 S1:120 S2:119 S5:0 S7:0 S8:0
-	//assert.Equal(map[string]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.Obsstats[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
+	//assert.Equal(map[ObsCode]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.Obsstats[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
 }
 
 func TestParseEpochTime(t *testing.T) {

@@ -15,8 +15,11 @@ import (
 )
 
 const (
-	// epochTimeFormat is the time format for the epoch-time in RINEX3 files.
+	// epochTimeFormat is the time format for a epoch in RINEX version 3 files.
 	epochTimeFormat string = "2006  1  2 15  4  5.0000000"
+
+	// epochTimeFormatv2 is the time format for a epoch in RINEX version 2 files.
+	epochTimeFormatv2 string = "06  1  2 15  4  5.0000000"
 
 	// rnx3StartTimeFormat is the time format for the start time in RINEX3 file names.
 	rnx3StartTimeFormat string = "20060021504"
@@ -41,7 +44,7 @@ var (
 		"E": gnss.SysGAL,
 		"J": gnss.SysQZSS,
 		"C": gnss.SysBDS,
-		"I": gnss.SysIRNSS,
+		"I": gnss.SysNavIC,
 		"S": gnss.SysSBAS,
 		"M": gnss.SysMIXED,
 	}
@@ -81,7 +84,7 @@ type RnxFil struct {
 	CountryCode    string    // ISO 3char
 	StartTime      time.Time // StartTime is the nominal start time derived from the filename.
 	DataSource     string    // [RSU]
-	FilePeriod     string    // 15M, 01D
+	FilePeriod     string    // 15M, 01D  // duration?
 	DataFreq       string    // 30S, not for nav files // TODO make type frequency!!
 	DataType       string    // The data type abbreviations GO, RO, MN, MM, ...
 	Format         string    // rnx, crx, etc. Attention: Format and Hatanaka are dependent!

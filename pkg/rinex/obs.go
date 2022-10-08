@@ -1,6 +1,8 @@
 package rinex
 
 // Note: fmt.Scanf is pretty slow in Go!? https://github.com/golang/go/issues/12275#issuecomment-133796990
+//
+// TODO: read headers that may occur at any position in the file.
 
 import (
 	"bufio"
@@ -20,9 +22,12 @@ import (
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
+// The RINEX observation code that specifies frequency, signal and tracking mode like "L1C".
+type ObsCode string
+
 // Options for global settings.
 type Options struct {
-	SatSys string // satellite systems GRE...
+	SatSys string // satellite systems GRE... Why not gnss.System?
 }
 
 // DiffOptions sets options for file comparison.
@@ -61,7 +66,6 @@ func newPRN(prn string) (PRN, error) {
 	if !ok {
 		return PRN{}, fmt.Errorf("invalid satellite system: %q", prn)
 	}
-
 	snum, err := strconv.Atoi(prn[1:3])
 	if err != nil {
 		return PRN{}, fmt.Errorf("parse sat num: %q: %v", prn, err)
@@ -69,7 +73,6 @@ func newPRN(prn string) (PRN, error) {
 	if snum < 1 || snum > 60 {
 		return PRN{}, fmt.Errorf("check satellite number '%v%d'", sys, snum)
 	}
-
 	return PRN{Sys: sys, Num: int8(snum)}, nil
 }
 
@@ -93,8 +96,8 @@ func (p ByPRN) Less(i, j int) bool {
 
 // SatObs contains all observations for a satellite per epoch.
 type SatObs struct {
-	Prn  PRN
-	Obss map[string]Obs // L1C: Obs{Val:0, LLI:0, SNR:0}, L2C: Obs{Val:...},...
+	Prn  PRN             // The satellite number or PRN.
+	Obss map[ObsCode]Obs // A map of observations with the obs-code as key. L1C: Obs{Val:0, LLI:0, SNR:0}, L2C: Obs{Val:...},...
 }
 
 // SyncEpochs contains two epochs from different files with the same timestamp.
@@ -105,10 +108,10 @@ type SyncEpochs struct {
 
 // Epoch contains a RINEX data epoch.
 type Epoch struct {
-	Time    time.Time // epoch time
-	Flag    int8      // Epoch flag 0:OK, 1:power failure between previous and current epoch, >1 : Special event.
-	NumSat  uint8     // The number of satellites in this epoch.
-	ObsList []SatObs  // A list of observations per PRN.
+	Time    time.Time // The epoch time.
+	Flag    int8      // The epoch flag 0:OK, 1:power failure between previous and current epoch, >1 : Special event.
+	NumSat  uint8     // The number of satellites per epoch.
+	ObsList []SatObs  // The list of observations per epoch.
 	//Error   error // e.g. parsing error
 }
 
@@ -118,8 +121,8 @@ func (epo *Epoch) Print() {
 	fmt.Printf("%s Flag: %d #prn: %d\n", epo.Time.Format(time.RFC3339Nano), epo.Flag, epo.NumSat)
 	for _, satObs := range epo.ObsList {
 		fmt.Printf("%v -------------------------------------\n", satObs.Prn)
-		for typ, obs := range satObs.Obss {
-			fmt.Printf("%s: %+v\n", typ, obs)
+		for code, obs := range satObs.Obss {
+			fmt.Printf("%s: %+v\n", code, obs)
 		}
 	}
 }
@@ -147,14 +150,14 @@ func (epo *Epoch) PrintTab(opts Options) {
 	}
 }
 
-// ObsMeta stores some metadata about a RINEX obs file.
+// ObsMeta holds some metadata about a RINEX obs file.
 type ObsMeta struct {
-	NumEpochs      int                    `json:"numEpochs"`
-	NumSatellites  int                    `json:"numSatellites"` // The number of satellites derived from the header.
-	Sampling       time.Duration          `json:"sampling"`      // The saampling interval derived from the data.
-	TimeOfFirstObs time.Time              `json:"timeOfFirstObs"`
-	TimeOfLastObs  time.Time              `json:"timeOfLastObs"`
-	Obsstats       map[PRN]map[string]int `json:"obsstats"` // Number of observations per PRN and observation-type.
+	NumEpochs      int                     `json:"numEpochs"`      // The number of epochs in the file.
+	NumSatellites  int                     `json:"numSatellites"`  // The number of satellites derived from the header.
+	Sampling       time.Duration           `json:"sampling"`       // The saampling interval derived from the data.
+	TimeOfFirstObs time.Time               `json:"timeOfFirstObs"` // Time of the first observation.
+	TimeOfLastObs  time.Time               `json:"timeOfLastObs"`  // Time of the last observation.
+	Obsstats       map[PRN]map[ObsCode]int `json:"obsstats"`       // Number of observations per PRN and observation-type.
 }
 
 // A ObsHeader provides the RINEX Observation Header information.
@@ -179,7 +182,7 @@ type ObsHeader struct {
 	Position     Coord    // Geocentric approximate marker position [m]
 	AntennaDelta CoordNEU // North,East,Up deltas in [m]
 
-	ObsTypes map[gnss.System][]string // List of all observation types per GNSS.
+	ObsTypes map[gnss.System][]ObsCode // List of all observation types per GNSS.
 
 	SignalStrengthUnit string
 	Interval           float64 // Observation interval in seconds
@@ -196,8 +199,7 @@ type ObsHeader struct {
 type ObsDecoder struct {
 	// The Header is valid after NewObsDecoder or Reader.Reset. The header must exist,
 	// otherwise ErrNoHeader will be returned.
-	Header ObsHeader
-	//b       *bufio.Reader // remove!!!
+	Header  ObsHeader
 	sc      *bufio.Scanner
 	epo     *Epoch // the current epoch
 	syncEpo *Epoch // the snchronized epoch from a second decoder
@@ -220,21 +222,18 @@ func (dec *ObsDecoder) Err() error {
 	if dec.err == io.EOF {
 		return nil
 	}
-
 	return dec.err
 }
 
-// readHeader reads a RINEX Navigation header. If the Header does not exist,
+// readHeader reads a RINEX Observation header. If the Header does not exist,
 // a ErrNoHeader error will be returned.
 func (dec *ObsDecoder) readHeader() (hdr ObsHeader, err error) {
-	hdr.ObsTypes = map[gnss.System][]string{}
+	hdr.ObsTypes = map[gnss.System][]ObsCode{}
 	maxLines := 800
-	rememberMe := ""
-read:
-	for dec.sc.Scan() {
-		dec.lineNum++
-		line := dec.sc.Text()
-		//fmt.Print(line)
+	var rememberSys gnss.System
+readln:
+	for dec.readLine() {
+		line := dec.line()
 
 		if dec.lineNum > maxLines {
 			return hdr, fmt.Errorf("reading header failed: line %d reached without finding end of header", maxLines)
@@ -246,7 +245,6 @@ read:
 		// RINEX files are ASCII, so we can write:
 		val := line[:60]
 		key := strings.TrimSpace(line[60:])
-
 		hdr.labels = append(hdr.labels, key)
 
 		switch key {
@@ -315,31 +313,35 @@ read:
 				hdr.AntennaDelta.N = f64
 			}
 		case "SYS / # / OBS TYPES":
-			sysStr := val[:1]
-			if sysStr == " " { // line continued
-				sysStr = rememberMe
+			var sys gnss.System
+			if val[:1] == " " { // line continued
+				sys = rememberSys
 			} else {
-				rememberMe = sysStr
+				ok := false
+				if sys, ok = sysPerAbbr[val[:1]]; !ok {
+					err = fmt.Errorf("invalid satellite system: %q: line %d", val[:1], dec.lineNum)
+					return
+				}
+				rememberSys = sys
+				nTypes, err := strconv.Atoi(strings.TrimSpace(val[3:6]))
+				if err != nil {
+					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				}
+				hdr.ObsTypes[sys] = make([]ObsCode, 0, nTypes)
 			}
-
-			sys, ok := sysPerAbbr[sysStr]
-			if !ok {
-				err = fmt.Errorf("invalid satellite system: %q: line %d", val[:1], dec.lineNum)
-				return
-			}
-
-			if strings.TrimSpace(val[3:6]) != "" { // number of obstypes
-				hdr.ObsTypes[sys] = strings.Fields(val[7:])
-			} else {
-				hdr.ObsTypes[sys] = append(hdr.ObsTypes[sys], strings.Fields(val[7:])...)
-			}
+			obscodes := convStringsToObscodes(strings.Fields(val[7:]))
+			hdr.ObsTypes[sys] = append(hdr.ObsTypes[sys], obscodes...)
 		case "# / TYPES OF OBSERV": // RINEX-2
 			sys := hdr.SatSystem
-			if strings.TrimSpace(val[:6]) != "" { // number of obstypes
-				hdr.ObsTypes[sys] = strings.Fields(val[7:])
-			} else {
-				hdr.ObsTypes[sys] = append(hdr.ObsTypes[sys], strings.Fields(val[7:])...)
+			if strings.TrimSpace(val[:6]) != "" { // number of obs types
+				nTypes, err := strconv.Atoi(strings.TrimSpace(val[:6]))
+				if err != nil {
+					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				}
+				hdr.ObsTypes[sys] = make([]ObsCode, 0, nTypes)
 			}
+			obscodes := convStringsToObscodes(strings.Fields(val[7:]))
+			hdr.ObsTypes[sys] = append(hdr.ObsTypes[sys], obscodes...)
 		case "SIGNAL STRENGTH UNIT":
 			hdr.SignalStrengthUnit = strings.TrimSpace(val[:20])
 		case "INTERVAL":
@@ -397,14 +399,14 @@ read:
 		case "PRN / # OF OBS": // optional
 			// TODO
 		case "END OF HEADER":
-			break read
+			break readln
 		default:
 			fmt.Printf("Header field %q not handled yet\n", key)
 		}
 	}
 
 	err = dec.sc.Err()
-	return
+	return hdr, err
 }
 
 // NextEpoch reads the observations for the next epoch.
@@ -419,21 +421,20 @@ func (dec *ObsDecoder) NextEpoch() bool {
 
 // Read RINEX version 2 obs file.
 func (dec *ObsDecoder) nextEpochv2() bool {
-	for dec.sc.Scan() {
-		dec.lineNum++
-		line := dec.sc.Text()
-
+readln:
+	for dec.readLine() {
+		line := dec.line()
 		if len(line) < 1 {
 			continue
 		}
 
-		epTime, err := time.Parse(epochTimeFormatv2, line[1:26])
+		epoTime, err := time.Parse(epochTimeFormatv2, line[1:26])
 		if err != nil {
 			dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
 			return false
 		}
 
-		epochFlag, err := strconv.Atoi(line[28:29])
+		epoFlag, err := strconv.Atoi(line[28:29])
 		if err != nil {
 			dec.setErr(fmt.Errorf("parsing epoch flag in line %d: %q", dec.lineNum, line))
 			return false
@@ -451,9 +452,10 @@ func (dec *ObsDecoder) nextEpochv2() bool {
 		sats := make([]PRN, 0, numSat)
 		for iSat := 0; iSat < numSat; iSat++ {
 			if iSat > 0 && iSat%12 == 0 {
-				dec.sc.Scan()
-				dec.lineNum++
-				line = dec.sc.Text()
+				if ok := dec.readLine(); !ok {
+					break readln
+				}
+				line = dec.line()
 				pos = 32
 			}
 
@@ -468,29 +470,29 @@ func (dec *ObsDecoder) nextEpochv2() bool {
 				return false
 			}
 			sats = append(sats, prn)
-			//_currEpo.rnxSat[iSat].prn.set(sys, satNum);
 			pos += 3
 		}
 
-		dec.epo = &Epoch{Time: epTime, Flag: int8(epochFlag), NumSat: uint8(numSat),
+		dec.epo = &Epoch{Time: epoTime, Flag: int8(epoFlag), NumSat: uint8(numSat),
 			ObsList: make([]SatObs, 0, numSat)}
 
 		// Read observations
 		obsTypes := dec.Header.ObsTypes[dec.Header.SatSystem]
-		// for ii := 0; ii < numSat; ii++ {
 		for _, prn := range sats {
-			dec.sc.Scan()
-			dec.lineNum++
-			line = dec.sc.Text()
+			if ok := dec.readLine(); !ok {
+				break readln
+			}
+			line = dec.line()
 			linelen := len(line)
 
-			obsPerTyp := make(map[string]Obs, len(obsTypes))
+			obsPerTyp := make(map[ObsCode]Obs, len(obsTypes))
 			pos := 0
 			for ityp, typ := range obsTypes {
 				if ityp > 0 && ityp%5 == 0 {
-					dec.sc.Scan()
-					dec.lineNum++
-					line = dec.sc.Text()
+					if ok := dec.readLine(); !ok {
+						break readln
+					}
+					line = dec.line()
 					linelen = len(line)
 					pos = 0
 				}
@@ -523,10 +525,10 @@ func (dec *ObsDecoder) nextEpochv2() bool {
 }
 
 func (dec *ObsDecoder) nextEpoch() bool {
-	for dec.sc.Scan() {
+readln:
+	for dec.readLine() {
 		dec.lineNum++
-		line := dec.sc.Text()
-
+		line := dec.line()
 		if len(line) < 1 {
 			continue
 		}
@@ -536,14 +538,13 @@ func (dec *ObsDecoder) nextEpoch() bool {
 			continue
 		}
 
-		//> 2018 11 06 19 00  0.0000000  0 31
-		epTime, err := time.Parse(epochTimeFormat, line[2:29])
+		epoTime, err := time.Parse(epochTimeFormat, line[2:29])
 		if err != nil {
 			dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
 			return false
 		}
 
-		epochFlag, err := strconv.Atoi(line[31:32])
+		epoFlag, err := strconv.Atoi(line[31:32])
 		if err != nil {
 			dec.setErr(fmt.Errorf("parsing epoch flag in line %d: %q", dec.lineNum, line))
 			return false
@@ -555,14 +556,15 @@ func (dec *ObsDecoder) nextEpoch() bool {
 			return false
 		}
 
-		dec.epo = &Epoch{Time: epTime, Flag: int8(epochFlag), NumSat: uint8(numSat),
+		dec.epo = &Epoch{Time: epoTime, Flag: int8(epoFlag), NumSat: uint8(numSat),
 			ObsList: make([]SatObs, 0, numSat)}
 
 		// Read observations
 		for ii := 1; ii <= numSat; ii++ {
-			dec.sc.Scan()
-			dec.lineNum++
-			line = dec.sc.Text()
+			if ok := dec.readLine(); !ok {
+				break readln
+			}
+			line = dec.line()
 			linelen := len(line)
 
 			prn, err := newPRN(line[0:3])
@@ -577,7 +579,7 @@ func (dec *ObsDecoder) nextEpoch() bool {
 
 			sys := sysPerAbbr[line[:1]]
 			ntypes := len(dec.Header.ObsTypes[sys])
-			obsPerTyp := make(map[string]Obs, ntypes)
+			obsPerTyp := make(map[ObsCode]Obs, ntypes)
 			for ityp, typ := range dec.Header.ObsTypes[sys] {
 				pos := 3 + 16*ityp
 				if pos >= linelen {
@@ -659,6 +661,21 @@ func (dec *ObsDecoder) sync(dec2 *ObsDecoder) bool {
 	return false
 }
 
+// readLine reads the next line into buffer. It returns false if an error
+// occurs or EOF was reached.
+func (dec *ObsDecoder) readLine() bool {
+	if ok := dec.sc.Scan(); !ok {
+		return ok
+	}
+	dec.lineNum++
+	return true
+}
+
+// line returns the current line.
+func (dec *ObsDecoder) line() string {
+	return dec.sc.Text()
+}
+
 // decode an observation of a GNSS obs file.
 func decodeObs(s string) (obs Obs, err error) {
 	val := 0.0
@@ -666,7 +683,7 @@ func decodeObs(s string) (obs Obs, err error) {
 	snr := 0
 
 	if strings.TrimSpace(s) == "" {
-		return
+		return obs, err
 	}
 
 	// Value
@@ -674,8 +691,7 @@ func decodeObs(s string) (obs Obs, err error) {
 	if valStr != "" {
 		val, err = strconv.ParseFloat(valStr, 64)
 		if err != nil {
-			err = fmt.Errorf("parse obs: %q: %v", s, err)
-			return
+			return obs, fmt.Errorf("parse obs: %q: %v", s, err)
 		}
 	}
 	obs.Val = val
@@ -685,8 +701,7 @@ func decodeObs(s string) (obs Obs, err error) {
 		if s[14:15] != " " {
 			lli, err = strconv.Atoi(s[14:15])
 			if err != nil {
-				err = fmt.Errorf("parse LLI: %q: %v", s, err)
-				return
+				return obs, fmt.Errorf("parse LLI: %q: %v", s, err)
 			}
 		}
 	}
@@ -701,13 +716,12 @@ func decodeObs(s string) (obs Obs, err error) {
 		if s[15:16] != " " {
 			snr, err = strconv.Atoi(s[15:16])
 			if err != nil {
-				err = fmt.Errorf("parse LLI: %q: %v", s, err)
-				return
+				return obs, fmt.Errorf("parse LLI: %q: %v", s, err)
 			}
 		}
 	}
 	obs.SNR = int8(snr)
-	return
+	return obs, err
 }
 
 // ObsFile contains fields and methods for RINEX observation files.
@@ -787,7 +801,7 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 
 	satmap := make(map[string]int, numSat)
 
-	obsstats := make(map[PRN]map[string]int, numSat)
+	obsstats := make(map[PRN]map[ObsCode]int, numSat)
 	numOfEpochs := 0
 	intervals := make([]time.Duration, 0, 10)
 	var epo, epoPrev *Epoch
@@ -807,13 +821,10 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 				satmap[prn.String()] = 1
 			}
 
-			// observations per sat and obs-type
+			// number of observations per sat and obs-type
 			for obstype, obs := range obsPerSat.Obss {
-				if prn.Sys == gnss.SysGPS && prn.Num == 11 {
-					fmt.Printf("%s: %s: %+v\n", prn, obstype, obs)
-				}
 				if _, exists := obsstats[prn]; !exists {
-					obsstats[prn] = map[string]int{}
+					obsstats[prn] = map[ObsCode]int{}
 				}
 				if _, exists := obsstats[prn][obstype]; !exists {
 					obsstats[prn][obstype] = 0
@@ -830,7 +841,7 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 		epoPrev = epo
 	}
 	if err = dec.Err(); err != nil {
-		return
+		return stat, err
 	}
 
 	stat.TimeOfLastObs = epoPrev.Time
@@ -855,7 +866,7 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 
 	// LLIs
 
-	return
+	return stat, err
 }
 
 // Rnx3Filename returns the filename following the RINEX3 convention.
@@ -1137,7 +1148,7 @@ func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
 	for k, o1 := range obs1.Obss {
 		if o2, ok := obs2.Obss[k]; ok {
 			val1, val2 := o1.Val, o2.Val
-			if strings.HasPrefix(k, "L") { // phase observations
+			if strings.HasPrefix(string(k), "L") { // phase observations
 				val1 = getDecimal(val1)
 				val2 = getDecimal(val2)
 			}
@@ -1160,4 +1171,13 @@ func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
 	}
 
 	return ""
+}
+
+// Convert strings to Obscodes.
+func convStringsToObscodes(strs []string) []ObsCode {
+	obscodes := make([]ObsCode, 0, len(strs))
+	for _, str := range strs {
+		obscodes = append(obscodes, ObsCode(str))
+	}
+	return obscodes
 }
