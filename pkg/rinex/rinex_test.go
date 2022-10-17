@@ -199,3 +199,23 @@ func Test_rinexNamedCaptures(t *testing.T) {
 	}
 	fmt.Printf("%+v\n", md)
 }
+
+func TestGetCaseSensitiveName(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want string
+	}{
+		{name: "t1", path: "BRUX2450.22o", want: "brux2450.22o"},
+		{name: "t1-withPath", path: "/path/to/BRUX2450.22O", want: "/path/to/brux2450.22o"},
+		{name: "t2", path: "brux00bel_r_20183101900_01h_30s_mo.rnx", want: "BRUX00BEL_R_20183101900_01H_30S_MO.rnx"},
+		{name: "t2-withPath", path: "/path/to/brux00bel_r_20183101900_01h_30s_mo.rnx", want: "/path/to/BRUX00BEL_R_20183101900_01H_30S_MO.rnx"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetCaseSensitiveName(tt.path); got != tt.want {
+				t.Errorf("GetCaseSensitiveName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

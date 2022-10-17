@@ -353,6 +353,21 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 	return fn.String(), nil
 }
 
+// Returns the RINEX filename with the correct case sensitivity. RINEX-3 long filenames must be uppercase
+// except format, whereas RINEX-2 short names have to be lowercase.
+func GetCaseSensitiveName(path string) string {
+	dir := filepath.Dir(path)
+	fname := filepath.Base(path)
+	if len(fname) < 17 { // RINEX-2 short names
+		return filepath.Join(dir, strings.ToLower(fname))
+	}
+
+	// RINEX-3
+	ext := filepath.Ext(fname)
+	fnameWoExt := strings.TrimSuffix(fname, ext)
+	return filepath.Join(dir, strings.ToUpper(fnameWoExt)+strings.ToLower(ext))
+}
+
 // IsCompressed returns true if the src is compressed, otherwise false.
 func IsCompressed(src string) bool {
 	ext := filepath.Ext(src)
