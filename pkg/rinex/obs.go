@@ -150,14 +150,14 @@ func (epo *Epoch) PrintTab(opts Options) {
 	}
 }
 
-// ObsMeta holds some metadata about a RINEX obs file.
-type ObsMeta struct {
+// ObsStats holds some statistics about a RINEX obs file, derived from the data.
+type ObsStats struct {
 	NumEpochs      int                     `json:"numEpochs"`      // The number of epochs in the file.
 	NumSatellites  int                     `json:"numSatellites"`  // The number of satellites derived from the header.
 	Sampling       time.Duration           `json:"sampling"`       // The saampling interval derived from the data.
 	TimeOfFirstObs time.Time               `json:"timeOfFirstObs"` // Time of the first observation.
 	TimeOfLastObs  time.Time               `json:"timeOfLastObs"`  // Time of the last observation.
-	Obsstats       map[PRN]map[ObsCode]int `json:"obsstats"`       // Number of observations per PRN and observation-type.
+	ObsPerSat      map[PRN]map[ObsCode]int `json:"obsstats"`       // Number of observations per PRN and observation-type.
 }
 
 // A ObsHeader provides the RINEX Observation Header information.
@@ -172,7 +172,9 @@ type ObsHeader struct {
 
 	Comments []string // * comment lines
 
-	MarkerName, MarkerNumber, MarkerType string // antennas' marker name, *number and type
+	MarkerName   string // The name of the antenna marker, usually the 9-character station ID.
+	MarkerNumber string // The IERS DOMES number assigned to the station marker is expected.
+	MarkerType   string // Type of the marker. See RINEX specification. // TODO: make list.
 
 	Observer, Agency string
 
@@ -312,6 +314,7 @@ readln:
 			if f64, err := strconv.ParseFloat(ecc[2], 64); err == nil {
 				hdr.AntennaDelta.N = f64
 			}
+		case "WAVELENGTH FACT L1/2": // optional (RINEX-2 only)
 		case "SYS / # / OBS TYPES":
 			var sys gnss.System
 			if val[:1] == " " { // line continued
@@ -730,6 +733,7 @@ type ObsFile struct {
 	*RnxFil
 	Header *ObsHeader
 	Opts   *Options
+	Stats  *ObsStats // Some Obersavation statistics.
 }
 
 // NewObsFile returns a new ObsFile.
@@ -781,8 +785,8 @@ func (f *ObsFile) Diff(obsFil2 *ObsFile) error {
 	return nil
 }
 
-// Meta reads the file and returns some metadata.
-func (f *ObsFile) Meta() (stat ObsMeta, err error) {
+// ComputeObsStats reads the file computes some statistics on the observations.
+func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 	r, err := os.Open(f.Path)
 	if err != nil {
 		return
@@ -810,7 +814,7 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 		numOfEpochs++
 		epo = dec.Epoch()
 		if numOfEpochs == 1 {
-			stat.TimeOfFirstObs = epo.Time
+			stats.TimeOfFirstObs = epo.Time
 		}
 
 		for _, obsPerSat := range epo.ObsList {
@@ -841,13 +845,13 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 		epoPrev = epo
 	}
 	if err = dec.Err(); err != nil {
-		return stat, err
+		return stats, err
 	}
 
-	stat.TimeOfLastObs = epoPrev.Time
-	stat.NumEpochs = numOfEpochs
-	stat.NumSatellites = len(satmap)
-	stat.Obsstats = obsstats
+	stats.TimeOfLastObs = epoPrev.Time
+	stats.NumEpochs = numOfEpochs
+	stats.NumSatellites = len(satmap)
+	stats.ObsPerSat = obsstats
 
 	// Some checks (TODO make a separate function for checks)
 	// Check observation types, see #637
@@ -862,18 +866,20 @@ func (f *ObsFile) Meta() (stat ObsMeta, err error) {
 
 	// Sampling rate
 	sort.Slice(intervals, func(i, j int) bool { return intervals[i] < intervals[j] })
-	stat.Sampling = intervals[int(len(intervals)/2)]
+	stats.Sampling = intervals[int(len(intervals)/2)]
 
 	// LLIs
 
-	return stat, err
+	f.Stats = &stats
+
+	return stats, err
 }
 
 // Rnx3Filename returns the filename following the RINEX3 convention.
 // In most cases we must read the read the header. The countrycode must come from an external source.
-// DO NOT USE! Must parse header first!
 func (f *ObsFile) Rnx3Filename() (string, error) {
-	if f.DataFreq == "" || f.FilePeriod == "" {
+	if f.Header.RINEXVersion == 0 {
+		// Parse header first.
 		r, err := os.Open(f.Path)
 		if err != nil {
 			return "", err
