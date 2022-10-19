@@ -733,7 +733,7 @@ func (f *NavFile) Rnx3Filename() (string, error) {
 	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Minute()))
 	fn.WriteString("_")
 
-	fn.WriteString(f.FilePeriod)
+	fn.WriteString(string(f.FilePeriod))
 	fn.WriteString("_")
 
 	fn.WriteString(f.DataType)

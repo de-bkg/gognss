@@ -151,7 +151,7 @@ func TestObsFile_parseFilename(t *testing.T) {
 	assert.Equal("CAN", rnx.CountryCode, "CountryCode")
 	assert.Equal("R", rnx.DataSource, "DataSource")
 	assert.Equal(time.Date(2012, 6, 8, 10, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
-	assert.Equal("15M", rnx.FilePeriod, "FilePeriod")
+	assert.Equal(FilePeriod15Min, rnx.FilePeriod, "FilePeriod")
 	assert.Equal("01S", rnx.DataFreq, "DataFreq")
 	assert.Equal("GO", rnx.DataType, "DataType")
 	assert.Equal("rnx", rnx.Format, "Format")
@@ -164,7 +164,7 @@ func TestObsFile_parseFilename(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal("ABMF", rnx.FourCharID, "FourCharID")
 	assert.Equal(time.Date(2019, 9, 12, 20, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
-	assert.Equal("01H", rnx.FilePeriod, "FilePeriod")
+	assert.Equal(FilePeriodHourly, rnx.FilePeriod, "FilePeriod")
 	assert.Equal("crx", rnx.Format, "Format")
 	assert.Equal(true, rnx.IsHatanakaCompressed(), "Hatanaka")
 	assert.Equal("Z", rnx.Compression, "Compression")
@@ -174,7 +174,7 @@ func TestObsFile_parseFilename(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal("AGGO", rnx.FourCharID, "FourCharID")
 	assert.Equal(time.Date(2019, 8, 25, 9, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
-	assert.Equal("01H", rnx.FilePeriod, "FilePeriod")
+	assert.Equal(FilePeriodHourly, rnx.FilePeriod, "FilePeriod")
 	assert.Equal("rnx", rnx.Format, "Format")
 	assert.Equal(false, rnx.IsHatanakaCompressed(), "Hatanaka")
 	assert.Equal("Z", rnx.Compression, "Compression")
@@ -185,7 +185,7 @@ func TestObsFile_parseFilename(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal("ADIS", rnx.FourCharID, "FourCharID")
 	assert.Equal(time.Date(2019, 8, 28, 4, 0, 0, 0, time.UTC), rnx.StartTime, "StartTime")
-	assert.Equal("15M", rnx.FilePeriod, "FilePeriod")
+	assert.Equal(FilePeriod15Min, rnx.FilePeriod, "FilePeriod")
 	assert.Equal("crx", rnx.Format, "Format")
 	assert.Equal(true, rnx.IsHatanakaCompressed(), "Hatanaka")
 	assert.Equal("Z", rnx.Compression, "Compression")
@@ -195,7 +195,7 @@ func TestObsFile_parseFilename(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal("ADIS", rnx.FourCharID, "FourCharID")
 	assert.Equal(time.Date(2019, 8, 28, 4, 15, 0, 0, time.UTC), rnx.StartTime, "StartTime")
-	assert.Equal("15M", rnx.FilePeriod, "FilePeriod")
+	assert.Equal(FilePeriod15Min, rnx.FilePeriod, "FilePeriod")
 	assert.Equal("crx", rnx.Format, "Format")
 	assert.Equal(true, rnx.IsHatanakaCompressed(), "Hatanaka")
 	assert.Equal("Z", rnx.Compression, "Compression")
@@ -205,7 +205,7 @@ func TestBuildFilename(t *testing.T) {
 	assert := assert.New(t)
 
 	rnx := &ObsFile{RnxFil: &RnxFil{StartTime: time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC), DataSource: "R",
-		FilePeriod: "01H", DataFreq: "30S", DataType: "MO", Format: "rnx"}}
+		FilePeriod: FilePeriodHourly, DataFreq: "30S", DataType: "MO", Format: "rnx"}}
 
 	assert.NotNil(rnx)
 	rnx.SetStationName("WTZR")

@@ -49,9 +49,30 @@ var (
 		"M": gnss.SysMIXED,
 	}
 
+	// periodMap helps to get the FilePeriod.
+	periodMap = map[string]FilePeriod{
+		"15M": FilePeriod15Min,
+		"01H": FilePeriodHourly,
+		"01D": FilePeriodDaily,
+		"24H": FilePeriodDaily,
+		"01Y": FilePeriodYearly,
+	}
+
 	// rnxTypMap maps RINEX3 data-types to RINEX2 types.
 	rnxTypMap = map[string]string{"GO": "o", "RO": "o", "EO": "o", "JO": "o", "CO": "o", "IO": "o", "SO": "o", "MO": "o",
 		"GN": "n", "RN": "g", "EN": "l", "JN": "q", "CN": "f", "SN": "h", "MN": "p", "MM": "m"}
+)
+
+// The FilePeriod specifies the intended (nominal) collection period of a file.
+type FilePeriod string
+
+// The file periods of the RINEX format specification.
+const (
+	FilePeriodUnspecified FilePeriod = "00U"
+	FilePeriod15Min       FilePeriod = "15M" // 15 minutes, usually for high-rate 1Hz files.
+	FilePeriodHourly      FilePeriod = "01H"
+	FilePeriodDaily       FilePeriod = "01D"
+	FilePeriodYearly      FilePeriod = "01Y"
 )
 
 // FilerHandler is the interface for RINEX files..
@@ -78,17 +99,17 @@ func (f DataFrequency) String() string {
 type RnxFil struct {
 	Path string
 
-	FourCharID     string    // The 4char ID of the file or site.
-	MonumentNumber int       // The site monument number.
-	ReceiverNumber int       // The site receiver number.
-	CountryCode    string    // ISO 3char
-	StartTime      time.Time // StartTime is the nominal start time derived from the filename.
-	DataSource     string    // [RSU]
-	FilePeriod     string    // 15M, 01D  // duration?
-	DataFreq       string    // 30S, not for nav files // TODO make type frequency!!
-	DataType       string    // The data type abbreviations GO, RO, MN, MM, ...
-	Format         string    // rnx, crx, etc. Attention: Format and Hatanaka are dependent!
-	Compression    string    // gz, ...
+	FourCharID     string     // The 4char ID of the file or site.
+	MonumentNumber int        // The site monument number.
+	ReceiverNumber int        // The site receiver number.
+	CountryCode    string     // ISO 3char
+	StartTime      time.Time  // StartTime is the nominal start time derived from the filename.
+	DataSource     string     // [RSU]
+	FilePeriod     FilePeriod // The intended collection period of the file.
+	DataFreq       string     // 30S, not for nav files // TODO make type frequency!!
+	DataType       string     // The data type abbreviations GO, RO, MN, MM, ...
+	Format         string     // rnx, crx, etc. Attention: Format and Hatanaka are dependent!
+	Compression    string     // gz, ...
 	//IsHatanaka     bool   // true if file is Hatanaka compressed
 
 	Warnings []string // List of warnings that might occur when reading the file.
@@ -196,7 +217,7 @@ func (f *RnxFil) parseFilename() error {
 				}
 				f.StartTime = t
 			case 13:
-				f.FilePeriod = strings.ToUpper(v)
+				f.FilePeriod = periodMap[strings.ToUpper(v)]
 			case 14:
 				f.DataFreq = strings.ToUpper(v)
 			case 15:
@@ -216,14 +237,14 @@ func (f *RnxFil) parseFilename() error {
 				f.FourCharID = strings.ToUpper(v)
 			case 5: // highrate minutes
 				if res[4] == "0" {
-					f.FilePeriod = "01D"
+					f.FilePeriod = FilePeriodDaily
 					f.DataFreq = "30S"
 				} else {
 					if v != "" {
-						f.FilePeriod = "15M"
+						f.FilePeriod = FilePeriod15Min
 						f.DataFreq = "01S"
 					} else {
-						f.FilePeriod = "01H"
+						f.FilePeriod = FilePeriodHourly
 						f.DataFreq = "30S"
 					}
 				}
@@ -315,13 +336,13 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 	var fn strings.Builder
 	fn.WriteString(strings.ToLower(rnx.FourCharID))
 	fn.WriteString(fmt.Sprintf("%03d", rnx.StartTime.YearDay()))
-	if rnx.FilePeriod == "01D" {
+	if rnx.FilePeriod == FilePeriodDaily {
 		fn.WriteString("0")
 	} else {
 		fn.WriteString(getHourAsChar(rnx.StartTime.Hour()))
 	}
 
-	if rnx.FilePeriod == "15M" { // 15min highrates
+	if rnx.FilePeriod == FilePeriod15Min { // 15min highrates
 		d := time.Duration(rnx.StartTime.Minute()) * time.Minute
 		fn.WriteString(fmt.Sprintf("%02d", int(d.Truncate(15*time.Minute).Minutes())))
 	}
@@ -341,7 +362,7 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 
 	// Checks
 	shouldLength := 12
-	if rnx.FilePeriod == "15M" { // 15min highrates
+	if rnx.FilePeriod == FilePeriod15Min { // 15min highrates
 		shouldLength = 14
 	}
 

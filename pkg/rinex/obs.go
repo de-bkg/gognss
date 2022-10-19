@@ -878,7 +878,7 @@ func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 // Rnx3Filename returns the filename following the RINEX3 convention.
 // In most cases we must read the read the header. The countrycode must come from an external source.
 func (f *ObsFile) Rnx3Filename() (string, error) {
-	if f.Header.RINEXVersion == 0 {
+	if f.DataFreq == "" || f.FilePeriod == "" {
 		// Parse header first.
 		r, err := os.Open(f.Path)
 		if err != nil {
@@ -930,7 +930,7 @@ func (f *ObsFile) Rnx3Filename() (string, error) {
 	fn.WriteString(fmt.Sprintf("%02d", f.StartTime.Minute()))
 	fn.WriteString("_")
 
-	fn.WriteString(f.FilePeriod)
+	fn.WriteString(string(f.FilePeriod))
 	fn.WriteString("_")
 
 	fn.WriteString(f.DataFreq)
