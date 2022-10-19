@@ -93,6 +93,9 @@ func TestMergeSourcetables(t *testing.T) {
 }
 
 func TestPullStream(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	user, pass := "", ""
 	c, err := NewClient("http://www.euref-ip.net:2101", Options{Username: user, Password: pass, Timeout: 10})
 	assert.NoError(t, err)
