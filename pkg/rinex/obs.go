@@ -1005,7 +1005,7 @@ func Rnx2crx(rnxFilename string) (string, error) {
 	ext := strings.ToLower(filepath.Ext(rnxFilename))
 
 	// Check if file is already Hata decompressed
-	if ext == "crx" || ext == "d" {
+	if ext == ".crx" || ext == ".d" {
 		return rnxFilename, nil
 	}
 
@@ -1057,7 +1057,7 @@ func Crx2rnx(crxFilename string) (string, error) {
 	ext := strings.ToLower(filepath.Ext(crxFilename))
 
 	// Check if file is already Hata decompressed
-	if ext == "rnx" || ext == "o" {
+	if ext == ".rnx" || ext == ".o" {
 		return crxFilename, nil
 	}
 
