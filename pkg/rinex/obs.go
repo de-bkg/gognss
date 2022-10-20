@@ -162,9 +162,10 @@ type ObsStats struct {
 
 // A ObsHeader provides the RINEX Observation Header information.
 type ObsHeader struct {
-	RINEXVersion float32     // RINEX Format version
-	RINEXType    string      // RINEX File type. O for Obs
-	SatSystem    gnss.System // Satellite System. System is "Mixed" if more than one.
+	RINEXVersion float32 // RINEX Format version
+	RINEXType    string  // RINEX File type. O for Obs
+	// The header satellite system. Note that system is "Mixed" if more than one. Use SatSystems() to get a list of all used systems.
+	SatSystem gnss.System
 
 	Pgm   string // name of program creating this file
 	RunBy string // name of agency creating this file
@@ -195,6 +196,19 @@ type ObsHeader struct {
 	NSatellites        int         // Number of satellites, for which observations are stored in the file
 
 	labels []string // all Header Labels found
+}
+
+// SatSystems returns all used satellite systems. The header must have been read before.
+// For RINEX-2 files use SatSystem().
+func (hdr *ObsHeader) SatSystems() []gnss.System {
+	if hdr.ObsTypes == nil {
+		return []gnss.System{}
+	}
+	sysList := make([]gnss.System, 0, len(hdr.ObsTypes))
+	for sys := range hdr.ObsTypes {
+		sysList = append(sysList, sys)
+	}
+	return sysList
 }
 
 // ObsDecoder reads and decodes header and data records from a RINEX Obs input stream.

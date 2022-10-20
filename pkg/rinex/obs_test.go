@@ -84,7 +84,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
 	assert.Equal(43, dec.Header.NSatellites, "number of satellites")
 	assert.Equal(gloSlotsWanted, dec.Header.GloSlots)
-	assert.Len(dec.Header.ObsTypes, 4, "number of GNSS")
+	assert.ElementsMatch([]gnss.System{gnss.SysGPS, gnss.SysGAL, gnss.SysGLO, gnss.SysBDS}, dec.Header.SatSystems(), "used satellite systems")
 	assert.Equal(obsCodesGPSWanted, dec.Header.ObsTypes[gnss.SysGPS], "observation types")
 	t.Logf("RINEX Header: %+v\n", dec)
 }
@@ -138,6 +138,8 @@ Forced Modulo Decimation to 30 seconds                      COMMENT
 	assert.Equal(time.Date(2020, 6, 3, 7, 0, 0, 0, time.UTC), dec.Header.TimeOfFirstObs, "TimeOfFirstObs")
 	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
 	assert.Equal(obsCodesWanted, dec.Header.ObsTypes[dec.Header.SatSystem], "observation types")
+	assert.Equal([]gnss.System{gnss.SysMIXED}, dec.Header.SatSystems(), "used satellite systems")
+	assert.Equal(dec.Header.SatSystem, dec.Header.SatSystems()[0], "used satellite systems")
 	t.Logf("RINEX Header: %+v\n", dec.Header)
 }
 
