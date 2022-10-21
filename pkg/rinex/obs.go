@@ -422,6 +422,19 @@ readln:
 		}
 	}
 
+	// Check for short obs types in RINEX-3 file. Usually in RINEX-2 to 3 converted files.
+	if hdr.RINEXVersion >= 3 {
+	chktypes:
+		for sys, obscodes := range hdr.ObsTypes {
+			for _, obscode := range obscodes {
+				if len(obscode) == 2 {
+					dec.setErr(fmt.Errorf("short observation type in RINEX %f file (sys: %s)", hdr.RINEXVersion, sys))
+					break chktypes
+				}
+			}
+		}
+	}
+
 	err = dec.sc.Err()
 	return hdr, err
 }
