@@ -195,7 +195,7 @@ type ObsHeader struct {
 	LeapSeconds        int         // The current number of leap seconds
 	NSatellites        int         // Number of satellites, for which observations are stored in the file
 
-	labels []string // all Header Labels found
+	Labels []string // all Header Labels found.
 }
 
 // SatSystems returns all used satellite systems. The header must have been read before.
@@ -261,7 +261,7 @@ readln:
 		// RINEX files are ASCII, so we can write:
 		val := line[:60]
 		key := strings.TrimSpace(line[60:])
-		hdr.labels = append(hdr.labels, key)
+		hdr.Labels = append(hdr.Labels, key)
 
 		switch key {
 		//if strings.EqualFold(key, "RINEX VERSION / TYPE") {
@@ -379,6 +379,7 @@ readln:
 			hdr.TimeOfLastObs = t
 		case "RCV CLOCK OFFS APPL": // TODO implement (field is optional)
 		case "SYS / PHASE SHIFT": // optional. This header line is strongly deprecated and should be ignored by decoders.
+		case "SYS / PHASE SHIFTS": // Rnx 3.01
 		case "GLONASS SLOT / FRQ #":
 			if strings.TrimSpace(val[:3]) != "" { // number of satellites
 				nSat, err := strconv.Atoi(strings.TrimSpace(val[:3]))
@@ -763,12 +764,27 @@ type ObsFile struct {
 	Stats  *ObsStats // Some Obersavation statistics.
 }
 
-// NewObsFile returns a new ObsFile.
+// NewObsFile returns a new ObsFile. The file must exist and the name will be parsed.
 func NewObsFile(filepath string) (*ObsFile, error) {
 	// must file exist?
 	obsFil := &ObsFile{RnxFil: &RnxFil{Path: filepath}, Header: &ObsHeader{}, Opts: &Options{}}
 	err := obsFil.parseFilename()
 	return obsFil, err
+}
+
+// Parse and return the Header data.
+func (f *ObsFile) ReadHeader() (ObsHeader, error) {
+	r, err := os.Open(f.Path)
+	if err != nil {
+		return ObsHeader{}, err
+	}
+	defer r.Close()
+	dec, err := NewObsDecoder(r)
+	if err != nil {
+		return ObsHeader{}, err
+	}
+	f.Header = &dec.Header
+	return dec.Header, nil
 }
 
 // Diff compares two RINEX obs files.
@@ -1036,13 +1052,13 @@ func Rnx2crx(rnxFilename string) (string, error) {
 	} else if Rnx3FileNamePattern.MatchString(rnxFil) {
 		crxFil = Rnx3FileNamePattern.ReplaceAllString(rnxFil, "${2}.crx")
 	} else {
-		return "", fmt.Errorf("file %s with no standard RINEX extension", rnxFil)
+		return "", fmt.Errorf("rnx2crx: file has no standard RINEX extension")
 	}
 
 	//fmt.Printf("rnxFil: %s - crxFil: %s\n", rnxFil, crxFil)
 
 	if crxFil == "" || rnxFil == crxFil {
-		return "", fmt.Errorf("could not build compressed filename for %s", rnxFil)
+		return "", fmt.Errorf("rnx2crx: could not build compressed filename")
 	}
 
 	// Run compression tool
@@ -1052,13 +1068,13 @@ func Rnx2crx(rnxFilename string) (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("cmd %s failed: %v: %s", tool, err, stderr.Bytes())
+		return "", fmt.Errorf("rnx2crx failed: %v: %s", err, stderr.Bytes())
 	}
 
 	// Return filepath
 	crxFilePath := filepath.Join(dir, crxFil)
 	if _, err := os.Stat(crxFilePath); os.IsNotExist(err) {
-		return "", fmt.Errorf("compressed file does not exist: %s", crxFilePath)
+		return "", fmt.Errorf("rnx2crx failed: compressed file does not exist: %s", crxFilePath)
 	}
 	return crxFilePath, nil
 }
@@ -1088,11 +1104,11 @@ func Crx2rnx(crxFilename string) (string, error) {
 	} else if Rnx3FileNamePattern.MatchString(crxFil) {
 		rnxFil = Rnx3FileNamePattern.ReplaceAllString(crxFil, "${2}.rnx")
 	} else {
-		return "", fmt.Errorf("file %s with no standard RINEX extension", crxFil)
+		return "", fmt.Errorf("crx2rnx: file has no standard RINEX extension")
 	}
 
 	if rnxFil == "" || rnxFil == crxFil {
-		return "", fmt.Errorf("could not build uncompressed filename for %s", crxFil)
+		return "", fmt.Errorf("crx2rnx: could not build uncompressed filename")
 	}
 
 	// Run compression tool
@@ -1102,13 +1118,13 @@ func Crx2rnx(crxFilename string) (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("cmd %s failed: %v: %s", tool, err, stderr.Bytes())
+		return "", fmt.Errorf("crx2rnx failed: %v: %s", err, stderr.Bytes())
 	}
 
 	// Return filepath
 	rnxFilePath := filepath.Join(dir, rnxFil)
 	if _, err := os.Stat(rnxFilePath); os.IsNotExist(err) {
-		return "", fmt.Errorf("compressed file does not exist: %s", rnxFilePath)
+		return "", fmt.Errorf("crx2rnx failed: compressed file does not exist: %s", rnxFilePath)
 	}
 	return rnxFilePath, nil
 }

@@ -16,8 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//var homeDir string = getHomeDir()
-
 func TestObsDecoder_readHeader(t *testing.T) {
 	const header = `
      3.03           OBSERVATION DATA    M                   RINEX VERSION / TYPE
