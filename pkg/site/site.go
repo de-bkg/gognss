@@ -727,39 +727,41 @@ func (sta StationInfo) String() string {
 		antSerialSnx, sta.Ant.EccNorth, sta.Ant.EccEast, sta.Ant.EccUp, sta.Description, sta.Recv.Firmware)
 }
 
+// Returns a datetime in Bernese STA file format.
+func printSTADate(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format("2006 01 02 15 04 05")
+}
+
+// Template functions for encoding a Bernese STA file.
+var tmplFuncMap = template.FuncMap{
+	"creationTime": func() string {
+		return time.Now().Format("02-Jan-06 15:04")
+	},
+	"encodeTyp1": func(s *Site) string {
+		from := s.Antennas[0].DateInstalled
+		to := s.Antennas[len(s.Antennas)-1].DateRemoved
+		return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-24.24s",
+			s.Ident.FourCharacterID, s.Ident.DOMESNumber, "001", printSTADate(from), printSTADate(to),
+			s.Ident.FourCharacterID+"*", "")
+	},
+	"encodeTyp2": func(s *Site) string {
+		staInfo, err := s.StationInfo()
+		if err != nil {
+			panic(err)
+		}
+		var b strings.Builder
+		for _, sta := range staInfo {
+			b.WriteString(sta.String() + "\n")
+		}
+		return b.String()
+	},
+}
+
 // EncodeSTAfile encodes all sites into a single Bernese STA-file.
 func EncodeSTAfile(w io.Writer, sites []*Site) error {
-	printDate := func(t time.Time) string {
-		if t.IsZero() {
-			return ""
-		}
-		return t.Format("2006 01 02 15 04 05")
-	}
-
-	funcMap := template.FuncMap{
-		"creationTime": func() string {
-			return time.Now().Format("02-Jan-06 15:04")
-		},
-		"encodeTyp1": func(s *Site) string {
-			from := s.Antennas[0].DateInstalled
-			to := s.Antennas[len(s.Antennas)-1].DateRemoved
-			return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-24.24s",
-				s.Ident.FourCharacterID, s.Ident.DOMESNumber, "001", printDate(from), printDate(to),
-				s.Ident.FourCharacterID+"*", "")
-		},
-		"encodeTyp2": func(s *Site) string {
-			staInfo, err := s.StationInfo()
-			if err != nil {
-				panic(err)
-			}
-			var b strings.Builder
-			for _, sta := range staInfo {
-				b.WriteString(sta.String() + "\n")
-			}
-			return b.String()
-		},
-	}
-
-	t := template.Must(template.New("stafile").Funcs(funcMap).Parse(bern52StaTempl))
+	t := template.Must(template.New("stafile").Funcs(tmplFuncMap).Parse(bern52StaTempl))
 	return t.Execute(w, sites)
 }
