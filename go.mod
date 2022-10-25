@@ -5,8 +5,8 @@ go 1.18
 require (
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/stretchr/testify v1.8.0
-	github.com/urfave/cli/v2 v2.20.2
+	github.com/stretchr/testify v1.8.1
+	github.com/urfave/cli/v2 v2.20.3
 )
 
 require (
@@ -27,7 +27,7 @@ require (
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/crypto v0.0.0-20221012134737-56aed061732a // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
