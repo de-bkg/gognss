@@ -581,13 +581,13 @@ readln:
 		if dec.Header.RINEXVersion == 0 || dec.Header.RINEXVersion >= 3 {
 			//if !strings.ContainsAny(line[:1], "GREJCIS") {
 			if !bytes.ContainsAny(line[:1], "GREJCIS") {
-				fmt.Printf("stream does not start with epoch line: %q\n", line) // must not be an error
+				fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
 				continue
 			}
 
 			sys, ok := sysPerAbbr[string(line[:1])]
 			if !ok {
-				dec.setErr(fmt.Errorf("invalid satellite system: %q: line %d", line[:1], dec.lineNum))
+				dec.setErr(fmt.Errorf("rinex: invalid satellite system: %q: line %d", line[:1], dec.lineNum))
 				return false
 			}
 
@@ -627,7 +627,7 @@ readln:
 	}
 
 	if err := dec.sc.Err(); err != nil {
-		dec.setErr(fmt.Errorf("read eph scanner error: %v", err))
+		dec.setErr(fmt.Errorf("rinex: read epochs: %v", err))
 	}
 
 	return false // EOF
