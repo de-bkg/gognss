@@ -112,7 +112,7 @@ type Epoch struct {
 	Flag    int8      // The epoch flag 0:OK, 1:power failure between previous and current epoch, >1 : Special event.
 	NumSat  uint8     // The number of satellites per epoch.
 	ObsList []SatObs  // The list of observations per epoch.
-	//Error   error // e.g. parsing error
+	//Error   error // e.g. parse error
 }
 
 // Print pretty prints the epoch.
@@ -229,7 +229,7 @@ type ObsDecoder struct {
 // It is the caller's responsibility to call Close on the underlying reader when done!
 func NewObsDecoder(r io.Reader) (*ObsDecoder, error) {
 	dec := &ObsDecoder{sc: bufio.NewScanner(r)}
-	dec.Header, dec.err = dec.readHeader()
+	dec.Header, dec.err = dec.readHeader(0)
 	return dec, dec.err
 }
 
@@ -242,24 +242,19 @@ func (dec *ObsDecoder) Err() error {
 }
 
 // readHeader reads a RINEX Observation header. If the Header does not exist,
-// a ErrNoHeader error will be returned.
-func (dec *ObsDecoder) readHeader() (hdr ObsHeader, err error) {
-	hdr.ObsTypes = map[gnss.System][]ObsCode{}
-	maxLines := 800
+// a ErrNoHeader error will be returned. Only maxLines header lines are read if maxLines > 0 (see epoch flags).
+func (dec *ObsDecoder) readHeader(maxLines int) (hdr ObsHeader, err error) {
+	hdr.ObsTypes = map[gnss.System][]ObsCode{} // TODO check Header reread for new ObsTypes
+	numLines := 0
 	var rememberSys gnss.System
 readln:
 	for dec.readLine() {
 		line := dec.line()
-
-		if dec.lineNum > maxLines {
-			return hdr, fmt.Errorf("reading header failed: line %d reached without finding end of header", maxLines)
-		}
 		if len(line) < 60 {
 			continue
 		}
 
-		// RINEX files are ASCII, so we can write:
-		val := line[:60]
+		val := line[:60] // RINEX files are ASCII
 		key := strings.TrimSpace(line[60:])
 		hdr.Labels = append(hdr.Labels, key)
 
@@ -269,7 +264,7 @@ readln:
 			if f64, err := strconv.ParseFloat(strings.TrimSpace(val[:20]), 32); err == nil {
 				hdr.RINEXVersion = float32(f64)
 			} else {
-				return hdr, fmt.Errorf("parsing RINEX VERSION: %v", err)
+				return hdr, fmt.Errorf("parse RINEX VERSION: %v", err)
 			}
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
 			if sys, ok := sysPerAbbr[strings.TrimSpace(val[40:41])]; ok {
@@ -303,7 +298,7 @@ readln:
 		case "APPROX POSITION XYZ":
 			pos := strings.Fields(val)
 			if len(pos) != 3 {
-				return hdr, fmt.Errorf("parsing approx. position from line: %s", line)
+				return hdr, fmt.Errorf("parse approx. position from line: %s", line)
 			}
 			if f64, err := strconv.ParseFloat(pos[0], 64); err == nil {
 				hdr.Position.X = f64
@@ -317,7 +312,7 @@ readln:
 		case "ANTENNA: DELTA H/E/N":
 			ecc := strings.Fields(val)
 			if len(ecc) != 3 {
-				return hdr, fmt.Errorf("parsing antenna deltas from line: %s", line)
+				return hdr, fmt.Errorf("parse antenna deltas from line: %s", line)
 			}
 			if f64, err := strconv.ParseFloat(ecc[0], 64); err == nil {
 				hdr.AntennaDelta.Up = f64
@@ -342,7 +337,7 @@ readln:
 				rememberSys = sys
 				nTypes, err := strconv.Atoi(strings.TrimSpace(val[3:6]))
 				if err != nil {
-					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
 				hdr.ObsTypes[sys] = make([]ObsCode, 0, nTypes)
 			}
@@ -353,7 +348,7 @@ readln:
 			if strings.TrimSpace(val[:6]) != "" { // number of obs types
 				nTypes, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 				if err != nil {
-					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
 				hdr.ObsTypes[sys] = make([]ObsCode, 0, nTypes)
 			}
@@ -368,13 +363,13 @@ readln:
 		case "TIME OF FIRST OBS":
 			t, err := time.Parse(epochTimeFormat, strings.TrimSpace(val[:43]))
 			if err != nil {
-				return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.TimeOfFirstObs = t
 		case "TIME OF LAST OBS":
 			t, err := time.Parse(epochTimeFormat, strings.TrimSpace(val[:43]))
 			if err != nil {
-				return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.TimeOfLastObs = t
 		case "RCV CLOCK OFFS APPL": // TODO implement (field is optional)
@@ -384,7 +379,7 @@ readln:
 			if strings.TrimSpace(val[:3]) != "" { // number of satellites
 				nSat, err := strconv.Atoi(strings.TrimSpace(val[:3]))
 				if err != nil {
-					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
 				hdr.GloSlots = make(map[PRN]int, nSat)
 			}
@@ -392,11 +387,11 @@ readln:
 			for i := 0; i < len(fields)-1; i++ {
 				prn, err := newPRN(fields[i])
 				if err != nil {
-					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
 				frq, err := strconv.Atoi(fields[i+1])
 				if err != nil {
-					return hdr, fmt.Errorf("parsing %q: %v", key, err)
+					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
 				hdr.GloSlots[prn] = frq
 				i++
@@ -405,13 +400,13 @@ readln:
 		case "LEAP SECONDS": // optional. not complete! TODO: extend
 			i, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 			if err != nil {
-				return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.LeapSeconds = i
 		case "# OF SATELLITES": // optional
 			i, err := strconv.Atoi(strings.TrimSpace(val[:6]))
 			if err != nil {
-				return hdr, fmt.Errorf("parsing %q: %v", key, err)
+				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.NSatellites = i
 		case "PRN / # OF OBS": // optional
@@ -420,6 +415,10 @@ readln:
 			break readln
 		default:
 			fmt.Printf("Header field %q not handled yet\n", key)
+		}
+
+		if maxLines > 0 && numLines == maxLines {
+			break readln
 		}
 	}
 
@@ -459,22 +458,47 @@ readln:
 			continue
 		}
 
-		epoTime, err := time.Parse(epochTimeFormatv2, line[1:26])
+		epoFlag, err := strconv.Atoi(line[28:29])
 		if err != nil {
-			dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
+			dec.setErr(fmt.Errorf("rinex2: parse epoch flag in line %d: %q", dec.lineNum, line))
 			return false
 		}
 
-		epoFlag, err := strconv.Atoi(line[28:29])
+		// flag == 2: start moving antenna - no action
+		if epoFlag >= 3 {
+			numSpecialRecords, err := strconv.Atoi(strings.TrimSpace(line[29:32]))
+			if err != nil {
+				dec.setErr(fmt.Errorf("rinex: line %d: %v", dec.lineNum, err))
+				return false
+			}
+			if epoFlag == 3 || epoFlag == 4 {
+				// TODO reread header
+				// dec.readHeader(numSpecialRecords)
+				for ii := 1; ii <= numSpecialRecords; ii++ {
+					if ok := dec.readLine(); !ok {
+						break readln
+					}
+				}
+			} else {
+				for ii := 1; ii <= numSpecialRecords; ii++ {
+					if ok := dec.readLine(); !ok {
+						break readln
+					}
+				}
+			}
+			continue
+		}
+
+		epoTime, err := time.Parse(epochTimeFormatv2, line[1:26])
 		if err != nil {
-			dec.setErr(fmt.Errorf("parsing epoch flag in line %d: %q", dec.lineNum, line))
+			dec.setErr(fmt.Errorf("rinex2: line %d: %v", dec.lineNum, err))
 			return false
 		}
 
 		// Number of satellites
-		numSat, err := strconv.Atoi(strings.TrimSpace(line[30:32]))
+		numSat, err := strconv.Atoi(strings.TrimSpace(line[29:32]))
 		if err != nil {
-			dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
+			dec.setErr(fmt.Errorf("rinex2: line %d: %v", dec.lineNum, err))
 			return false
 		}
 
@@ -497,7 +521,7 @@ readln:
 
 			prn, err := newPRN(line[pos : pos+3])
 			if err != nil {
-				dec.setErr(fmt.Errorf("new PRN in line %d: %q: %v", dec.lineNum, line, err))
+				dec.setErr(fmt.Errorf("rinex2: new PRN in line %d: %q: %v", dec.lineNum, line, err))
 				return false
 			}
 			sats = append(sats, prn)
@@ -535,9 +559,9 @@ readln:
 				if end > linelen {
 					end = linelen
 				}
-				obs, err := decodeObs(line[pos:end])
+				obs, err := decodeObs(line[pos:end], epoFlag)
 				if err != nil {
-					dec.setErr(fmt.Errorf("parsing the %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
+					dec.setErr(fmt.Errorf("rinex2: parse %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
 					return false
 				}
 				obsPerTyp[typ] = obs
@@ -549,7 +573,7 @@ readln:
 	}
 
 	if err := dec.sc.Err(); err != nil {
-		dec.setErr(fmt.Errorf("read epoch scanner error: %v", err))
+		dec.setErr(fmt.Errorf("rinex2: read epochs: %v", err))
 	}
 
 	return false // EOF
@@ -558,32 +582,56 @@ readln:
 func (dec *ObsDecoder) nextEpoch() bool {
 readln:
 	for dec.readLine() {
-		dec.lineNum++
 		line := dec.line()
 		if len(line) < 1 {
 			continue
 		}
 
 		if !strings.HasPrefix(line, "> ") {
-			fmt.Printf("stream does not start with epoch line: %q\n", line) // must not be an error
+			fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
+			continue
+		}
+
+		epoFlag, err := strconv.Atoi(line[31:32])
+		if err != nil {
+			dec.setErr(fmt.Errorf("rinex: parse epoch flag in line %d: %q: %v", dec.lineNum, line, err))
+			return false
+		}
+
+		// flag == 2: start moving antenna - no action
+		if epoFlag >= 3 {
+			numSpecialRecords, err := strconv.Atoi(strings.TrimSpace(line[32:35]))
+			if err != nil {
+				dec.setErr(fmt.Errorf("rinex: line %d: %v", dec.lineNum, err))
+				return false
+			}
+			if epoFlag == 3 || epoFlag == 4 {
+				// TODO reread header
+				// dec.readHeader(numSpecialRecords)
+				for ii := 1; ii <= numSpecialRecords; ii++ {
+					if ok := dec.readLine(); !ok {
+						break readln
+					}
+				}
+			} else {
+				for ii := 1; ii <= numSpecialRecords; ii++ {
+					if ok := dec.readLine(); !ok {
+						break readln
+					}
+				}
+			}
 			continue
 		}
 
 		epoTime, err := time.Parse(epochTimeFormat, line[2:29])
 		if err != nil {
-			dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
-			return false
-		}
-
-		epoFlag, err := strconv.Atoi(line[31:32])
-		if err != nil {
-			dec.setErr(fmt.Errorf("parsing epoch flag in line %d: %q", dec.lineNum, line))
+			dec.setErr(fmt.Errorf("rinex: line %d: %v", dec.lineNum, err))
 			return false
 		}
 
 		numSat, err := strconv.Atoi(strings.TrimSpace(line[32:35]))
 		if err != nil {
-			dec.setErr(fmt.Errorf("error in line %d: %v", dec.lineNum, err))
+			dec.setErr(fmt.Errorf("rinex: line %d: %v", dec.lineNum, err))
 			return false
 		}
 
@@ -600,7 +648,7 @@ readln:
 
 			prn, err := newPRN(line[0:3])
 			if err != nil {
-				dec.setErr(fmt.Errorf("parsing sat num in line %d: %q: %v", dec.lineNum, line, err))
+				dec.setErr(fmt.Errorf("rinex: parse sat num in line %d: %q: %v", dec.lineNum, line, err))
 				return false
 			}
 
@@ -621,9 +669,9 @@ readln:
 				if end > linelen {
 					end = linelen
 				}
-				obs, err := decodeObs(line[pos:end])
+				obs, err := decodeObs(line[pos:end], epoFlag)
 				if err != nil {
-					dec.setErr(fmt.Errorf("parsing the %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
+					dec.setErr(fmt.Errorf("rinex: parse %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
 					return false
 				}
 				obsPerTyp[typ] = obs
@@ -634,7 +682,7 @@ readln:
 	}
 
 	if err := dec.sc.Err(); err != nil {
-		dec.setErr(fmt.Errorf("read epoch scanner error: %v", err))
+		dec.setErr(fmt.Errorf("rinex: read epochs: %v", err))
 	}
 
 	return false // EOF
@@ -708,7 +756,7 @@ func (dec *ObsDecoder) line() string {
 }
 
 // decode an observation of a GNSS obs file.
-func decodeObs(s string) (obs Obs, err error) {
+func decodeObs(s string, flag int) (obs Obs, err error) {
 	val := 0.0
 	lli := 0
 	snr := 0
@@ -736,10 +784,10 @@ func decodeObs(s string) (obs Obs, err error) {
 			}
 		}
 	}
-	// TODO flag powerfail
-	// if (_flgPowerFail) {
-	// 	lli |= 1;
-	//   }
+	// flag power failure
+	if flag == 1 {
+		lli |= 1
+	}
 	obs.LLI = int8(lli)
 
 	// SNR

@@ -358,6 +358,30 @@ func TestReadEpochs(t *testing.T) {
 	}
 	assert.Equal(120, numOfEpochs, "# epochs")
 	t.Logf("got all epochs: %d", numOfEpochs)
+
+	assert.Equal(5275, dec.lineNum, "# lines")
+}
+
+func TestReadEpochsWithFlag4(t *testing.T) {
+	assert := assert.New(t)
+	// this file contains header at the end of the file
+	// TODO find better example
+	filepath := "testdata/white/kais329w.18o"
+	r, err := os.Open(filepath)
+	assert.NoError(err)
+	defer r.Close()
+
+	dec, err := NewObsDecoder(r)
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	numOfEpochs := 0
+	for dec.NextEpoch() {
+		numOfEpochs++
+		_ = dec.Epoch()
+	}
+	err = dec.Err()
+	assert.NoError(err)
 }
 
 func TestReadEpochsRINEX2(t *testing.T) {
@@ -727,9 +751,10 @@ func Test_decodeObs(t *testing.T) {
 		{name: "t4", s: "      -105.814  ", wantObs: Obs{Val: float64(-105.814), LLI: int8(0), SNR: int8(0)}, wantErr: false},
 		{name: "t5", s: "      -105.814a_", wantObs: Obs{Val: float64(-105.814)}, wantErr: true},
 	}
+	epoFlag := 0
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotObs, err := decodeObs(tt.s)
+			gotObs, err := decodeObs(tt.s, epoFlag)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("decodeObs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -739,4 +764,19 @@ func Test_decodeObs(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_decodeEpoLineHlp(t *testing.T) {
+	// Helper test. Go slices are inclusive-exclusive.
+	// Rnx2
+	line := " 20  6  3  7  0 30.0000000  0 32S25G14R07G29G24R06R24G15G02G12G19G10"
+	assert.Equal(t, "20  6  3  7  0 30.0000000", line[1:26], "epoch time")
+	assert.Equal(t, "0", line[28:29], "epoch flag")
+	assert.Equal(t, " 32", line[29:32], "num Satellites")
+
+	// Rnx3
+	line = "> 2018 11 25 22 59 30.0000000  0 26"
+	assert.Equal(t, "2018 11 25 22 59 30.0000000", line[2:29], "epoch time")
+	assert.Equal(t, "0", line[31:32], "epoch flag")
+	assert.Equal(t, " 26", line[32:35], "num Satellites")
 }
