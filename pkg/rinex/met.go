@@ -31,7 +31,7 @@ type MeteoHeader struct {
 	Comments []string
 }
 
-// NewMeteoFile returns a new RINEX Meteo file.
+// NewMeteoFile returns a new RINEX Meteo file. The file must exist and the name will be parsed.
 func NewMeteoFile(filepath string) (*MeteoFile, error) {
 	met := &MeteoFile{RnxFil: &RnxFil{Path: filepath}}
 	err := met.parseFilename()
