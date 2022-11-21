@@ -669,11 +669,26 @@ type NavFile struct {
 	Header *NavHeader
 }
 
-// NewNavFile returns a new Navigation File object.
+// NewNavFile returns a new Navigation File object. The file must exist and the name will be parsed.
 func NewNavFile(filepath string) (*NavFile, error) {
 	navFil := &NavFile{RnxFil: &RnxFil{Path: filepath}}
 	err := navFil.parseFilename()
 	return navFil, err
+}
+
+// Parse and return the Header lines.
+func (f *NavFile) ReadHeader() (NavHeader, error) {
+	r, err := os.Open(f.Path)
+	if err != nil {
+		return NavHeader{}, err
+	}
+	defer r.Close()
+	dec, err := NewNavDecoder(r)
+	if err != nil {
+		return NavHeader{}, err
+	}
+	f.Header = &dec.Header
+	return dec.Header, nil
 }
 
 // Compress a navigation file using the gzip format.
