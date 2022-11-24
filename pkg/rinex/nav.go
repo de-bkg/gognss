@@ -314,54 +314,65 @@ readln:
 //
 // TODO: read all values
 func (dec *NavDecoder) NextEphemeris() bool {
+	if dec.Header.RINEXVersion < 3 {
+		// TODO
+		//return dec.nextEphemerisv2()
+		panic("rinex-2 not implemented yet")
+	}
+	if dec.Header.RINEXVersion >= 4 {
+		// TODO
+		panic("rinex-4 not implemented yet")
+	}
+	// RINEX Version 3
+	return dec.nextEphemerisv3()
+}
+
+// decode RINEX Version 3 ephemeris.
+func (dec *NavDecoder) nextEphemerisv3() bool {
 	for dec.readLine() {
 		line := dec.line()
-
-		// RINEX 3
-		if dec.Header.RINEXVersion == 0 || dec.Header.RINEXVersion >= 3 {
-			if !strings.ContainsAny(line[:1], "GREJCIS") {
-				fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
-				continue
-			}
-
-			sys, ok := sysPerAbbr[line[:1]]
-			if !ok {
-				dec.setErr(fmt.Errorf("rinex: invalid satellite system: %q: line %d", line[:1], dec.lineNum))
-				return false
-			}
-
-			var err error
-			switch sys {
-			case gnss.SysGPS:
-				err = dec.decodeGPS()
-			case gnss.SysGLO:
-				err = dec.decodeGLO()
-			case gnss.SysGAL:
-				err = dec.decodeGAL()
-			case gnss.SysQZSS:
-				err = dec.decodeQZSS()
-			case gnss.SysBDS:
-				err = dec.decodeBDS()
-			case gnss.SysNavIC:
-				err = dec.decodeNavIC()
-			case gnss.SysSBAS:
-				err = dec.decodeSBAS()
-			default:
-				fmt.Printf("unknown satellite system: %v", sys)
-				os.Exit(1)
-			}
-
-			if err != nil {
-				dec.setErr(err)
-				return false
-			}
-
-			return true
+		if len(line) < 1 {
+			continue
 		}
 
-		// RINEX 2
-		dec.setErr(fmt.Errorf("RINEX 2 not supported so far"))
-		return false
+		if !strings.ContainsAny(line[:1], "GREJCIS") {
+			fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
+			continue
+		}
+
+		sys, ok := sysPerAbbr[line[:1]]
+		if !ok {
+			dec.setErr(fmt.Errorf("rinex: invalid satellite system: %q: line %d", line[:1], dec.lineNum))
+			return false
+		}
+
+		var err error
+		switch sys {
+		case gnss.SysGPS:
+			err = dec.decodeGPS()
+		case gnss.SysGLO:
+			err = dec.decodeGLO()
+		case gnss.SysGAL:
+			err = dec.decodeGAL()
+		case gnss.SysQZSS:
+			err = dec.decodeQZSS()
+		case gnss.SysBDS:
+			err = dec.decodeBDS()
+		case gnss.SysNavIC:
+			err = dec.decodeNavIC()
+		case gnss.SysSBAS:
+			err = dec.decodeSBAS()
+		default:
+			fmt.Printf("unknown satellite system: %v", sys)
+			os.Exit(1)
+		}
+
+		if err != nil {
+			dec.setErr(err)
+			return false
+		}
+
+		return true
 	}
 
 	if err := dec.sc.Err(); err != nil {
