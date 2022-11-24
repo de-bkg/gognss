@@ -142,68 +142,6 @@ func TestNavDecoder_EphemeridesFromFile(t *testing.T) {
 	assert.Equal(1015, nSBAS, "number of SBAS epemerides")
 }
 
-func TestNavDecoder_EphemeridesFromBuf(t *testing.T) {
-	assert := assert.New(t)
-
-	const ehems = `
-G20 2020 06 18 00 00 00 5.274894647300E-04-1.136868377216E-13 0.000000000000E+00
-     8.300000000000E+01 2.078125000000E+01 5.373438110980E-09-2.252452975616E+00
-     1.156702637672E-06 5.203154985793E-03 7.405877113342E-06 5.153647661209E+03
-     3.456000000000E+05-1.247972249985E-07-2.679776962713E+00 2.048909664154E-08
-     9.344138223835E-01 2.252500000000E+02 2.669542608731E+00-8.333918569731E-09
-     4.632335812523E-10 1.000000000000E+00 2.110000000000E+03 0.000000000000E+00
-     2.000000000000E+00 0.000000000000E+00-8.847564458847E-09 8.300000000000E+01
-     3.393480000000E+05 4.000000000000E+00
-R21 2020 06 17 09 45 00-1.319693401456E-04-2.728484105319E-12 2.937000000000E+05
-    -1.042075537109E+04 2.813003540039E+00-2.793967723846E-09 0.000000000000E+00
-    -6.330877929688E+03-1.233654975891E+00 0.000000000000E+00 4.000000000000E+00
-    -2.240664208984E+04-9.621353149414E-01 9.313225746155E-10 0.000000000000E+00
-E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
-     7.400000000000E+01-1.238437500000E+02 2.376527563341E-09 3.130998000440E+00
-    -5.731359124184E-06 2.621184103191E-05 1.052953302860E-05 5.440627540588E+03
-     2.748000000000E+05 1.303851604462E-08 2.421956189340E+00-2.607703208923E-08
-     9.848811109258E-01 1.224062500000E+02 1.660149314991E+00-5.262004897911E-09
-     8.571785620706E-11 5.170000000000E+02 2.110000000000E+03
-     3.120000000000E+00 0.000000000000E+00 3.958120942116E-09 4.423782229424E-09
-     2.754650000000E+05
-	`
-
-	dec, err := NewNavDecoder(strings.NewReader(ehems))
-	assert.EqualError(err, ErrNoHeader.Error())
-	assert.NotNil(dec)
-
-	nEphs := 0
-	for dec.NextEphemeris() {
-		eph := dec.Ephemeris()
-
-		nEphs++
-		switch typ := eph.(type) {
-		case *EphGPS:
-			fmt.Printf("GPS Eph: %v\n", eph)
-		case *EphGLO:
-			fmt.Printf("GLO Eph: %v\n", eph)
-		case *EphGAL:
-			fmt.Printf("Gal Eph: %v\n", eph)
-		case *EphQZSS:
-			fmt.Printf("QZSS Eph: %v\n", eph)
-		case *EphBDS:
-			fmt.Printf("BDS Eph: %v\n", eph)
-		case *EphNavIC:
-			fmt.Printf("NavIC Eph: %v\n", eph)
-		case *EphSBAS:
-			fmt.Printf("SBAS payload: %v\n", eph)
-		default:
-			t.Fatalf("unknown type %T\n", typ)
-		}
-	}
-	if err := dec.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading ephemerides:", err)
-	}
-
-	assert.Equal(3, nEphs, "number of epemerides")
-
-}
-
 func TestNavDecoder_EphemeridesFromStream(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
