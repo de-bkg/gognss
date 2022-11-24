@@ -66,7 +66,7 @@ func newPRN(prn string) (PRN, error) {
 	if !ok {
 		return PRN{}, fmt.Errorf("invalid satellite system: %q", prn)
 	}
-	snum, err := strconv.Atoi(prn[1:3])
+	snum, err := strconv.Atoi(strings.TrimSpace(prn[1:3]))
 	if err != nil {
 		return PRN{}, fmt.Errorf("parse sat num: %q: %v", prn, err)
 	}
@@ -820,7 +820,7 @@ func NewObsFile(filepath string) (*ObsFile, error) {
 	return obsFil, err
 }
 
-// Parse and return the Header data.
+// Parse and return the Header lines.
 func (f *ObsFile) ReadHeader() (ObsHeader, error) {
 	r, err := os.Open(f.Path)
 	if err != nil {
