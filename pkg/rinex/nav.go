@@ -2,10 +2,10 @@ package rinex
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -23,7 +23,13 @@ type Eph interface {
 	// Validate checks the ephemeris.
 	Validate() error
 
-	unmarshal(data []byte) error
+	// Returns the ephemermis' PRN.
+	GetPRN() PRN
+
+	// Returns the ephemermis' time of clock (toc).
+	GetTime() time.Time
+
+	//unmarshal(data []byte) error
 }
 
 // NewEph returns a new ephemeris having the concrete type.
@@ -50,15 +56,6 @@ func NewEph(sys gnss.System) Eph {
 	}
 
 	return eph
-}
-
-// type Unmarshaler interface {
-// 	Unmarshal([]string) error
-// }
-
-// UnmarshalEph parses the RINEX ephemeris given in lines and stores the result in the value pointed to by eph.
-func UnmarshalEph(data []byte, eph Eph) error {
-	return eph.unmarshal(data)
 }
 
 // EphGPS describes a GPS ephemeris.
@@ -105,11 +102,19 @@ type EphGPS struct {
 	FitInterval float64 // Fit interval in hours
 }
 
+func (eph *EphGPS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphGPS) GetTime() time.Time { return eph.TOC }
+func (EphGPS) Validate() error         { return nil }
+
 // EphGLO describes a GLONASS ephemeris.
 type EphGLO struct {
 	PRN PRN
 	TOC time.Time
 }
+
+func (eph *EphGLO) GetPRN() PRN        { return eph.PRN }
+func (eph *EphGLO) GetTime() time.Time { return eph.TOC }
+func (EphGLO) Validate() error         { return nil }
 
 // EphGAL describes a Galileo ephemeris.
 type EphGAL struct {
@@ -117,11 +122,19 @@ type EphGAL struct {
 	TOC time.Time
 }
 
+func (eph *EphGAL) GetPRN() PRN        { return eph.PRN }
+func (eph *EphGAL) GetTime() time.Time { return eph.TOC }
+func (EphGAL) Validate() error         { return nil }
+
 // EphQZSS describes a QZSS ephemeris.
 type EphQZSS struct {
 	PRN PRN
 	TOC time.Time
 }
+
+func (eph *EphQZSS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphQZSS) GetTime() time.Time { return eph.TOC }
+func (EphQZSS) Validate() error         { return nil }
 
 // EphBDS describes a chinese BDS ephemeris.
 type EphBDS struct {
@@ -129,11 +142,19 @@ type EphBDS struct {
 	TOC time.Time
 }
 
+func (eph *EphBDS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphBDS) GetTime() time.Time { return eph.TOC }
+func (EphBDS) Validate() error         { return nil }
+
 // EphNavIC describes an indian IRNSS/NavIC ephemeris.
 type EphNavIC struct {
 	PRN PRN
 	TOC time.Time
 }
+
+func (eph *EphNavIC) GetPRN() PRN        { return eph.PRN }
+func (eph *EphNavIC) GetTime() time.Time { return eph.TOC }
+func (EphNavIC) Validate() error         { return nil }
 
 // EphSBAS describes a SBAS payload.
 type EphSBAS struct {
@@ -141,225 +162,9 @@ type EphSBAS struct {
 	TOC time.Time
 }
 
-func (EphGPS) Validate() error { return nil }
-func (eph *EphGPS) unmarshal(data []byte) (err error) {
-
-	/*
-			G12 2020 06 17 02 00 00 1.051961444318E-04-4.433786671143E-12 0.000000000000E+00
-			     6.100000000000E+01 5.971875000000E+01 4.119457306218E-09-2.150395402634E+00
-		         3.147870302200E-06 8.033315883949E-03 3.485009074211E-06 5.153677604675E+03
-			     2.664000000000E+05 1.061707735062E-07 6.666502414356E-01-5.774199962616E-08
-			     9.781878686511E-01 3.217500000000E+02 1.162895587886E+00-7.943902323989E-09
-			     1.325055193867E-10 1.000000000000E+00 2.110000000000E+03 0.000000000000E+00
-			     2.000000000000E+00 0.000000000000E+00-1.210719347000E-08 6.100000000000E+01
-				 2.592180000000E+05 4.000000000000E+00
-	*/
-
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-	if err != nil {
-		return
-	}
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	eph.ClockBias, err = parseFloat(line[23 : 23+19])
-	if err != nil {
-		return
-	}
-
-	eph.ClockDrift, err = parseFloat(line[42 : 42+19])
-	if err != nil {
-		return
-	}
-
-	eph.ClockDriftRate, err = parseFloat(line[61 : 61+19])
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.IODE, eph.Crs, eph.DeltaN, eph.M0, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.Cuc, eph.Ecc, eph.Cus, eph.SqrtA, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.Toe, eph.Cic, eph.Omega0, eph.Cis, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.I0, eph.Crc, eph.Omega, eph.OmegaDot, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.IDOT, eph.L2Codes, eph.ToeWeek, eph.L2PFlag, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.URA, eph.Health, eph.TGD, eph.IODC, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	line, err = r.ReadString('\n')
-	if err != nil {
-		return
-	}
-	eph.Tom, eph.FitInterval, _, _, err = parseFloatsNavLine(line)
-	if err != nil {
-		return
-	}
-
-	return nil
-}
-
-func (EphGLO) Validate() error { return nil }
-func (eph *EphGLO) unmarshal(data []byte) error {
-
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	return nil
-}
-
-func (EphGAL) Validate() error { return nil }
-func (eph *EphGAL) unmarshal(data []byte) error {
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	return nil
-}
-
-func (EphQZSS) Validate() error { return nil }
-func (eph *EphQZSS) unmarshal(data []byte) error {
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	return nil
-}
-
-func (EphBDS) Validate() error { return nil }
-func (eph *EphBDS) unmarshal(data []byte) error {
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	return nil
-}
-
-func (EphNavIC) Validate() error { return nil }
-func (eph *EphNavIC) unmarshal(data []byte) error {
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	return nil
-}
-
-func (EphSBAS) Validate() error { return nil }
-func (eph *EphSBAS) unmarshal(data []byte) error {
-	r := bufio.NewReader(bytes.NewReader(data))
-	line, err := r.ReadString('\n')
-
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
-	}
-
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
-	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
-	}
-
-	return nil
-}
+func (eph *EphSBAS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphSBAS) GetTime() time.Time { return eph.TOC }
+func (EphSBAS) Validate() error         { return nil }
 
 // A NavHeader containes the RINEX Navigation Header information.
 // All header parameters are optional and may comprise different types of ionospheric model parameters
@@ -375,29 +180,19 @@ type NavHeader struct {
 
 	Comments []string // * comment lines
 
-	labels []string // all Header Labels found
-}
-
-// A headerLabel is a RINEX Header Label.
-type headerLabel struct {
-	label    string
-	official bool
-	optional bool
+	Labels []string // all Header Labels found
 }
 
 // A NavDecoder reads and decodes header and data records from a RINEX Nav input stream.
 type NavDecoder struct {
 	// The Header is valid after NewNavDecoder or Reader.Reset. The header must not necessarily exist,
 	// e.g. if you want to read from a stream. Then ErrNoHeader will be returned.
-	Header NavHeader
-
-	//b       *bufio.Reader
-	sc  *bufio.Scanner
-	eph Eph
-	//ephLines []string
-	buf     bytes.Buffer
-	lineNum int
-	err     error
+	Header   NavHeader
+	sc       *bufio.Scanner
+	eph      Eph
+	lineNum  int
+	fastMode bool // In fast mode, only the eph type and TOC are read.
+	err      error
 }
 
 // NewNavDecoder creates a new decoder for RINEX Navigation data.
@@ -407,19 +202,14 @@ type NavDecoder struct {
 // It is the caller's responsibility to call Close on the underlying reader when done!
 func NewNavDecoder(r io.Reader) (*NavDecoder, error) {
 	var err error
-	//br := bufio.NewReader(r)
-	/* 	rc, ok := r.(io.ReadCloser)
-	   	if !ok && r != nil {
-	   		fmt.Println("WARN: new nav decoder: could not convert underlying reader to io.ReadCloser")
-	   		rc = io.NopCloser(r)
-	   	}
-	   	dec := &NavDecoder{r: rc} */
-	dec := &NavDecoder{sc: bufio.NewScanner(r)}
-	// TODO: reset reader?
-	// if err := dec.Reset(r); err != nil {
-	// 	return nil, err
-	// }
-
+	dec := &NavDecoder{
+		Header:   NavHeader{},
+		sc:       bufio.NewScanner(r),
+		eph:      nil,
+		lineNum:  0,
+		fastMode: false,
+		err:      err,
+	}
 	dec.Header, err = dec.readHeader()
 	return dec, err
 }
@@ -429,60 +219,12 @@ func (dec *NavDecoder) Err() error {
 	if dec.err == io.EOF {
 		return nil
 	}
-
 	return dec.err
 }
-
-func (dec *NavDecoder) unmarshal(sys gnss.System) error {
-	eph := NewEph(sys)
-	err := eph.unmarshal(dec.buf.Bytes())
-	if err != nil {
-		dec.setErr(err)
-		return err
-	}
-	dec.eph = eph
-	return nil
-}
-
-// Close closes the wrapped io.Reader originally passed to NewReader.
-/* func (dec *NavDecoder) Close() error {
-	dec.err = dec.r.Close()
-	return dec.err
-} */
-
-// Reset discards the Reader z's state and makes it equivalent to the
-// result of its original state from NewReader, but reading from r instead.
-// This permits reusing a Reader rather than allocating a new one.
-/* func (dec *NavDecoder) Reset(r io.Reader) error {
-	*dec = NavDecoder{
-		decompressor: z.decompressor,
-	}
-
-	if rr, ok := r.(flate.Reader); ok {
-		dec.r = rr
-	} else {
-		dec.r = bufio.NewReader(r)
-	}
-
-	dec.NavHeader, dec.err = dec.readHeader()
-	return dec.err
-} */
 
 // readHeader reads a RINEX Navigation header. If the Header does not exist,
 // a ErrNoHeader error will be returned.
 func (dec *NavDecoder) readHeader() (hdr NavHeader, err error) {
-	// The header always begins with "RINEX VERSION / TYPE".
-	/* 	line1 := []byte("")
-	   	line1, err = dec.b.Peek(80)
-	   	if err != nil {
-	   		return
-	   	}
-	   	if !bytes.Contains(line1, []byte("RINEX VERSION / TYPE")) {
-	   		err = ErrNoHeader
-	   		return
-	   	} */
-
-	// Now we can read the header
 	maxLines := 300
 readln:
 	for dec.readLine() {
@@ -506,7 +248,7 @@ readln:
 		val := line[:60]
 		key := strings.TrimSpace(line[60:])
 
-		hdr.labels = append(hdr.labels, key)
+		hdr.Labels = append(hdr.Labels, key)
 
 		switch key {
 		case "RINEX VERSION / TYPE":
@@ -570,49 +312,45 @@ readln:
 // NextEphemeris reads the next Ephemeris into the buffer.
 // It returns false when the scan stops, either by reaching the end of the input or an error.
 //
-// If there is no header we suppose the format is RINEX3.
 // TODO: read all values
 func (dec *NavDecoder) NextEphemeris() bool {
-readln:
 	for dec.readLine() {
-		line := dec.sc.Bytes()
+		line := dec.line()
 
 		// RINEX 3
 		if dec.Header.RINEXVersion == 0 || dec.Header.RINEXVersion >= 3 {
-			//if !strings.ContainsAny(line[:1], "GREJCIS") {
-			if !bytes.ContainsAny(line[:1], "GREJCIS") {
+			if !strings.ContainsAny(line[:1], "GREJCIS") {
 				fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
 				continue
 			}
 
-			sys, ok := sysPerAbbr[string(line[:1])]
+			sys, ok := sysPerAbbr[line[:1]]
 			if !ok {
 				dec.setErr(fmt.Errorf("rinex: invalid satellite system: %q: line %d", line[:1], dec.lineNum))
 				return false
 			}
 
-			// Write the ephemeris data into the buffer.
-			nLines := 8
+			var err error
 			switch sys {
-			case gnss.SysGLO, gnss.SysSBAS:
-				nLines = 4
+			case gnss.SysGPS:
+				err = dec.decodeGPS()
+			case gnss.SysGLO:
+				err = dec.decodeGLO()
+			case gnss.SysGAL:
+				err = dec.decodeGAL()
+			case gnss.SysQZSS:
+				err = dec.decodeQZSS()
+			case gnss.SysBDS:
+				err = dec.decodeBDS()
+			case gnss.SysNavIC:
+				err = dec.decodeNavIC()
+			case gnss.SysSBAS:
+				err = dec.decodeSBAS()
+			default:
+				fmt.Printf("unknown satellite system: %v", sys)
+				os.Exit(1)
 			}
 
-			dec.buf.Reset()
-			dec.buf.Write(line)
-			dec.buf.WriteByte('\n')
-			//dec.ephLines = dec.ephLines[:0] // reuse
-			//dec.ephLines = append(dec.ephLines, string(line))
-			for ii := 1; ii < nLines; ii++ {
-				if ok := dec.readLine(); !ok {
-					break readln
-				}
-				//dec.ephLines = append(dec.ephLines, dec.sc.Text())
-				dec.buf.Write(dec.sc.Bytes())
-				dec.buf.WriteByte('\n')
-			}
-
-			err := dec.unmarshal(sys)
 			if err != nil {
 				dec.setErr(err)
 				return false
@@ -655,9 +393,317 @@ func (dec *NavDecoder) readLine() bool {
 	return true
 }
 
+// skip i lines.
+func (dec *NavDecoder) skipLines(i int) bool {
+	for l := 0; l < i; l++ {
+		if ok := dec.readLine(); !ok {
+			return false
+		}
+	}
+	return true
+}
+
 // line returns the current line.
 func (dec *NavDecoder) line() string {
 	return dec.sc.Text()
+}
+
+func (dec *NavDecoder) decodeGPS() (err error) {
+	/*
+			G12 2020 06 17 02 00 00 1.051961444318E-04-4.433786671143E-12 0.000000000000E+00
+			     6.100000000000E+01 5.971875000000E+01 4.119457306218E-09-2.150395402634E+00
+		         3.147870302200E-06 8.033315883949E-03 3.485009074211E-06 5.153677604675E+03
+			     2.664000000000E+05 1.061707735062E-07 6.666502414356E-01-5.774199962616E-08
+			     9.781878686511E-01 3.217500000000E+02 1.162895587886E+00-7.943902323989E-09
+			     1.325055193867E-10 1.000000000000E+00 2.110000000000E+03 0.000000000000E+00
+			     2.000000000000E+00 0.000000000000E+00-1.210719347000E-08 6.100000000000E+01
+				 2.592180000000E+05 4.000000000000E+00
+	*/
+	eph := &EphGPS{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we only read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(7)
+		return nil
+	}
+
+	eph.ClockBias, err = parseFloat(line[23 : 23+19])
+	if err != nil {
+		return
+	}
+
+	eph.ClockDrift, err = parseFloat(line[42 : 42+19])
+	if err != nil {
+		return
+	}
+
+	eph.ClockDriftRate, err = parseFloat(line[61 : 61+19])
+	if err != nil {
+		return
+	}
+
+	// Line 2
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.IODE, eph.Crs, eph.DeltaN, eph.M0, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	// Line 3
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.Cuc, eph.Ecc, eph.Cus, eph.SqrtA, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	// Line 4
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.Toe, eph.Cic, eph.Omega0, eph.Cis, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	// Line 5
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.I0, eph.Crc, eph.Omega, eph.OmegaDot, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	// Line 6
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.IDOT, eph.L2Codes, eph.ToeWeek, eph.L2PFlag, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	// Line 7
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.URA, eph.Health, eph.TGD, eph.IODC, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	// Line 8
+	if ok := dec.readLine(); !ok {
+		return fmt.Errorf("could not read line")
+	}
+	line = dec.line()
+	eph.Tom, eph.FitInterval, _, _, err = parseFloatsNavLine(line)
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
+func (dec *NavDecoder) decodeGLO() (err error) {
+	eph := &EphGLO{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(3)
+		return nil
+	}
+
+	// TODO parse remaining lines
+	dec.skipLines(3)
+
+	return nil
+}
+
+func (dec *NavDecoder) decodeGAL() (err error) {
+	eph := &EphGAL{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(7)
+		return nil
+	}
+
+	// TODO parse remaining lines
+	dec.skipLines(7)
+
+	return nil
+}
+
+func (dec *NavDecoder) decodeQZSS() (err error) {
+	eph := &EphQZSS{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(7)
+		return nil
+	}
+
+	// TODO parse remaining lines
+	dec.skipLines(7)
+
+	return nil
+}
+
+func (dec *NavDecoder) decodeBDS() (err error) {
+	eph := &EphBDS{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(7)
+		return nil
+	}
+
+	// TODO parse remaining lines
+	dec.skipLines(7)
+
+	return nil
+}
+
+func (dec *NavDecoder) decodeNavIC() (err error) {
+	eph := &EphNavIC{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(7)
+		return nil
+	}
+
+	// TODO parse remaining lines
+	dec.skipLines(7)
+
+	return nil
+}
+
+func (dec *NavDecoder) decodeSBAS() (err error) {
+	eph := &EphSBAS{}
+	dec.eph = eph
+
+	// reread first line
+	line := dec.line()
+
+	eph.PRN, err = newPRN(line[0:3])
+	if err != nil {
+		return err
+	}
+
+	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	if err != nil {
+		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+	}
+
+	// In fast mode we read only the TOC.
+	if dec.fastMode {
+		dec.skipLines(3)
+		return nil
+	}
+
+	// TODO parse remaining lines
+	dec.skipLines(3)
+
+	return nil
+}
+
+// NavStats holds some statistics about a RINEX nav file, derived from the data.
+type NavStats struct {
+	NumEphemeris    int          `json:"numEphemeris"`    // The number of epochs in the file.
+	SatSystems      gnss.Systems `json:"systems"`         // The satellite systems contained.
+	Satellites      []PRN        `json:"satellites"`      // The ephemeris' satellites.
+	EarliestEphTime time.Time    `json:"earliestEphTime"` // Time of the earliest ephemeris.
+	LatestEphTime   time.Time    `json:"latestEphTime"`   // Time of the latest ephemeris.
 }
 
 // A NavFile contains fields and methods for RINEX navigation files and includes common methods for
@@ -667,6 +713,7 @@ func (dec *NavDecoder) line() string {
 type NavFile struct {
 	*RnxFil
 	Header *NavHeader
+	Stats  *NavStats // Some statistics.
 }
 
 // NewNavFile returns a new Navigation File object. The file must exist and the name will be parsed.
@@ -691,21 +738,69 @@ func (f *NavFile) ReadHeader() (NavHeader, error) {
 	return dec.Header, nil
 }
 
-// Compress a navigation file using the gzip format.
-// The source file will be removed if the compression finishes without errors.
-/* func (f *NavFile) Compress() error {
-	if IsCompressed(f.Path) {
-		return nil
-	}
-	err := archiver.CompressFile(f.Path, f.Path+".gz")
+// GetStats reads the file and retuns some statistics.
+func (f *NavFile) GetStats() (stats NavStats, err error) {
+	r, err := os.Open(f.Path)
 	if err != nil {
-		return err
+		return
 	}
-	os.Remove(f.Path)
-	f.Path = f.Path + ".gz"
-	f.Compression = "gz"
-	return nil
-} */
+	defer r.Close()
+	dec, err := NewNavDecoder(r)
+	if err != nil {
+		return
+	}
+	f.Header = &dec.Header
+	dec.fastMode = true
+
+	earliestTOC, latestTOC := time.Time{}, time.Time{}
+	seenSystems := make(map[gnss.System]int, 5)
+	seenSatellites := make(map[PRN]int, 50)
+	nEphs := 0
+	for dec.NextEphemeris() {
+		eph := dec.Ephemeris()
+		nEphs++
+
+		prn := eph.GetPRN()
+		if _, exists := seenSystems[prn.Sys]; !exists {
+			seenSystems[prn.Sys]++
+		}
+
+		if _, exists := seenSatellites[prn]; !exists {
+			seenSatellites[prn]++
+		}
+
+		stats.Satellites = append(stats.Satellites, prn)
+
+		toc := eph.GetTime()
+		if earliestTOC.IsZero() || toc.Before(earliestTOC) {
+			earliestTOC = toc
+		}
+		if latestTOC.IsZero() || toc.After(latestTOC) {
+			latestTOC = toc
+		}
+
+	}
+	if err := dec.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading ephemerides:", err)
+	}
+
+	stats.NumEphemeris = nEphs
+	stats.EarliestEphTime = earliestTOC
+	stats.LatestEphTime = latestTOC
+
+	stats.SatSystems = make([]gnss.System, 0, len(seenSystems))
+	for sys := range seenSystems {
+		stats.SatSystems = append(stats.SatSystems, sys)
+	}
+
+	stats.Satellites = make([]PRN, 0, len(seenSatellites))
+	for prn := range seenSatellites {
+		stats.Satellites = append(stats.Satellites, prn)
+	}
+	sort.Sort(ByPRN(stats.Satellites))
+
+	return stats, err
+}
 
 // Rnx3Filename returns the filename following the RINEX3 convention.
 // In most cases we must read the read the header. The countrycode must come from an external source.
@@ -759,165 +854,6 @@ func (f *NavFile) Rnx3Filename() (string, error) {
 	}
 
 	return fn.String(), nil
-}
-
-// Validate validates the RINEX Nav file. It is valid if no error is returned.
-func (f *NavFile) Validate() error {
-	r, err := os.Open(f.Path)
-	if err != nil {
-		return fmt.Errorf("open nav file: %v", err)
-	}
-	defer r.Close()
-
-	// Read the header
-	dec, err := NewNavDecoder(r)
-	if err != nil {
-		return err
-	}
-	f.Header = &dec.Header
-
-	// TODO add checks
-	err = f.validateHdr()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-var rnx3HeaderLables = []headerLabel{
-	// mandatory
-	{label: "RINEX VERSION / TYPE", official: true, optional: false},
-	{label: "PGM / RUN BY / DATE", official: true, optional: false},
-	{label: "END OF HEADER", official: true, optional: false},
-	// optional
-	{label: "COMMENT", official: true, optional: true},
-	{label: "IONOSPHERIC CORR", official: true, optional: true},
-	{label: "TIME SYSTEM CORR", official: true, optional: true},
-	{label: "LEAP SECONDS", official: true, optional: true},
-}
-
-var navHeaderLables = map[float32][]headerLabel{
-	2: {
-		// mandatory
-		headerLabel{label: "RINEX VERSION / TYPE", official: true, optional: false},
-		headerLabel{label: "PGM / RUN BY / DATE", official: true, optional: false},
-		headerLabel{label: "END OF HEADER", official: true, optional: false},
-		// optional
-		headerLabel{label: "COMMENT", official: true, optional: true},
-		headerLabel{label: "ION ALPHA", official: true, optional: true},
-		headerLabel{label: "ION BETA", official: true, optional: true},
-		headerLabel{label: "DELTA-UTC: A0,A1,T,W", official: true, optional: true},
-		headerLabel{label: "LEAP SECONDS", official: true, optional: true},
-	},
-	2.01: {
-		// mandatory
-		headerLabel{label: "RINEX VERSION / TYPE", official: true, optional: false},
-		headerLabel{label: "PGM / RUN BY / DATE", official: true, optional: false},
-		headerLabel{label: "END OF HEADER", official: true, optional: false},
-		// optional
-		headerLabel{label: "COMMENT", official: true, optional: true},
-		headerLabel{label: "ION ALPHA", official: true, optional: true},
-		headerLabel{label: "ION BETA", official: true, optional: true},
-		headerLabel{label: "DELTA-UTC: A0,A1,T,W", official: true, optional: true},
-		headerLabel{label: "LEAP SECONDS", official: true, optional: true},
-		headerLabel{label: "CORR TO SYSTEM TIME", official: true, optional: true},
-	},
-	2.10: {
-		// mandatory
-		headerLabel{label: "RINEX VERSION / TYPE", official: true, optional: false},
-		headerLabel{label: "PGM / RUN BY / DATE", official: true, optional: false},
-		headerLabel{label: "END OF HEADER", official: true, optional: false},
-		// optional
-		headerLabel{label: "COMMENT", official: true, optional: true},
-		headerLabel{label: "ION ALPHA", official: true, optional: true},
-		headerLabel{label: "ION BETA", official: true, optional: true},
-		headerLabel{label: "DELTA-UTC: A0,A1,T,W", official: true, optional: true},
-		headerLabel{label: "LEAP SECONDS", official: true, optional: true},
-		headerLabel{label: "CORR TO SYSTEM TIME", official: true, optional: true},
-	},
-	2.11: {
-		// The "CORR TO SYSTEM TIME" header record (in 2.10 for GLONASS Nav) has been replaced by the more general record "D-UTC A0,A1,T,W,S,U" in Version 2.11.
-		// mandatory
-		headerLabel{label: "RINEX VERSION / TYPE", official: true, optional: false},
-		headerLabel{label: "PGM / RUN BY / DATE", official: true, optional: false},
-		headerLabel{label: "END OF HEADER", official: true, optional: false},
-		// optional
-		headerLabel{label: "COMMENT", official: true, optional: true},
-		headerLabel{label: "ION ALPHA", official: true, optional: true},
-		headerLabel{label: "ION BETA", official: true, optional: true},
-		headerLabel{label: "DELTA-UTC: A0,A1,T,W", official: true, optional: true},
-		headerLabel{label: "LEAP SECONDS", official: true, optional: true},
-		headerLabel{label: "CORR TO SYSTEM TIME", official: true, optional: true}, // ??
-	},
-	3.00: rnx3HeaderLables,
-	3.01: rnx3HeaderLables,
-	3.02: rnx3HeaderLables,
-	3.03: rnx3HeaderLables,
-	3.04: rnx3HeaderLables,
-	4.00: {
-		headerLabel{label: "RINEX VERSION / TYPE", optional: false},
-		headerLabel{label: "PGM / RUN BY / DATE", optional: false},
-		headerLabel{label: "LEAP SECONDS", optional: false},
-		headerLabel{label: "END OF HEADER", optional: false},
-		headerLabel{label: "COMMENT", optional: true},
-		headerLabel{label: "REC # / TYPE / VERS", optional: true},
-		headerLabel{label: "MERGED FILE", optional: true},
-		headerLabel{label: "DOI", optional: true},
-		headerLabel{label: "LICENSE OF USE", optional: true},
-		headerLabel{label: "STATION INFORMATION", optional: true},
-	},
-}
-
-// Validate validates the RINEX Nav file. It is valid if no error is returned.
-func (f *NavFile) validateHdr() error {
-	hdr := f.Header
-	if hdr.RINEXVersion >= 3 {
-		if hdr.RINEXType != "N" {
-			return fmt.Errorf("invalid RINEX TYPE: %q", hdr.RINEXType)
-		}
-	}
-
-	// unofficial RINEX 2.12
-	if hdr.RINEXVersion == 2.12 {
-		return fmt.Errorf("invalid RINEX VERSION: %.2f", 2.12)
-	}
-
-	// Check header lines
-	if hLablesMust, ok := navHeaderLables[hdr.RINEXVersion]; ok {
-		// https://stackoverflow.com/questions/10485743/contains-method-for-a-slice
-
-		// Check existence of mandatory header lines
-		hlpmap := make(map[string]struct{}, len(hdr.labels))
-		for _, l := range hdr.labels {
-			hlpmap[l] = struct{}{}
-		}
-
-		ok := false
-		for _, lab := range hLablesMust {
-			if !lab.optional {
-				if _, ok = hlpmap[lab.label]; !ok {
-					f.Warnings = append(f.Warnings, fmt.Sprintf("mandatory header label does not exist: %s", lab.label))
-				}
-			}
-		}
-
-		// Vice versa, check found header lines
-		hlpmap = make(map[string]struct{}, len(hLablesMust))
-		for _, h := range hLablesMust {
-			hlpmap[h.label] = struct{}{}
-		}
-		for _, l := range hdr.labels {
-			if _, ok = hlpmap[l]; !ok {
-				f.Warnings = append(f.Warnings, fmt.Sprintf("invalid RINEX %.2f header label: %s", hdr.RINEXVersion, l))
-			}
-		}
-
-	} else {
-		return fmt.Errorf("invalid RINEX VERSION: %.2f", hdr.RINEXVersion)
-	}
-
-	return nil
 }
 
 // parseFloatsNavLine parses a common data line of a nav file, having four floats 4X,4D19.12.

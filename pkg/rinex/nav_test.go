@@ -235,16 +235,6 @@ func TestNavDecoder_EphemeridesFromStream(t *testing.T) {
 	assert.GreaterOrEqual(nEphs, 4, "number of epemerides")
 }
 
-func TestNavFile_Validate(t *testing.T) {
-	assert := assert.New(t)
-	navFilepath := "testdata/white/AREG00PER_R_20201690000_01D_MN.rnx"
-	nf, err := NewNavFile(navFilepath)
-	assert.NoError(err)
-
-	err = nf.Validate()
-	assert.NoError(err)
-}
-
 func TestNavFile_Rnx3Filename(t *testing.T) {
 	file, err := NewNavFile("testdata/white/brst155h.20n")
 	if err != nil {
@@ -260,10 +250,20 @@ func TestNavFile_Rnx3Filename(t *testing.T) {
 	assert.Equal(t, "BRST00FRA_R_20201550700_01H_GN.rnx", rnx3name)
 }
 
-func TestUnmarshalEph(t *testing.T) {
+func TestNavDecoder_decodeEph(t *testing.T) {
 	assert := assert.New(t)
 
-	gps := []byte(`G20 2020 06 18 00 00 00 5.274894647300E-04-1.136868377216E-13 0.000000000000E+00
+	navdata := `     3.04           N: GNSS NAV DATA    M: MIXED            RINEX VERSION / TYPE
+sbf2rin-13.4.3                          20200618 001127 UTC PGM / RUN BY / DATE 
+GPSA   5.5879E-09  1.4901E-08 -5.9605E-08 -1.1921E-07       IONOSPHERIC CORR    
+GPSB   8.3968E+04  9.8304E+04 -6.5536E+04 -5.2429E+05       IONOSPHERIC CORR    
+GAL    2.3750E+01  1.5625E-02  1.2329E-02  0.0000E+00       IONOSPHERIC CORR    
+GPUT  3.4924596548E-10-1.154631946E-14 503808 2110          TIME SYSTEM CORR    
+GAUT -9.3132257462E-10 0.000000000E+00 259200 2110          TIME SYSTEM CORR    
+GAGP  9.0221874416E-10 4.884981308E-15 345600 2110          TIME SYSTEM CORR    
+    18                                                      LEAP SECONDS        
+                                                            END OF HEADER 
+G20 2020 06 18 00 00 00 5.274894647300E-04-1.136868377216E-13 0.000000000000E+00
      8.300000000000E+01 2.078125000000E+01 5.373438110980E-09-2.252452975616E+00
      1.156702637672E-06 5.203154985793E-03 7.405877113342E-06 5.153647661209E+03
      3.456000000000E+05-1.247972249985E-07-2.679776962713E+00 2.048909664154E-08
@@ -271,75 +271,62 @@ func TestUnmarshalEph(t *testing.T) {
      4.632335812523E-10 1.000000000000E+00 2.110000000000E+03 0.000000000000E+00
      2.000000000000E+00 0.000000000000E+00-8.847564458847E-09 8.300000000000E+01
      3.393480000000E+05 4.000000000000E+00
-	`)
+E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
+     7.400000000000E+01-1.238437500000E+02 2.376527563341E-09 3.130998000440E+00
+    -5.731359124184E-06 2.621184103191E-05 1.052953302860E-05 5.440627540588E+03
+     2.748000000000E+05 1.303851604462E-08 2.421956189340E+00-2.607703208923E-08
+     9.848811109258E-01 1.224062500000E+02 1.660149314991E+00-5.262004897911E-09
+     8.571785620706E-11 5.170000000000E+02 2.110000000000E+03
+     3.120000000000E+00 0.000000000000E+00 3.958120942116E-09 4.423782229424E-09
+     2.754650000000E+05
+	`
+	wantGPS := &EphGPS{PRN: PRN{gnss.SysGPS, 20}, TOC: time.Date(2020, 6, 18, 0, 0, 0, 0, time.UTC), ClockBias: 5.274894647300e-04, ClockDrift: -1.136868377216e-13, ClockDriftRate: 0,
+		IODE: 83, Crs: 2.078125000000e+01, DeltaN: 5.373438110980e-09, M0: -2.252452975616,
+		Cuc: 1.156702637672e-06, Ecc: 5.203154985793e-03, Cus: 7.405877113342e-06, SqrtA: 5.153647661209e+03,
+		Toe: 3.456000000000e+05, Cic: -1.247972249985e-07, Omega0: -2.679776962713, Cis: 2.048909664154e-08,
+		I0: 9.344138223835e-01, Crc: 2.252500000000e+02, Omega: 2.669542608731, OmegaDot: -8.333918569731e-09,
+		IDOT: 4.632335812523e-10, L2Codes: 1.0, ToeWeek: 2110, L2PFlag: 0,
+		URA: 2.0, Health: 0, TGD: -8.847564458847e-09, IODC: 83,
+		Tom: 3.393480000000e+05, FitInterval: 4}
 
-	gal := []byte(`E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
-	7.400000000000E+01-1.238437500000E+02 2.376527563341E-09 3.130998000440E+00
-   -5.731359124184E-06 2.621184103191E-05 1.052953302860E-05 5.440627540588E+03
-	2.748000000000E+05 1.303851604462E-08 2.421956189340E+00-2.607703208923E-08
-	9.848811109258E-01 1.224062500000E+02 1.660149314991E+00-5.262004897911E-09
-	8.571785620706E-11 5.170000000000E+02 2.110000000000E+03
-	3.120000000000E+00 0.000000000000E+00 3.958120942116E-09 4.423782229424E-09
-	2.754650000000E+05
-	`)
+	wantGAL := &EphGAL{PRN: PRN{gnss.SysGAL, 26}, TOC: time.Date(2020, 6, 17, 4, 20, 0, 0, time.UTC)}
 
-	type args struct {
-		eph  Eph
-		data []byte
+	dec, err := NewNavDecoder(strings.NewReader(navdata))
+	assert.NoError(err)
+
+	// GPS
+	ok := dec.NextEphemeris()
+	assert.True(ok)
+	eph := dec.Ephemeris()
+	gpsEhp, ok := eph.(*EphGPS)
+	assert.True(ok)
+	assert.Equal(wantGPS, gpsEhp, "GPS eph content check")
+
+	// Galileo
+	ok = dec.NextEphemeris()
+	assert.True(ok)
+	eph = dec.Ephemeris()
+	galEhp, ok := eph.(*EphGAL)
+	assert.True(ok)
+	assert.Equal(wantGAL, galEhp, "Galileo eph content check")
+
+	assert.NoError(dec.Err())
+}
+
+func TestNavFile_GetStats(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/white/AREG00PER_R_20201690000_01D_MN.rnx"
+	fil, err := NewNavFile(filepath)
+	if err != nil {
+		t.Fatalf("%v", err)
 	}
-	tests := []struct {
-		name    string
-		args    args
-		want    Eph
-		wantErr bool
-	}{
-		{
-			name: "GPS eph",
-			args: args{NewEph(gnss.SysGPS), gps},
-			want: &EphGPS{PRN: PRN{gnss.SysGPS, 20}, TOC: time.Date(2020, 6, 18, 0, 0, 0, 0, time.UTC), ClockBias: 5.274894647300e-04, ClockDrift: -1.136868377216e-13, ClockDriftRate: 0,
-				IODE: 83, Crs: 2.078125000000e+01, DeltaN: 5.373438110980e-09, M0: -2.252452975616,
-				Cuc: 1.156702637672e-06, Ecc: 5.203154985793e-03, Cus: 7.405877113342e-06, SqrtA: 5.153647661209e+03,
-				Toe: 3.456000000000e+05, Cic: -1.247972249985e-07, Omega0: -2.679776962713, Cis: 2.048909664154e-08,
-				I0: 9.344138223835e-01, Crc: 2.252500000000e+02, Omega: 2.669542608731, OmegaDot: -8.333918569731e-09,
-				IDOT: 4.632335812523e-10, L2Codes: 1.0, ToeWeek: 2110, L2PFlag: 0,
-				URA: 2.0, Health: 0, TGD: -8.847564458847e-09, IODC: 83,
-				Tom: 3.393480000000e+05, FitInterval: 4},
-			wantErr: false,
-		},
-		{
-			name:    "GAL eph",
-			args:    args{NewEph(gnss.SysGAL), gal},
-			want:    &EphGAL{PRN: PRN{gnss.SysGAL, 26}, TOC: time.Date(2020, 6, 17, 4, 20, 0, 0, time.UTC)},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := UnmarshalEph(tt.args.data, tt.args.eph); (err != nil) != tt.wantErr {
-				t.Errorf("UnmarshalEph() error = %v, wantErr %v", err, tt.wantErr)
-			}
-
-			assert.Equal(tt.want, tt.args.eph, "content check")
-
-			/* 			switch typ := tt.want.(type) {
-			   			case *EphGPS:
-			   				assert.Equal(tt.want, tt.args.eph, "GPS check")
-			   			case *EphGLO:
-			   				//fmt.Printf("GLO Eph: %v\n", eph)
-			   			case *EphGAL:
-			   				//fmt.Printf("Gal Eph: %v\n", eph)
-			   			case *EphQZSS:
-			   				//fmt.Printf("QZSS Eph: %v\n", eph)
-			   			case *EphBDS:
-			   				//fmt.Printf("BDS Eph: %v\n", eph)
-			   			case *EphIRNSS:
-			   				//fmt.Printf("NavIC Eph: %v\n", eph)
-			   			case *EphSBAS:
-			   				//fmt.Printf("SBAS payload: %v\n", eph)
-			   			default:
-			   				t.Fatalf("unknown type %T\n", typ)
-			   			} */
-
-		})
-	}
+	assert.NotNil(fil)
+	stats, err := fil.GetStats()
+	assert.NoError(err)
+	t.Logf("%+v", stats)
+	assert.Equal(3612, stats.NumEphemeris)
+	assert.ElementsMatch([]gnss.System{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysSBAS}, stats.SatSystems, "satellite systems")
+	assert.Equal(105, len(stats.Satellites), "number of satellites")
+	assert.Equal(time.Date(2020, 6, 16, 20, 10, 0, 0, time.UTC), stats.EarliestEphTime)
+	assert.Equal(time.Date(2020, 6, 18, 00, 00, 0, 0, time.UTC), stats.LatestEphTime)
 }
