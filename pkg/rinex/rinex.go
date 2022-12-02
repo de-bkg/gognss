@@ -418,7 +418,10 @@ func ParseDoy(year, doy int) time.Time {
 }
 
 func parseFloat(s string) (float64, error) {
-	return strconv.ParseFloat(strings.TrimSpace(s), 64)
+	//s. bncutils::readDbl
+	r := strings.NewReplacer("d", "e", "D", "e")
+	scleaned := r.Replace(strings.TrimSpace(s))
+	return strconv.ParseFloat(scleaned, 64)
 }
 
 func getHourAsChar(hr int) string {
