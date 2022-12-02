@@ -487,6 +487,35 @@ func (dec *NavDecoder) parseToC() (time.Time, error) {
 	return time.Parse(TimeOfClockFormat, line[4:23])
 }
 
+// parseFloatsFromLine parses a common data line of a nav file, having 4 floats 4X,4D19.12.
+// For RINEX-2 it is 3X,4D19.12, so we have a shift of -1.
+func (dec *NavDecoder) parseFloatsFromLine(shift int) (f1, f2, f3, f4 float64, err error) {
+	line := dec.line()
+	f1, err = parseFloat(line[4+shift : 4+shift+19])
+	if err != nil {
+		return
+	}
+
+	f2, err = parseFloat(line[23+shift : 23+shift+19])
+	if err != nil {
+		return
+	}
+
+	if len(line) < 45+shift {
+		return
+	}
+	f3, err = parseFloat(line[42+shift : 42+shift+19])
+	if err != nil {
+		return
+	}
+
+	if len(line) < 64+shift {
+		return
+	}
+	f4, err = parseFloat(line[61+shift : 61+shift+19])
+	return
+}
+
 func (dec *NavDecoder) decodeGPS() (err error) {
 	eph := &EphGPS{}
 	dec.eph = eph
@@ -534,8 +563,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.IODE, eph.Crs, eph.DeltaN, eph.M0, err = parseFloatsNavLine(line, shift)
+	eph.IODE, eph.Crs, eph.DeltaN, eph.M0, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -544,8 +572,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.Cuc, eph.Ecc, eph.Cus, eph.SqrtA, err = parseFloatsNavLine(line, shift)
+	eph.Cuc, eph.Ecc, eph.Cus, eph.SqrtA, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -554,8 +581,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.Toe, eph.Cic, eph.Omega0, eph.Cis, err = parseFloatsNavLine(line, shift)
+	eph.Toe, eph.Cic, eph.Omega0, eph.Cis, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -564,8 +590,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.I0, eph.Crc, eph.Omega, eph.OmegaDot, err = parseFloatsNavLine(line, shift)
+	eph.I0, eph.Crc, eph.Omega, eph.OmegaDot, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -574,8 +599,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.IDOT, eph.L2Codes, eph.ToeWeek, eph.L2PFlag, err = parseFloatsNavLine(line, shift)
+	eph.IDOT, eph.L2Codes, eph.ToeWeek, eph.L2PFlag, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -584,8 +608,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.URA, eph.Health, eph.TGD, eph.IODC, err = parseFloatsNavLine(line, shift)
+	eph.URA, eph.Health, eph.TGD, eph.IODC, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -594,8 +617,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 	if ok := dec.readLine(); !ok {
 		return fmt.Errorf("could not read line")
 	}
-	line = dec.line()
-	eph.Tom, eph.FitInterval, _, _, err = parseFloatsNavLine(line, shift)
+	eph.Tom, eph.FitInterval, _, _, err = dec.parseFloatsFromLine(shift)
 	if err != nil {
 		return
 	}
@@ -936,31 +958,4 @@ func (f *NavFile) Rnx3Filename() (string, error) {
 	}
 
 	return fn.String(), nil
-}
-
-// parseFloatsNavLine parses a common data line of a nav file, having four floats 4X,4D19.12.
-func parseFloatsNavLine(s string, shift int) (f1, f2, f3, f4 float64, err error) {
-	f1, err = parseFloat(s[4+shift : 4+shift+19])
-	if err != nil {
-		return
-	}
-
-	f2, err = parseFloat(s[23+shift : 23+shift+19])
-	if err != nil {
-		return
-	}
-
-	if len(s) < 45+shift {
-		return
-	}
-	f3, err = parseFloat(s[42+shift : 42+shift+19])
-	if err != nil {
-		return
-	}
-
-	if len(s) < 64+shift {
-		return
-	}
-	f4, err = parseFloat(s[61+shift : 61+shift+19])
-	return
 }
