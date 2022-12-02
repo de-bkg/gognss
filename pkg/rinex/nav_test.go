@@ -23,7 +23,6 @@ func TestNavDecoder_readHeader(t *testing.T) {
 	dec, err := NewNavDecoder(r)
 	assert.NoError(err)
 	assert.NotNil(dec)
-	//defer dec.Close() // obsolet? s.o.
 
 	assert.Equal(float32(3.04), dec.Header.RINEXVersion, "RINEX Version")
 	assert.Equal("N", dec.Header.RINEXType, "RINEX Type")
@@ -188,6 +187,73 @@ func TestNavFile_Rnx3Filename(t *testing.T) {
 	assert.Equal(t, "BRST00FRA_R_20201550700_01H_GN.rnx", rnx3name)
 }
 
+func TestNavDecoder_decodeEphv2(t *testing.T) {
+	assert := assert.New(t)
+
+	navdata := `     2.11           N: GPS NAV DATA                         RINEX VERSION / TYPE
+teqc  2019Feb25     BKG Frankfurt       20221124 21:10:15UTCPGM / RUN BY / DATE
+Linux 2.6.32-573.12.1.x86_64|x86_64|gcc -static|Linux 64|=+ COMMENT
+teqc  2019Feb25                         20221124 21:03:02UTCCOMMENT
+    1.9558D-08 -1.4901D-08 -1.1921D-07  1.7881D-07          ION ALPHA
+    1.2902D+05 -1.4746D+05  0.0000D+00 -6.5536D+04          ION BETA
+   -2.793967723846D-09-4.440892098501D-15   589824     2237 DELTA-UTC: A0,A1,T,W
+Concatenated RINEX files (6)                                COMMENT
+                                                            END OF HEADER
+26 22 11 24 20  0  0.0 2.367375418544D-04 1.023181539495D-12 0.000000000000D+00
+    8.200000000000D+01 1.376562500000D+02 4.792342477443D-09 4.269679655010D-01
+    7.273629307747D-06 7.515437668189D-03 1.032091677189D-05 5.153605495453D+03
+    4.176000000000D+05 5.215406417847D-08-2.808004081807D+00 7.823109626770D-08
+    9.360958109822D-01 1.641250000000D+02 3.988379102056D-01-8.139981920063D-09
+   -2.592965150264D-10 1.000000000000D+00 2.237000000000D+03 0.000000000000D+00
+    2.000000000000D+00 0.000000000000D+00 6.984919309616D-09 8.200000000000D+01
+    4.146780000000D+05 4.000000000000D+00
+ 2 22 11 24 20  0  0.0-6.363084539771D-04 1.818989403546D-12 0.000000000000D+00
+    8.700000000000D+01-1.420312500000D+02 4.175531070486D-09 1.741044635417D+00
+   -7.731840014458D-06 2.000890567433D-02 2.821907401085D-06 5.153701881409D+03
+    4.176000000000D+05 3.669410943985D-07-7.308842678977D-01-2.477318048477D-07
+    9.668741546923D-01 3.261875000000D+02-1.360933979883D+00-7.969260523117D-09
+   -3.232277494475D-10 1.000000000000D+00 2.237000000000D+03 0.000000000000D+00
+    2.000000000000D+00 0.000000000000D+00-1.769512891769D-08 8.700000000000D+01
+    4.129260000000D+05 4.000000000000D+00
+11 22 11 24 20  0  0.0-4.512257874012D-05-6.480149750132D-12 0.000000000000D+00
+    3.700000000000D+01-1.539062500000D+02 4.230533361553D-09-1.937381617115D+00
+   -7.865950465202D-06 8.068794850260D-04 4.619359970093D-06 5.153675182343D+03
+    4.176000000000D+05-4.097819328308D-08-5.986412719033D-01-3.539025783539D-08
+    9.644632715494D-01 2.925625000000D+02-2.863460476908D+00-8.068907530958D-09
+   -2.307238962907D-10 1.000000000000D+00 2.237000000000D+03 0.000000000000D+00
+    2.000000000000D+00 0.000000000000D+00-8.847564458847D-09 8.050000000000D+02
+    4.104180000000D+05 4.000000000000D+00
+		`
+
+	wantGPS := &EphGPS{PRN: PRN{gnss.SysGPS, 26}, TOC: time.Date(2022, 11, 24, 20, 0, 0, 0, time.UTC), ClockBias: 2.367375418544e-04, ClockDrift: 1.023181539495e-12, ClockDriftRate: 0,
+		IODE: 82, Crs: 1.376562500000e+02, DeltaN: 4.792342477443e-09, M0: 4.269679655010e-01,
+		Cuc: 7.273629307747e-06, Ecc: 7.515437668189e-03, Cus: 1.032091677189e-05, SqrtA: 5.153605495453e+03,
+		Toe: 4.176000000000e+05, Cic: 5.215406417847e-08, Omega0: -2.808004081807e+00, Cis: 7.823109626770e-08,
+		I0: 9.360958109822e-01, Crc: 1.641250000000e+02, Omega: 3.988379102056e-01, OmegaDot: -8.139981920063e-09,
+		IDOT: -2.592965150264e-10, L2Codes: 1.0, ToeWeek: 2237, L2PFlag: 0,
+		URA: 2.0, Health: 0, TGD: 6.984919309616e-09, IODC: 82,
+		Tom: 4.146780000000e+05, FitInterval: 4}
+
+	dec, err := NewNavDecoder(strings.NewReader(navdata))
+	assert.NoError(err)
+
+	//dec.fastMode = true
+
+	nEphs := 0
+	for dec.NextEphemeris() {
+		if nEphs == 0 {
+			eph := dec.Ephemeris()
+			assert.Equal(wantGPS, eph, "GPS eph content")
+		}
+		nEphs++
+	}
+	if err := dec.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "reading standard input:", err)
+	}
+
+	assert.GreaterOrEqual(nEphs, 3, "number of epemerides")
+}
+
 func TestNavDecoder_decodeEph(t *testing.T) {
 	assert := assert.New(t)
 
@@ -238,7 +304,7 @@ E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
 	eph := dec.Ephemeris()
 	gpsEhp, ok := eph.(*EphGPS)
 	assert.True(ok)
-	assert.Equal(wantGPS, gpsEhp, "GPS eph content check")
+	assert.Equal(wantGPS, gpsEhp, "GPS eph content")
 
 	// Galileo
 	ok = dec.NextEphemeris()
@@ -246,7 +312,7 @@ E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
 	eph = dec.Ephemeris()
 	galEhp, ok := eph.(*EphGAL)
 	assert.True(ok)
-	assert.Equal(wantGAL, galEhp, "Galileo eph content check")
+	assert.Equal(wantGAL, galEhp, "Galileo eph content")
 
 	assert.NoError(dec.Err())
 }
@@ -267,4 +333,17 @@ func TestNavFile_GetStats(t *testing.T) {
 	assert.Equal(105, len(stats.Satellites), "number of satellites")
 	assert.Equal(time.Date(2020, 6, 16, 20, 10, 0, 0, time.UTC), stats.EarliestEphTime)
 	assert.Equal(time.Date(2020, 6, 18, 00, 00, 0, 0, time.UTC), stats.LatestEphTime)
+}
+
+func Test_decodeEphLineHlp(t *testing.T) {
+	// Helper test. Go slices are inclusive-exclusive.
+	// Rnx2 GPS
+	line := "26 22 11 24 20  0  0.0 2.367375418544D-04 1.023181539495D-12 0.000000000000D+00"
+	assert.Equal(t, "26", line[:2], "prn")
+	assert.Equal(t, "22 11 24 20  0  0.0", line[3:22], "epoch time")
+	assert.Equal(t, " 2.367375418544D-04", line[22:22+19], "clock bias")
+	assert.Equal(t, " 1.023181539495D-12", line[41:41+19], "clock drift")
+	assert.Equal(t, " 0.000000000000D+00", line[60:60+19], "clock drift rate")
+
+	// Rnx3
 }

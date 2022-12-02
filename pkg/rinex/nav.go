@@ -14,8 +14,11 @@ import (
 )
 
 const (
-	// TimeOfClockFormat is the time format within RINEX3 Nav records.
+	// TimeOfClockFormat is the time format within RINEX-3 Nav records.
 	TimeOfClockFormat string = "2006  1  2 15  4  5"
+
+	// TimeOfClockFormatv2 is the time format within RINEX-2 Nav records.
+	TimeOfClockFormatv2 string = "06  1  2 15  4  5.0"
 )
 
 // Eph is the interface that wraps some methods for all types of ephemeris.
@@ -171,7 +174,7 @@ func (EphSBAS) Validate() error         { return nil }
 // and time conversion parameters.
 type NavHeader struct {
 	RINEXVersion float32     // RINEX Format version
-	RINEXType    string      // RINEX File type. O for Obs
+	RINEXType    string      // RINEX File type. N for Nav, O for Obs
 	SatSystem    gnss.System // Satellite System. System is "Mixed" if more than one.
 
 	Pgm   string // name of program creating this file
@@ -259,30 +262,31 @@ readln:
 			}
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
 
-			s := strings.TrimSpace(val[40:41])
-			/* 			if hdr.RINEXVersion < 3 {
-				hlp := map[string]gnss.System{
-					"N": SatSysGPS,
-					"G": SatSysGLO,
-					"E": SatSysGAL,
-					"L": SatSysGAL, // gfzrnx
-					"S": SatSysSBAS,
+			if hdr.RINEXVersion < 3 {
+				// Only N and G are RINEX conform.
+				switch hdr.RINEXType {
+				case "N":
+					hdr.SatSystem = gnss.SysGPS
+				case "G":
+					hdr.SatSystem = gnss.SysGLO
+				case "E", "L":
+					hdr.SatSystem = gnss.SysGAL
+				case "C":
+					hdr.SatSystem = gnss.SysBDS
+				case "S":
+					hdr.SatSystem = gnss.SysSBAS
+				default:
+					return hdr, fmt.Errorf("read RINEX-2 header: invalid satellite system: %s", hdr.RINEXType)
 				}
-			}  */
-			// Rnx2.11: GPS G, GLO R, Gal E, GEO Nav H, GEO SBAS S
-			// L: GALILEO NAV DATA (aubg207w.16l)
-			// E: GALILEO NAV DATA (gfzrnx)
-			/* 				if ( $val =~ /[NGELCHS]/ ) {
-			   					my %translate = ( N => "G", G => "R", E => "E", L => "E", C => "C", H => "S", S => "S" );
-			   					$self->satSystem( $translate{$val} );
-			   				}
-			   				else { $ok = 0 } */
+				continue
+			}
 
+			// version >= 3:
+			s := strings.TrimSpace(val[40:41])
 			if sys, ok := sysPerAbbr[s]; ok {
 				hdr.SatSystem = sys
 			} else {
-				err = fmt.Errorf("read header: invalid satellite system in line %d: %s", dec.lineNum, line)
-				return
+				return hdr, fmt.Errorf("read RINEX-3 header: invalid satellite system: %s", s)
 			}
 		case "PGM / RUN BY / DATE":
 			hdr.Pgm = strings.TrimSpace(val[:20])
@@ -315,9 +319,7 @@ readln:
 // TODO: read all values
 func (dec *NavDecoder) NextEphemeris() bool {
 	if dec.Header.RINEXVersion < 3 {
-		// TODO
-		//return dec.nextEphemerisv2()
-		panic("rinex-2 not implemented yet")
+		return dec.nextEphemerisv2()
 	}
 	if dec.Header.RINEXVersion >= 4 {
 		// TODO
@@ -325,6 +327,54 @@ func (dec *NavDecoder) NextEphemeris() bool {
 	}
 	// RINEX Version 3
 	return dec.nextEphemerisv3()
+}
+
+// decode RINEX Version 2 ephemeris.
+func (dec *NavDecoder) nextEphemerisv2() bool {
+	for dec.readLine() {
+		line := dec.line()
+		if len(line) < 3 {
+			continue
+		}
+
+		if strings.TrimSpace(line[:2]) == "" {
+			continue
+		}
+
+		var err error
+		switch dec.Header.SatSystem {
+		case gnss.SysGPS:
+			err = dec.decodeGPS()
+		case gnss.SysGLO:
+			err = dec.decodeGLO()
+		case gnss.SysGAL:
+			err = dec.decodeGAL()
+		case gnss.SysQZSS:
+			err = dec.decodeQZSS()
+		case gnss.SysBDS:
+			err = dec.decodeBDS()
+		case gnss.SysNavIC:
+			err = dec.decodeNavIC()
+		case gnss.SysSBAS:
+			err = dec.decodeSBAS()
+		default:
+			fmt.Printf("rinex: not supported satellite system: %v", dec.Header.SatSystem)
+			os.Exit(1)
+		}
+
+		if err != nil {
+			dec.setErr(err)
+			return false
+		}
+
+		return true
+	}
+
+	if err := dec.sc.Err(); err != nil {
+		dec.setErr(fmt.Errorf("rinex: read epochs: %v", err))
+	}
+
+	return false // EOF
 }
 
 // decode RINEX Version 3 ephemeris.
@@ -363,7 +413,7 @@ func (dec *NavDecoder) nextEphemerisv3() bool {
 		case gnss.SysSBAS:
 			err = dec.decodeSBAS()
 		default:
-			fmt.Printf("unknown satellite system: %v", sys)
+			fmt.Printf("rinex: not supported satellite system: %v", sys)
 			os.Exit(1)
 		}
 
@@ -419,30 +469,39 @@ func (dec *NavDecoder) line() string {
 	return dec.sc.Text()
 }
 
+// parse the prn from the data record.
+func (dec *NavDecoder) parsePRN() (PRN, error) {
+	line := dec.line()
+	if dec.Header.RINEXVersion < 3 {
+		return newPRN(fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), line[0:2]))
+	}
+	return newPRN(line[0:3])
+}
+
+// parse the time of eph from the data record.
+func (dec *NavDecoder) parseToC() (time.Time, error) {
+	line := dec.line()
+	if dec.Header.RINEXVersion < 3 {
+		return time.Parse(TimeOfClockFormatv2, line[3:22])
+	}
+	return time.Parse(TimeOfClockFormat, line[4:23])
+}
+
 func (dec *NavDecoder) decodeGPS() (err error) {
-	/*
-			G12 2020 06 17 02 00 00 1.051961444318E-04-4.433786671143E-12 0.000000000000E+00
-			     6.100000000000E+01 5.971875000000E+01 4.119457306218E-09-2.150395402634E+00
-		         3.147870302200E-06 8.033315883949E-03 3.485009074211E-06 5.153677604675E+03
-			     2.664000000000E+05 1.061707735062E-07 6.666502414356E-01-5.774199962616E-08
-			     9.781878686511E-01 3.217500000000E+02 1.162895587886E+00-7.943902323989E-09
-			     1.325055193867E-10 1.000000000000E+00 2.110000000000E+03 0.000000000000E+00
-			     2.000000000000E+00 0.000000000000E+00-1.210719347000E-08 6.100000000000E+01
-				 2.592180000000E+05 4.000000000000E+00
-	*/
 	eph := &EphGPS{}
 	dec.eph = eph
 
 	// reread first line
 	line := dec.line()
-	eph.PRN, err = newPRN(line[0:3])
+
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	eph.TOC, err = dec.parseToC()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we only read only the TOC.
@@ -451,17 +510,22 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return nil
 	}
 
-	eph.ClockBias, err = parseFloat(line[23 : 23+19])
+	shift := 0
+	if dec.Header.RINEXVersion < 3 {
+		shift = -1
+	}
+
+	eph.ClockBias, err = parseFloat(line[23+shift : 23+shift+19])
 	if err != nil {
 		return
 	}
 
-	eph.ClockDrift, err = parseFloat(line[42 : 42+19])
+	eph.ClockDrift, err = parseFloat(line[42+shift : 42+shift+19])
 	if err != nil {
 		return
 	}
 
-	eph.ClockDriftRate, err = parseFloat(line[61 : 61+19])
+	eph.ClockDriftRate, err = parseFloat(line[61+shift : 61+shift+19])
 	if err != nil {
 		return
 	}
@@ -471,7 +535,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.IODE, eph.Crs, eph.DeltaN, eph.M0, err = parseFloatsNavLine(line)
+	eph.IODE, eph.Crs, eph.DeltaN, eph.M0, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -481,7 +545,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.Cuc, eph.Ecc, eph.Cus, eph.SqrtA, err = parseFloatsNavLine(line)
+	eph.Cuc, eph.Ecc, eph.Cus, eph.SqrtA, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -491,7 +555,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.Toe, eph.Cic, eph.Omega0, eph.Cis, err = parseFloatsNavLine(line)
+	eph.Toe, eph.Cic, eph.Omega0, eph.Cis, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -501,7 +565,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.I0, eph.Crc, eph.Omega, eph.OmegaDot, err = parseFloatsNavLine(line)
+	eph.I0, eph.Crc, eph.Omega, eph.OmegaDot, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -511,7 +575,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.IDOT, eph.L2Codes, eph.ToeWeek, eph.L2PFlag, err = parseFloatsNavLine(line)
+	eph.IDOT, eph.L2Codes, eph.ToeWeek, eph.L2PFlag, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -521,7 +585,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.URA, eph.Health, eph.TGD, eph.IODC, err = parseFloatsNavLine(line)
+	eph.URA, eph.Health, eph.TGD, eph.IODC, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -531,7 +595,7 @@ func (dec *NavDecoder) decodeGPS() (err error) {
 		return fmt.Errorf("could not read line")
 	}
 	line = dec.line()
-	eph.Tom, eph.FitInterval, _, _, err = parseFloatsNavLine(line)
+	eph.Tom, eph.FitInterval, _, _, err = parseFloatsNavLine(line, shift)
 	if err != nil {
 		return
 	}
@@ -543,26 +607,32 @@ func (dec *NavDecoder) decodeGLO() (err error) {
 	eph := &EphGLO{}
 	dec.eph = eph
 
-	// reread first line
-	line := dec.line()
-	eph.PRN, err = newPRN(line[0:3])
-	if err != nil {
-		return err
+	nLines := 4
+	if dec.Header.RINEXVersion >= 3.05 {
+		nLines = 5
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	// reread first line
+	line := dec.line()
+
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
+	}
+
+	eph.TOC, err = dec.parseToC()
+	if err != nil {
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we read only the TOC.
 	if dec.fastMode {
-		dec.skipLines(3)
+		dec.skipLines(nLines - 1)
 		return nil
 	}
 
 	// TODO parse remaining lines
-	dec.skipLines(3)
+	dec.skipLines(nLines - 1)
 
 	return nil
 }
@@ -573,14 +643,15 @@ func (dec *NavDecoder) decodeGAL() (err error) {
 
 	// reread first line
 	line := dec.line()
-	eph.PRN, err = newPRN(line[0:3])
+
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	eph.TOC, err = dec.parseToC()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we read only the TOC.
@@ -601,14 +672,14 @@ func (dec *NavDecoder) decodeQZSS() (err error) {
 
 	// reread first line
 	line := dec.line()
-	eph.PRN, err = newPRN(line[0:3])
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	eph.TOC, err = dec.parseToC()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we read only the TOC.
@@ -629,14 +700,14 @@ func (dec *NavDecoder) decodeBDS() (err error) {
 
 	// reread first line
 	line := dec.line()
-	eph.PRN, err = newPRN(line[0:3])
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	eph.TOC, err = dec.parseToC()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we read only the TOC.
@@ -657,14 +728,14 @@ func (dec *NavDecoder) decodeNavIC() (err error) {
 
 	// reread first line
 	line := dec.line()
-	eph.PRN, err = newPRN(line[0:3])
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	eph.TOC, err = dec.parseToC()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we read only the TOC.
@@ -686,14 +757,14 @@ func (dec *NavDecoder) decodeSBAS() (err error) {
 	// reread first line
 	line := dec.line()
 
-	eph.PRN, err = newPRN(line[0:3])
+	eph.PRN, err = dec.parsePRN()
 	if err != nil {
-		return err
+		return fmt.Errorf("parse prn: '%s': %v", line, err)
 	}
 
-	eph.TOC, err = time.Parse(TimeOfClockFormat, line[4:23])
+	eph.TOC, err = dec.parseToC()
 	if err != nil {
-		return fmt.Errorf("could not parse TOC: '%s': %v", line, err)
+		return fmt.Errorf("parse ToC: '%s': %v", line, err)
 	}
 
 	// In fast mode we read only the TOC.
@@ -868,28 +939,28 @@ func (f *NavFile) Rnx3Filename() (string, error) {
 }
 
 // parseFloatsNavLine parses a common data line of a nav file, having four floats 4X,4D19.12.
-func parseFloatsNavLine(s string) (f1, f2, f3, f4 float64, err error) {
-	f1, err = parseFloat(s[4 : 4+19])
+func parseFloatsNavLine(s string, shift int) (f1, f2, f3, f4 float64, err error) {
+	f1, err = parseFloat(s[4+shift : 4+shift+19])
 	if err != nil {
 		return
 	}
 
-	f2, err = parseFloat(s[23 : 23+19])
+	f2, err = parseFloat(s[23+shift : 23+shift+19])
 	if err != nil {
 		return
 	}
 
-	if len(s) < 45 {
+	if len(s) < 45+shift {
 		return
 	}
-	f3, err = parseFloat(s[42 : 42+19])
+	f3, err = parseFloat(s[42+shift : 42+shift+19])
 	if err != nil {
 		return
 	}
 
-	if len(s) < 64 {
+	if len(s) < 64+shift {
 		return
 	}
-	f4, err = parseFloat(s[61 : 61+19])
+	f4, err = parseFloat(s[61+shift : 61+shift+19])
 	return
 }
