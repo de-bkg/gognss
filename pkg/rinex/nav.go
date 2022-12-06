@@ -13,6 +13,17 @@ import (
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
+// The NavRecordType specifies the Navigation Data Record Type introduced in RINEX Vers 4.
+type NavRecordType string
+
+// The Navigation Data Record Types.
+const (
+	NavRecordTypeEPH NavRecordType = "EPH" // Ephemerides data including orbit, clock, biases, accuracy and status parameters.
+	NavRecordTypeSTO NavRecordType = "STO" // System Time and UTC proxy offset parameters.
+	NavRecordTypeEOP NavRecordType = "EOP" // Earth Orientation Parameters.
+	NavRecordTypeION NavRecordType = "ION" // Global/Regional ionospheric model parameters.
+)
+
 const (
 	// TimeOfClockFormat is the time format within RINEX-3 Nav records.
 	TimeOfClockFormat string = "2006  1  2 15  4  5"
@@ -63,7 +74,8 @@ func NewEph(sys gnss.System) Eph {
 
 // EphGPS describes a GPS ephemeris.
 type EphGPS struct {
-	PRN PRN
+	PRN         PRN
+	MessageType string // Navigation Message Type, LNAV etc., see RINEX 4 spec.
 
 	// Clock
 	TOC            time.Time // Time of Clock, clock reference epoch
@@ -111,8 +123,9 @@ func (EphGPS) Validate() error         { return nil }
 
 // EphGLO describes a GLONASS ephemeris.
 type EphGLO struct {
-	PRN PRN
-	TOC time.Time
+	PRN         PRN
+	MessageType string // Navigation Message Type.
+	TOC         time.Time
 }
 
 func (eph *EphGLO) GetPRN() PRN        { return eph.PRN }
@@ -121,8 +134,9 @@ func (EphGLO) Validate() error         { return nil }
 
 // EphGAL describes a Galileo ephemeris.
 type EphGAL struct {
-	PRN PRN
-	TOC time.Time
+	PRN         PRN
+	MessageType string // Navigation Message Type.
+	TOC         time.Time
 }
 
 func (eph *EphGAL) GetPRN() PRN        { return eph.PRN }
@@ -131,8 +145,9 @@ func (EphGAL) Validate() error         { return nil }
 
 // EphQZSS describes a QZSS ephemeris.
 type EphQZSS struct {
-	PRN PRN
-	TOC time.Time
+	PRN         PRN
+	MessageType string // Navigation Message Type.
+	TOC         time.Time
 }
 
 func (eph *EphQZSS) GetPRN() PRN        { return eph.PRN }
@@ -141,8 +156,9 @@ func (EphQZSS) Validate() error         { return nil }
 
 // EphBDS describes a chinese BDS ephemeris.
 type EphBDS struct {
-	PRN PRN
-	TOC time.Time
+	PRN         PRN
+	MessageType string // Navigation Message Type.
+	TOC         time.Time
 }
 
 func (eph *EphBDS) GetPRN() PRN        { return eph.PRN }
@@ -151,8 +167,9 @@ func (EphBDS) Validate() error         { return nil }
 
 // EphNavIC describes an indian IRNSS/NavIC ephemeris.
 type EphNavIC struct {
-	PRN PRN
-	TOC time.Time
+	PRN         PRN
+	MessageType string // EPH Navigation Message Type.
+	TOC         time.Time
 }
 
 func (eph *EphNavIC) GetPRN() PRN        { return eph.PRN }
@@ -161,8 +178,9 @@ func (EphNavIC) Validate() error         { return nil }
 
 // EphSBAS describes a SBAS payload.
 type EphSBAS struct {
-	PRN PRN
-	TOC time.Time
+	PRN         PRN
+	MessageType string // EPH Navigation Message Type.
+	TOC         time.Time
 }
 
 func (eph *EphSBAS) GetPRN() PRN        { return eph.PRN }
@@ -289,6 +307,11 @@ readln:
 				return hdr, fmt.Errorf("read RINEX-3 header: invalid satellite system: %s", s)
 			}
 		case "PGM / RUN BY / DATE":
+			// Additional lines of this type can appear together after the second line, if needed to preserve the history of previous actions on the file.
+			if hdr.Pgm != "" {
+				continue
+				// TODO additional lines
+			}
 			hdr.Pgm = strings.TrimSpace(val[:20])
 			hdr.RunBy = strings.TrimSpace(val[20:40])
 			hdr.Date = strings.TrimSpace(val[40:])
@@ -321,12 +344,10 @@ func (dec *NavDecoder) NextEphemeris() bool {
 	if dec.Header.RINEXVersion < 3 {
 		return dec.nextEphemerisv2()
 	}
-	if dec.Header.RINEXVersion >= 4 {
-		// TODO
-		panic("rinex-4 not implemented yet")
+	if dec.Header.RINEXVersion < 4 {
+		return dec.nextEphemerisv3()
 	}
-	// RINEX Version 3
-	return dec.nextEphemerisv3()
+	return dec.nextEphemerisv4()
 }
 
 // decode RINEX Version 2 ephemeris.
@@ -341,32 +362,11 @@ func (dec *NavDecoder) nextEphemerisv2() bool {
 			continue
 		}
 
-		var err error
-		switch dec.Header.SatSystem {
-		case gnss.SysGPS:
-			err = dec.decodeGPS()
-		case gnss.SysGLO:
-			err = dec.decodeGLO()
-		case gnss.SysGAL:
-			err = dec.decodeGAL()
-		case gnss.SysQZSS:
-			err = dec.decodeQZSS()
-		case gnss.SysBDS:
-			err = dec.decodeBDS()
-		case gnss.SysNavIC:
-			err = dec.decodeNavIC()
-		case gnss.SysSBAS:
-			err = dec.decodeSBAS()
-		default:
-			fmt.Printf("rinex: not supported satellite system: %v", dec.Header.SatSystem)
-			os.Exit(1)
-		}
-
+		err := dec.decodeEPH(dec.Header.SatSystem)
 		if err != nil {
 			dec.setErr(err)
 			return false
 		}
-
 		return true
 	}
 
@@ -396,33 +396,51 @@ func (dec *NavDecoder) nextEphemerisv3() bool {
 			return false
 		}
 
-		var err error
-		switch sys {
-		case gnss.SysGPS:
-			err = dec.decodeGPS()
-		case gnss.SysGLO:
-			err = dec.decodeGLO()
-		case gnss.SysGAL:
-			err = dec.decodeGAL()
-		case gnss.SysQZSS:
-			err = dec.decodeQZSS()
-		case gnss.SysBDS:
-			err = dec.decodeBDS()
-		case gnss.SysNavIC:
-			err = dec.decodeNavIC()
-		case gnss.SysSBAS:
-			err = dec.decodeSBAS()
-		default:
-			fmt.Printf("rinex: not supported satellite system: %v", sys)
-			os.Exit(1)
-		}
-
+		err := dec.decodeEPH(sys)
 		if err != nil {
 			dec.setErr(err)
 			return false
 		}
-
 		return true
+	}
+
+	if err := dec.sc.Err(); err != nil {
+		dec.setErr(fmt.Errorf("rinex: read epochs: %v", err))
+	}
+
+	return false // EOF
+}
+
+// decode RINEX Version 4 ephemeris.
+func (dec *NavDecoder) nextEphemerisv4() bool {
+	for dec.readLine() {
+		line := dec.line()
+		if len(line) < 1 {
+			continue
+		}
+
+		if !strings.HasPrefix(line, "> ") {
+			continue
+		}
+
+		rectyp := line[2:5]
+		if rectyp == string(NavRecordTypeEPH) {
+			sys, ok := sysPerAbbr[line[6:7]]
+			if !ok {
+				dec.setErr(fmt.Errorf("rinex: invalid satellite system in: %q (line %d)", line, dec.lineNum))
+				return false
+			}
+
+			err := dec.decodeEPH(sys)
+			if err != nil {
+				dec.setErr(err)
+				return false
+			}
+			return true
+		}
+
+		// TODO read other record types
+
 	}
 
 	if err := dec.sc.Err(); err != nil {
@@ -516,12 +534,41 @@ func (dec *NavDecoder) parseFloatsFromLine(shift int) (f1, f2, f3, f4 float64, e
 	return
 }
 
+func (dec *NavDecoder) decodeEPH(sys gnss.System) (err error) {
+	switch sys {
+	case gnss.SysGPS:
+		return dec.decodeGPS()
+	case gnss.SysGLO:
+		return dec.decodeGLO()
+	case gnss.SysGAL:
+		return dec.decodeGAL()
+	case gnss.SysQZSS:
+		return dec.decodeQZSS()
+	case gnss.SysBDS:
+		return dec.decodeBDS()
+	case gnss.SysNavIC:
+		return dec.decodeNavIC()
+	case gnss.SysSBAS:
+		return dec.decodeSBAS()
+	}
+
+	return fmt.Errorf("rinex: not supported satellite system: %v", sys)
+}
+
 func (dec *NavDecoder) decodeGPS() (err error) {
 	eph := &EphGPS{}
 	dec.eph = eph
 
 	// reread first line
 	line := dec.line()
+
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
 
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
@@ -637,6 +684,14 @@ func (dec *NavDecoder) decodeGLO() (err error) {
 	// reread first line
 	line := dec.line()
 
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
+
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
 		return fmt.Errorf("parse prn: '%s': %v", line, err)
@@ -666,6 +721,14 @@ func (dec *NavDecoder) decodeGAL() (err error) {
 	// reread first line
 	line := dec.line()
 
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
+
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
 		return fmt.Errorf("parse prn: '%s': %v", line, err)
@@ -694,6 +757,15 @@ func (dec *NavDecoder) decodeQZSS() (err error) {
 
 	// reread first line
 	line := dec.line()
+
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
+
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
 		return fmt.Errorf("parse prn: '%s': %v", line, err)
@@ -722,6 +794,15 @@ func (dec *NavDecoder) decodeBDS() (err error) {
 
 	// reread first line
 	line := dec.line()
+
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
+
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
 		return fmt.Errorf("parse prn: '%s': %v", line, err)
@@ -750,6 +831,15 @@ func (dec *NavDecoder) decodeNavIC() (err error) {
 
 	// reread first line
 	line := dec.line()
+
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
+
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
 		return fmt.Errorf("parse prn: '%s': %v", line, err)
@@ -778,6 +868,14 @@ func (dec *NavDecoder) decodeSBAS() (err error) {
 
 	// reread first line
 	line := dec.line()
+
+	if dec.Header.RINEXVersion >= 4 {
+		eph.MessageType = strings.TrimSpace(line[10:])
+		if ok := dec.readLine(); !ok {
+			return fmt.Errorf("could not read line")
+		}
+		line = dec.line()
+	}
 
 	eph.PRN, err = dec.parsePRN()
 	if err != nil {
