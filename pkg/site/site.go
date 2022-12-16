@@ -617,6 +617,11 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 	var from time.Time // start time of every new line
 	var staHistory []StationInfo
 
+	stationID := s.Ident.NineCharacterID
+	if stationID == "" {
+		stationID = s.Ident.FourCharacterID
+	}
+
 	for ir, recv := range s.Receivers {
 
 		nextRecv := func() *Receiver {
@@ -666,7 +671,7 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 			if recvEnd.After(antEnd) { // next change by antenna
 				next := nextAnt()
 				if next == nil || !ant.Equal(next) {
-					staHistory = append(staHistory, StationInfo{Description: descr, FourCharacterID: s.Ident.FourCharacterID,
+					staHistory = append(staHistory, StationInfo{Name: stationID, Description: descr,
 						DOMESNumber: s.Ident.DOMESNumber, Flag: "001", Recv: recv, Ant: ant, From: from, To: antEnd})
 					if next != nil {
 						from = next.DateInstalled
@@ -675,7 +680,7 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 			} else { // next change by receiver
 				next := nextRecv()
 				if next == nil || !recv.Equal(next) {
-					staHistory = append(staHistory, StationInfo{Description: descr, FourCharacterID: s.Ident.FourCharacterID,
+					staHistory = append(staHistory, StationInfo{Name: stationID, Description: descr,
 						DOMESNumber: s.Ident.DOMESNumber, Flag: "001", Recv: recv, Ant: ant, From: from, To: recvEnd})
 					if next != nil {
 						from = next.DateInstalled
@@ -690,20 +695,28 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 
 // StationInfo represents the receiver and antenna state for a time range.
 type StationInfo struct {
-	Description     string // usually the city or town
-	FourCharacterID string
-	DOMESNumber     string
-	Flag            string //  "001"
-	From, To        time.Time
-	Recv            *Receiver
-	Ant             *Antenna
-	Remark          string // could be the Recv.Firmware if not otherwise used
+	Name        string // The 9-char or 4-char station name.
+	Description string // usually the city or town
+	DOMESNumber string
+	Flag        string //  "001"
+	From, To    time.Time
+	Recv        *Receiver
+	Ant         *Antenna
+	Remark      string // could be the Recv.Firmware if not otherwise used
+}
+
+// Returns the (old) short 4-char station name.
+func (sta *StationInfo) FourCharacterID() string {
+	if len(sta.Name) >= 4 {
+		return sta.Name[0:4]
+	}
+	return ""
 }
 
 var sinexSerialNumPattern = regexp.MustCompile(`\D`)
 
-// String returns the StationInfo in the Bernese STATION INFORMATION format.
-func (sta StationInfo) String() string {
+// MarshalBerneseSTA returns the station info as it is used in Bernese STA files.
+func (sta *StationInfo) MarshalBerneseSTA(fmtVers string) string {
 	printDate := func(t time.Time) string {
 		if t.IsZero() {
 			t = time.Date(2099, 12, 31, 0, 0, 0, 0, time.UTC)
@@ -721,10 +734,42 @@ func (sta StationInfo) String() string {
 		antSerialSnx = antSerialSnx[len(antSerialSnx)-5:]
 	}
 
-	return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-20.20s  %6.6s  %-15.15s %4.4s  %-20.20s  %6.6s  %8.4f  %8.4f  %8.4f  %-22.22s  %-24.24s",
-		sta.FourCharacterID, sta.DOMESNumber, sta.Flag, printDate(sta.From), printDate(sta.To),
-		sta.Recv.Type, sta.Recv.SerialNum, recvSerialSnx, sta.Ant.Type, sta.Ant.Radome, sta.Ant.SerialNum,
-		antSerialSnx, sta.Ant.EccNorth, sta.Ant.EccEast, sta.Ant.EccUp, sta.Description, sta.Recv.Firmware)
+	if fmtVers == "1.01" {
+		return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-20.20s  %6.6s  %-15.15s %4.4s  %-20.20s  %6.6s  %8.4f  %8.4f  %8.4f  %-22.22s  %-24.24s",
+			sta.FourCharacterID(), sta.DOMESNumber, sta.Flag, printDate(sta.From), printDate(sta.To),
+			sta.Recv.Type, sta.Recv.SerialNum, recvSerialSnx, sta.Ant.Type, sta.Ant.Radome, sta.Ant.SerialNum,
+			antSerialSnx, sta.Ant.EccNorth, sta.Ant.EccEast, sta.Ant.EccUp, sta.Description, sta.Recv.Firmware)
+	}
+
+	if fmtVers == "1.03" {
+		name := strings.ToUpper(sta.Name)
+		if len(name) != 9 {
+			name = ""
+		}
+		return fmt.Sprintf("%-4.4s %-11.11s      %-3.3s  %-19.19s  %-19.19s  %-20.20s  %-20.20s  %6.6s  %-15.15s %4.4s  %-20.20s  %6.6s  %8.4f  %8.4f  %8.4f  %6.1f  %-9.9s  %-22.22s  %-24.24s",
+			sta.FourCharacterID(), sta.DOMESNumber, sta.Flag, printDate(sta.From), printDate(sta.To),
+			sta.Recv.Type, sta.Recv.SerialNum, recvSerialSnx, sta.Ant.Type, sta.Ant.Radome, sta.Ant.SerialNum,
+			antSerialSnx, sta.Ant.EccNorth, sta.Ant.EccEast, sta.Ant.EccUp, sta.Ant.AlignmentFromTrueNorth, name, sta.Description, sta.Recv.Firmware)
+	}
+
+	panic("format version sot supported: " + fmtVers)
+}
+
+// Sites constains a slice of type Site.
+type Sites []*Site
+
+// Write sites to w in Bernese STA file format, with the given format version.
+func (sites *Sites) WriteBerneseSTA(w io.Writer, fmtVers string) error {
+	templ := bernStaTemplv103
+	if fmtVers == "1.01" {
+		templ = bernStaTemplv101
+	} else if fmtVers == "1.03" {
+		templ = bernStaTemplv103
+	} else {
+		return fmt.Errorf("write Bernese STA: format version sot supported: " + fmtVers)
+	}
+	t := template.Must(template.New("stafile").Funcs(tmplFuncMap).Parse(templ))
+	return t.Execute(w, sites)
 }
 
 // Returns a datetime in Bernese STA file format.
@@ -747,21 +792,15 @@ var tmplFuncMap = template.FuncMap{
 			s.Ident.FourCharacterID, s.Ident.DOMESNumber, "001", printSTADate(from), printSTADate(to),
 			s.Ident.FourCharacterID+"*", "")
 	},
-	"encodeTyp2": func(s *Site) string {
+	"encodeTyp2": func(s *Site, fmtVers string) string {
 		staInfo, err := s.StationInfo()
 		if err != nil {
 			panic(err)
 		}
 		var b strings.Builder
 		for _, sta := range staInfo {
-			b.WriteString(sta.String() + "\n")
+			b.WriteString(sta.MarshalBerneseSTA(fmtVers) + "\n")
 		}
 		return b.String()
 	},
-}
-
-// EncodeSTAfile encodes all sites into a single Bernese STA-file.
-func EncodeSTAfile(w io.Writer, sites []*Site) error {
-	t := template.Must(template.New("stafile").Funcs(tmplFuncMap).Parse(bern52StaTempl))
-	return t.Execute(w, sites)
 }

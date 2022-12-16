@@ -54,34 +54,6 @@ func TestReadFromGAJSON(t *testing.T) {
 	t.Logf("%+v", site)
 }
 
-func TestEncodeSTAfile(t *testing.T) {
-	assert := assert.New(t)
-
-	var sites []*Site
-	sitelogs := []string{"testdata/brux_20200225.log", "testdata/WTZR00DEU_20200602.log"}
-	for _, slPath := range sitelogs {
-		f, err := os.Open(slPath)
-		if err != nil {
-			t.Fatalf("%v", err)
-		}
-		defer f.Close()
-
-		site, err := DecodeSitelog(f)
-		assert.NoError(err)
-
-		err = site.ValidateAndClean(false)
-		assert.NoError(err)
-
-		sites = append(sites, site)
-	}
-
-	//w := &bytes.Buffer{}
-	w := os.Stdout
-	err := EncodeSTAfile(w, sites)
-	assert.NoError(err)
-
-}
-
 func TestSite_StationInfo(t *testing.T) {
 	assert := assert.New(t)
 	f, err := os.Open("testdata/brux_20200225.log")
@@ -113,4 +85,34 @@ func TestSite_StationInfo(t *testing.T) {
 	assert.Equal(time.Date(2008, 9, 22, 8, 59, 59, 0, time.UTC), staInfo[4].To, "5 To Date")
 	assert.Equal(time.Date(2020, 2, 25, 13, 30, 0, 0, time.UTC), staInfo[len(staInfo)-1].From, "Last From Date")
 	assert.Equal(time.Date(2099, 12, 31, 0, 0, 0, 0, time.UTC), staInfo[len(staInfo)-1].To, "Last To Date")
+}
+
+func TestSites_WriteBerneseSTA(t *testing.T) {
+	assert := assert.New(t)
+
+	fmtvers := "1.03"
+
+	var sites Sites
+	sitelogs := []string{"testdata/brux_20200225.log", "testdata/WTZR00DEU_20200602.log"}
+	for _, slPath := range sitelogs {
+		f, err := os.Open(slPath)
+		if err != nil {
+			t.Fatalf("%v", err)
+		}
+		defer f.Close()
+
+		site, err := DecodeSitelog(f)
+		assert.NoError(err)
+
+		err = site.ValidateAndClean(false)
+		assert.NoError(err)
+
+		sites = append(sites, site)
+	}
+
+	//w := &bytes.Buffer{}
+	w := os.Stdout
+
+	err := sites.WriteBerneseSTA(w, fmtvers)
+	assert.NoError(err)
 }
