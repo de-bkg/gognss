@@ -23,6 +23,17 @@ const (
 
 	// rnx3StartTimeFormat is the time format for the start time in RINEX3 file names.
 	rnx3StartTimeFormat string = "20060021504"
+
+	// The Date/Time format in the PGM / RUN BY / DATE header record.
+	headerDateFormat string = "20060102 150405"
+
+	// The Date/Time format with time zone in the PGM / RUN BY / DATE header record.
+	//
+	// Format: "yyyymmdd hhmmss zone" with 3–4 character code for the time zone.
+	headerDateWithZoneFormat string = "20060102 150405 MST"
+
+	// The RINEX-2 Date/Time format in the PGM / RUN BY / DATE header record.
+	headerDateFormatv2 string = "02-Jan-06 15:04"
 )
 
 // errors
@@ -419,6 +430,9 @@ func ParseDoy(year, doy int) time.Time {
 
 func parseFloat(s string) (float64, error) {
 	//s. bncutils::readDbl
+	if s == "" {
+		return 0, nil
+	}
 	r := strings.NewReplacer("d", "e", "D", "e")
 	scleaned := r.Replace(strings.TrimSpace(s))
 	return strconv.ParseFloat(scleaned, 64)

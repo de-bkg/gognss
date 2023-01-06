@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"sort"
 	"strconv"
@@ -195,11 +196,15 @@ type NavHeader struct {
 	RINEXType    string      // RINEX File type. N for Nav, O for Obs
 	SatSystem    gnss.System // Satellite System. System is "Mixed" if more than one.
 
-	Pgm   string // name of program creating this file
-	RunBy string // name of agency creating this file
-	Date  string // date and time of file creation TODO time.Time
+	Pgm   string    // name of program creating this file
+	RunBy string    // name of agency creating this file
+	Date  time.Time // Date and time of file creation.
 
-	Comments []string // * comment lines
+	DOI          string   // Digital Object Identifier (DOI) for data citation i.e. https://doi.org/<DOI-number>.
+	License      string   // Line(s) with the data license of use. Name of the license plus link to the specific version of the license. Using standard data license as from https://creativecommons.org/licenses/
+	StationInfos []string // Line(s) with the link(s) to persistent URL with the station metadata (site log, GeodesyML, etc).
+
+	Comments []string // Comment lines
 
 	Labels []string // all Header Labels found
 }
@@ -314,7 +319,11 @@ readln:
 			}
 			hdr.Pgm = strings.TrimSpace(val[:20])
 			hdr.RunBy = strings.TrimSpace(val[20:40])
-			hdr.Date = strings.TrimSpace(val[40:])
+			if date, err := parseHeaderDate(strings.TrimSpace(val[40:])); err == nil {
+				hdr.Date = date
+			} else {
+				log.Printf("header date: %q, %v", val[40:], err)
+			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
 		case "IONOSPHERIC CORR":

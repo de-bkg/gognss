@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"math/big"
 	"os"
@@ -106,7 +107,7 @@ type SyncEpochs struct {
 	Epo2 *Epoch
 }
 
-// Epoch contains a RINEX data epoch.
+// Epoch contains a RINEX obs data epoch.
 type Epoch struct {
 	Time    time.Time // The epoch time.
 	Flag    int8      // The epoch flag 0:OK, 1:power failure between previous and current epoch, >1 : Special event.
@@ -167,9 +168,9 @@ type ObsHeader struct {
 	// The header satellite system. Note that system is "Mixed" if more than one. Use SatSystems() to get a list of all used systems.
 	SatSystem gnss.System
 
-	Pgm   string // name of program creating this file
-	RunBy string // name of agency creating this file
-	Date  string // date and time of file creation TODO time.Time
+	Pgm   string    // name of program creating this file
+	RunBy string    // name of agency creating this file
+	Date  time.Time // Date and time of file creation.
 
 	Comments []string // * comment lines
 
@@ -184,6 +185,10 @@ type ObsHeader struct {
 
 	Position     Coord    // Geocentric approximate marker position [m]
 	AntennaDelta CoordNEU // North,East,Up deltas in [m]
+
+	DOI          string   // Digital Object Identifier (DOI) for data citation i.e. https://doi.org/<DOI-number>.
+	License      string   // Line(s) with the data license of use. Name of the license plus link to the specific version of the license. Using standard data license as from https://creativecommons.org/licenses/
+	StationInfos []string // Line(s) with the link(s) to persistent URL with the station metadata (site log, GeodesyML, etc).
 
 	ObsTypes map[gnss.System][]ObsCode // List of all observation types per GNSS.
 
@@ -245,7 +250,6 @@ func (dec *ObsDecoder) Err() error {
 // a ErrNoHeader error will be returned. Only maxLines header lines are read if maxLines > 0 (see epoch flags).
 func (dec *ObsDecoder) readHeader(maxLines int) (hdr ObsHeader, err error) {
 	hdr.ObsTypes = map[gnss.System][]ObsCode{} // TODO check Header reread for new ObsTypes
-	numLines := 0
 	var rememberSys gnss.System
 readln:
 	for dec.readLine() {
@@ -274,9 +278,18 @@ readln:
 				return
 			}
 		case "PGM / RUN BY / DATE":
+			// Additional lines of this type can appear together after the second line, if needed to preserve the history of previous actions on the file.
+			if hdr.Pgm != "" {
+				continue
+				// TODO additional lines
+			}
 			hdr.Pgm = strings.TrimSpace(val[:20])
 			hdr.RunBy = strings.TrimSpace(val[20:40])
-			hdr.Date = strings.TrimSpace(val[40:])
+			if date, err := parseHeaderDate(strings.TrimSpace(val[40:])); err == nil {
+				hdr.Date = date
+			} else {
+				log.Printf("header date: %q, %v", val[40:], err)
+			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
 		case "MARKER NAME":
@@ -417,7 +430,7 @@ readln:
 			fmt.Printf("Header field %q not handled yet\n", key)
 		}
 
-		if maxLines > 0 && numLines == maxLines {
+		if maxLines > 0 && dec.lineNum == maxLines {
 			break readln
 		}
 	}
@@ -876,7 +889,7 @@ func (f *ObsFile) Diff(obsFil2 *ObsFile) error {
 	return nil
 }
 
-// ComputeObsStats reads the file computes some statistics on the observations.
+// ComputeObsStats reads the file and computes some statistics on the observations.
 func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 	r, err := os.Open(f.Path)
 	if err != nil {
@@ -1182,6 +1195,25 @@ func parseFlag(str string) (int, error) {
 		return 0, nil
 	}
 	return strconv.Atoi(str)
+}
+
+// Parse the Date/Time in the PGM / RUN BY / DATE header record.
+// It is recommended to use UTC as the time zone. Set zone to LCL if an unknown local time was used.
+func parseHeaderDate(date string) (time.Time, error) {
+	format := headerDateFormat
+	if len(date) == 19 || len(date) == 20 {
+		format = headerDateWithZoneFormat
+	} else if len(date) == 15 && strings.Contains(date, "-") {
+		format = headerDateFormatv2
+	} else if len(date) == 16 && strings.Contains(date, "-") {
+		format = "2006-01-02 15:04" // This is inofficial!
+	}
+
+	ti, err := time.Parse(format, date)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return ti, nil
 }
 
 // get decimal part of a float.

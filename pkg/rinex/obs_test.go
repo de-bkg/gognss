@@ -71,6 +71,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 		{Sys: gnss.SysGLO, Num: 16}: -1, {Sys: gnss.SysGLO, Num: 22}: -3, {Sys: gnss.SysGLO, Num: 23}: 3, {Sys: gnss.SysGLO, Num: 24}: 2}
 
 	assert.Equal("O", dec.Header.RINEXType, "RINEX Type")
+	assert.Equal(time.Date(2018, 11, 6, 20, 2, 25, 0, time.UTC), dec.Header.Date)
 	assert.Equal("BRUX", dec.Header.MarkerName, "Markername")
 	assert.Equal("3001376", dec.Header.ReceiverNumber, "ReceiverNumber")
 	assert.Equal("SEPT POLARX4TR", dec.Header.ReceiverType, "ReceiverType")
@@ -439,7 +440,7 @@ func TestPrintEpochs(t *testing.T) {
 	}
 }
 
-func TestStat(t *testing.T) {
+func TestObsFile_ComputeObsStats(t *testing.T) {
 	assert := assert.New(t)
 	filepath := "testdata/white/REYK00ISL_R_20192701000_01H_30S_MO.rnx"
 	obsFil, err := NewObsFile(filepath)
@@ -475,7 +476,7 @@ func TestStat(t *testing.T) {
 	assert.Equal(map[ObsCode]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.ObsPerSat[PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
 }
 
-func TestStatV2(t *testing.T) {
+func TestObsFile_ComputeObsStatsV2(t *testing.T) {
 	assert := assert.New(t)
 	filepath := "testdata/white/brst155h.20o"
 	obsFil, err := NewObsFile(filepath)
@@ -779,4 +780,21 @@ func Test_decodeEpoLineHlp(t *testing.T) {
 	assert.Equal(t, "2018 11 25 22 59 30.0000000", line[2:29], "epoch time")
 	assert.Equal(t, "0", line[31:32], "epoch flag")
 	assert.Equal(t, " 26", line[32:35], "num Satellites")
+}
+
+func Test_parseHeaderDate(t *testing.T) {
+	assert := assert.New(t)
+	tests := map[string]time.Time{
+		"20221109 140100":     time.Date(2022, 11, 9, 14, 1, 0, 0, time.UTC),
+		"20190927 095942 UTC": time.Date(2019, 9, 27, 9, 59, 42, 0, time.UTC),
+		"19-FEB-98 10:42":     time.Date(1998, 2, 19, 10, 42, 0, 0, time.UTC),
+		"2022-11-09 14:01":    time.Date(2022, 11, 9, 14, 1, 0, 0, time.UTC), // inofficial!
+	}
+
+	for k, v := range tests {
+		epTime, err := parseHeaderDate(k)
+		assert.NoError(err)
+		assert.Equal(v, epTime)
+		fmt.Printf("epoch: %s\n", epTime)
+	}
 }
