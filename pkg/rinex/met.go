@@ -54,7 +54,7 @@ type MeteoHeader struct {
 
 	Pgm   string    // name of program creating this file
 	RunBy string    // name of agency creating this file
-	Date  time.Time // date and time of file creation.
+	Date  time.Time // Date and time of file creation.
 
 	MarkerName, MarkerNumber string // antennas' marker name, *number and type
 
@@ -314,7 +314,7 @@ type MeteoFile struct {
 // NewMeteoFile returns a new RINEX Meteo file. The file must exist and the name will be parsed.
 func NewMeteoFile(filepath string) (*MeteoFile, error) {
 	met := &MeteoFile{RnxFil: &RnxFil{Path: filepath}}
-	err := met.parseFilename()
+	err := met.ParseFilename()
 	return met, err
 }
 

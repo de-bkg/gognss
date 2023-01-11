@@ -930,7 +930,7 @@ type NavFile struct {
 // NewNavFile returns a new Navigation File object. The file must exist and the name will be parsed.
 func NewNavFile(filepath string) (*NavFile, error) {
 	navFil := &NavFile{RnxFil: &RnxFil{Path: filepath}}
-	err := navFil.parseFilename()
+	err := navFil.ParseFilename()
 	return navFil, err
 }
 
