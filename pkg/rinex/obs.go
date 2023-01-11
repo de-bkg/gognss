@@ -829,7 +829,7 @@ type ObsFile struct {
 func NewObsFile(filepath string) (*ObsFile, error) {
 	// must file exist?
 	obsFil := &ObsFile{RnxFil: &RnxFil{Path: filepath}, Header: &ObsHeader{}, Opts: &Options{}}
-	err := obsFil.parseFilename()
+	err := obsFil.ParseFilename()
 	return obsFil, err
 }
 
@@ -1095,7 +1095,7 @@ func Rnx2crx(rnxFilename string) (string, error) {
 	ext := strings.ToLower(filepath.Ext(rnxFilename))
 
 	// Check if file is already Hata decompressed
-	if ext == ".crx" || ext == ".d" {
+	if ext == ".crx" || strings.HasSuffix(ext, "d") { // .21d
 		return rnxFilename, nil
 	}
 
@@ -1147,7 +1147,7 @@ func Crx2rnx(crxFilename string) (string, error) {
 	ext := strings.ToLower(filepath.Ext(crxFilename))
 
 	// Check if file is already Hata decompressed
-	if ext == ".rnx" || ext == ".o" {
+	if ext == ".rnx" || strings.HasSuffix(ext, "o") { // .21o
 		return crxFilename, nil
 	}
 
