@@ -44,7 +44,7 @@ var (
 
 var (
 	// Rnx2FileNamePattern is the regex for RINEX2 filenames.
-	Rnx2FileNamePattern = regexp.MustCompile(`(?i)(([a-z0-9]{4})(\d{3})([a-x0])(\d{2})?\.(\d{2})([domnglqfph]))\.?([a-zA-Z0-9]+)?`)
+	Rnx2FileNamePattern = regexp.MustCompile(`(?i)(([a-z0-9]{4})(\d{3})([a-x0])(\d{2})?\.(\d{2})([domnglqfphs]))\.?([a-zA-Z0-9]+)?`)
 
 	// Rnx3FileNamePattern is the regex for RINEX3 filenames.
 	Rnx3FileNamePattern = regexp.MustCompile(`(?i)((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCSM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
@@ -129,7 +129,7 @@ type RnxFil struct {
 // NewFile returns a new RINEX file object.
 func NewFile(filepath string) (FilerHandler, error) {
 	rnx := &RnxFil{Path: filepath}
-	err := rnx.parseFilename()
+	err := rnx.ParseFilename()
 	if err != nil {
 		return nil, err
 	}
@@ -190,9 +190,9 @@ func (f *RnxFil) IsMeteoType() bool {
 	return strings.HasSuffix(f.DataType, "M")
 }
 
-// parseFilename parses the specified filename, which must be a valid RINEX filename,
+// ParseFilename parses the specified filename, which must be a valid RINEX filename,
 // and fills its fields.
-func (f *RnxFil) parseFilename() error {
+func (f *RnxFil) ParseFilename() error {
 	if f.Path == "" {
 		return fmt.Errorf("could not parse filename: Path is empty")
 	}
@@ -200,6 +200,9 @@ func (f *RnxFil) parseFilename() error {
 	fn := filepath.Base(f.Path)
 	if len(fn) > 20 { // Rnx3
 		res := Rnx3FileNamePattern.FindStringSubmatch(fn)
+		if len(res) == 0 {
+			return fmt.Errorf("filename did not match: %s", fn)
+		}
 		for k, v := range res {
 			//fmt.Printf("%d. %s\n", k, v)
 			switch k {
@@ -241,6 +244,9 @@ func (f *RnxFil) parseFilename() error {
 		}
 	} else { // Rnx2
 		res := Rnx2FileNamePattern.FindStringSubmatch(fn)
+		if len(res) == 0 {
+			return fmt.Errorf("filename did not match: %s", fn)
+		}
 		for k, v := range res {
 			//fmt.Printf("%d. %s\n", k, v)
 			switch k {
@@ -293,6 +299,9 @@ func (f *RnxFil) parseFilename() error {
 				case "l":
 					f.DataType = "EN"
 					f.Format = "rnx"
+				case "s": // RINEX summary file
+					f.DataType = "SM" // This datatype is not official!
+					f.Format = "rnx"
 				default:
 					return fmt.Errorf("could not determine the DATA TYPE")
 				}
@@ -313,7 +322,7 @@ func Rnx3Filename(rnx2filepath string, countryCode string) (string, error) {
 		return "", fmt.Errorf("invalid countryCode %q", countryCode)
 	}
 	rnx := &RnxFil{Path: rnx2filepath, CountryCode: countryCode, DataSource: "R"}
-	err := rnx.parseFilename()
+	err := rnx.ParseFilename()
 	if err != nil {
 		return "", err
 	}
@@ -334,7 +343,7 @@ func Rnx3Filename(rnx2filepath string, countryCode string) (string, error) {
 // Rnx2Filename returns the filename following the RINEX2 convention.
 func Rnx2Filename(rnx3filepath string) (string, error) {
 	rnx := &RnxFil{Path: rnx3filepath}
-	err := rnx.parseFilename()
+	err := rnx.ParseFilename()
 	if err != nil {
 		return "", err
 	}
