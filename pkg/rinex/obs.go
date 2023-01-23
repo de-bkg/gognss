@@ -7,6 +7,7 @@ package rinex
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -1130,6 +1131,7 @@ func Rnx2crx(rnxFilename string) (string, error) {
 	if crxFil == "" || rnxFil == crxFil {
 		return "", fmt.Errorf("rnx2crx: could not build compressed filename")
 	}
+	crxFilePath := filepath.Join(dir, crxFil)
 
 	// Run compression tool
 	cmd := exec.Command(tool, rnxFilename, "-d", "-f")
@@ -1138,11 +1140,13 @@ func Rnx2crx(rnxFilename string) (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
+		if _, err := os.Stat(crxFilePath); !errors.Is(err, os.ErrNotExist) {
+			os.Remove(crxFilePath)
+		}
 		return "", fmt.Errorf("rnx2crx failed: %v: %s", err, stderr.Bytes())
 	}
 
 	// Return filepath
-	crxFilePath := filepath.Join(dir, crxFil)
 	if _, err := os.Stat(crxFilePath); os.IsNotExist(err) {
 		return "", fmt.Errorf("rnx2crx failed: compressed file does not exist: %s", crxFilePath)
 	}
@@ -1180,6 +1184,7 @@ func Crx2rnx(crxFilename string) (string, error) {
 	if rnxFil == "" || rnxFil == crxFil {
 		return "", fmt.Errorf("crx2rnx: could not build uncompressed filename")
 	}
+	rnxFilePath := filepath.Join(dir, rnxFil)
 
 	// Run compression tool
 	cmd := exec.Command(tool, crxFilename, "-d", "-f")
@@ -1188,11 +1193,13 @@ func Crx2rnx(crxFilename string) (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
+		if _, err := os.Stat(rnxFilePath); !errors.Is(err, os.ErrNotExist) {
+			os.Remove(rnxFilePath)
+		}
 		return "", fmt.Errorf("crx2rnx failed: %v: %s", err, stderr.Bytes())
 	}
 
 	// Return filepath
-	rnxFilePath := filepath.Join(dir, rnxFil)
 	if _, err := os.Stat(rnxFilePath); os.IsNotExist(err) {
 		return "", fmt.Errorf("crx2rnx failed: compressed file does not exist: %s", rnxFilePath)
 	}
