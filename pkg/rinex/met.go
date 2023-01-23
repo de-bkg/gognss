@@ -298,9 +298,15 @@ func (dec *MetDecoder) Epoch() *MeteoEpoch {
 
 func (dec *MetDecoder) parseEpochTime(line string) (time.Time, error) {
 	if dec.Header.RINEXVersion < 3 {
+		if len(line) < 18 {
+			return time.Time{}, fmt.Errorf("incomplete line: %q", line)
+		}
 		return time.Parse(meteoEpochTimeFormatv2, line[1:18])
 	}
 
+	if len(line) < 20 {
+		return time.Time{}, fmt.Errorf("incomplete line: %q", line)
+	}
 	return time.Parse(meteoEpochTimeFormat, line[1:20])
 }
 
@@ -430,6 +436,12 @@ func (f *MeteoFile) ComputeObsStats() (stats MeteoStats, err error) {
 	}
 	if err = dec.Err(); err != nil {
 		return stats, err
+	}
+
+	if numOfEpochs == 0 {
+		stats.NumEpochs = numOfEpochs
+		f.Stats = &stats
+		return stats, nil
 	}
 
 	// Sampling rate
