@@ -194,14 +194,14 @@ func (f *RnxFil) IsMeteoType() bool {
 // and fills its fields.
 func (f *RnxFil) ParseFilename() error {
 	if f.Path == "" {
-		return fmt.Errorf("could not parse filename: Path is empty")
+		return fmt.Errorf("parse filename: empty path")
 	}
 
 	fn := filepath.Base(f.Path)
 	if len(fn) > 20 { // Rnx3
 		res := Rnx3FileNamePattern.FindStringSubmatch(fn)
 		if len(res) == 0 {
-			return fmt.Errorf("filename did not match: %s", fn)
+			return fmt.Errorf("parse filename: name did not match: %s", fn)
 		}
 		for k, v := range res {
 			//fmt.Printf("%d. %s\n", k, v)
@@ -212,13 +212,13 @@ func (f *RnxFil) ParseFilename() error {
 				i, err := strconv.Atoi(v)
 				f.MonumentNumber = i
 				if err != nil {
-					return fmt.Errorf("could not parse MonumentNumber: %s", v)
+					return fmt.Errorf("parse filename: could not parse MonumentNumber: %s", v)
 				}
 			case 5:
 				i, err := strconv.Atoi(v)
 				f.ReceiverNumber = i
 				if err != nil {
-					return fmt.Errorf("could not parse ReceiverNumber: %s", v)
+					return fmt.Errorf("parse filename: could not parse ReceiverNumber: %s", v)
 				}
 			case 6:
 				f.CountryCode = strings.ToUpper(v)
@@ -227,7 +227,7 @@ func (f *RnxFil) ParseFilename() error {
 			case 8:
 				t, err := time.Parse(rnx3StartTimeFormat, v)
 				if err != nil {
-					return fmt.Errorf("could not parse start time: %s: %v", v, err)
+					return fmt.Errorf("parse filename: could not parse start time: %s: %v", v, err)
 				}
 				f.StartTime = t
 			case 13:
@@ -245,7 +245,7 @@ func (f *RnxFil) ParseFilename() error {
 	} else { // Rnx2
 		res := Rnx2FileNamePattern.FindStringSubmatch(fn)
 		if len(res) == 0 {
-			return fmt.Errorf("filename did not match: %s", fn)
+			return fmt.Errorf("parse filename: name did not match: %s", fn)
 		}
 		for k, v := range res {
 			//fmt.Printf("%d. %s\n", k, v)
@@ -268,7 +268,7 @@ func (f *RnxFil) ParseFilename() error {
 			case 6: // yr
 				doy, err := time.Parse("06002", v+res[3])
 				if err != nil {
-					return fmt.Errorf("could not parse DoY: %v", err)
+					return fmt.Errorf("parse filename: could not parse DoY: %v", err)
 				}
 				hr, _ := getHourAsDigit(rune((res[4])[0]))
 				min := 0
@@ -299,11 +299,14 @@ func (f *RnxFil) ParseFilename() error {
 				case "l":
 					f.DataType = "EN"
 					f.Format = "rnx"
+				case "q":
+					f.DataType = "JN"
+					f.Format = "rnx"
 				case "s": // RINEX summary file
 					f.DataType = "SM" // This datatype is not official!
 					f.Format = "rnx"
 				default:
-					return fmt.Errorf("could not determine the DATA TYPE")
+					return fmt.Errorf("parse filename: could not determine DATA TYPE: %q", v)
 				}
 			case 8:
 				f.Compression = v
