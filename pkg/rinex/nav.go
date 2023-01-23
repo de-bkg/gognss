@@ -296,6 +296,8 @@ readln:
 					hdr.SatSystem = gnss.SysGAL
 				case "C":
 					hdr.SatSystem = gnss.SysBDS
+				case "J":
+					hdr.SatSystem = gnss.SysQZSS
 				case "S":
 					hdr.SatSystem = gnss.SysSBAS
 				default:
@@ -943,6 +945,9 @@ func (f *NavFile) ReadHeader() (NavHeader, error) {
 	defer r.Close()
 	dec, err := NewNavDecoder(r)
 	if err != nil {
+		if dec.Header.RINEXType != "" {
+			f.Header = &dec.Header
+		}
 		return NavHeader{}, err
 	}
 	f.Header = &dec.Header
@@ -995,6 +1000,12 @@ func (f *NavFile) GetStats() (stats NavStats, err error) {
 		fmt.Fprintln(os.Stderr, "reading ephemerides:", err)
 	}
 
+	if nEphs == 0 {
+		stats.NumEphemeris = nEphs
+		f.Stats = &stats
+		return stats, nil
+	}
+
 	stats.NumEphemeris = nEphs
 	stats.EarliestEphTime = earliestTOC
 	stats.LatestEphTime = latestTOC
@@ -1009,6 +1020,8 @@ func (f *NavFile) GetStats() (stats NavStats, err error) {
 		stats.Satellites = append(stats.Satellites, prn)
 	}
 	sort.Sort(ByPRN(stats.Satellites))
+
+	f.Stats = &stats
 
 	return stats, err
 }

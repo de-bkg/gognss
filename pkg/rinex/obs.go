@@ -155,7 +155,7 @@ func (epo *Epoch) PrintTab(opts Options) {
 type ObsStats struct {
 	NumEpochs      int                     `json:"numEpochs"`      // The number of epochs in the file.
 	NumSatellites  int                     `json:"numSatellites"`  // The number of satellites derived from the header.
-	Sampling       time.Duration           `json:"sampling"`       // The saampling interval derived from the data.
+	Sampling       time.Duration           `json:"sampling"`       // The sampling interval derived from the data.
 	TimeOfFirstObs time.Time               `json:"timeOfFirstObs"` // Time of the first observation.
 	TimeOfLastObs  time.Time               `json:"timeOfLastObs"`  // Time of the last observation.
 	ObsPerSat      map[PRN]map[ObsCode]int `json:"obsstats"`       // Number of observations per PRN and observation-type.
@@ -344,7 +344,7 @@ readln:
 			} else {
 				ok := false
 				if sys, ok = sysPerAbbr[val[:1]]; !ok {
-					err = fmt.Errorf("invalid satellite system: %q: line %d", val[:1], dec.lineNum)
+					err = fmt.Errorf("read header: invalid satellite system: %q: line %d", val[:1], dec.lineNum)
 					return
 				}
 				rememberSys = sys
@@ -898,6 +898,9 @@ func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 	defer r.Close()
 	dec, err := NewObsDecoder(r)
 	if err != nil {
+		if dec.Header.RINEXType != "" {
+			f.Header = &dec.Header
+		}
 		return
 	}
 	f.Header = &dec.Header
@@ -950,6 +953,12 @@ func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 	}
 	if err = dec.Err(); err != nil {
 		return stats, err
+	}
+
+	if numOfEpochs == 0 {
+		stats.NumEpochs = numOfEpochs
+		f.Stats = &stats
+		return stats, nil
 	}
 
 	stats.TimeOfLastObs = epoPrev.Time
