@@ -72,7 +72,7 @@ func newPRN(prn string) (PRN, error) {
 	if err != nil {
 		return PRN{}, fmt.Errorf("parse sat num: %q: %v", prn, err)
 	}
-	if snum < 1 || snum > 60 {
+	if snum < 1 {
 		return PRN{}, fmt.Errorf("check satellite number '%v%d'", sys, snum)
 	}
 	return PRN{Sys: sys, Num: int8(snum)}, nil
@@ -252,9 +252,20 @@ func (dec *ObsDecoder) Err() error {
 func (dec *ObsDecoder) readHeader(maxLines int) (hdr ObsHeader, err error) {
 	hdr.ObsTypes = map[gnss.System][]ObsCode{} // TODO check Header reread for new ObsTypes
 	var rememberSys gnss.System
+	if maxLines == 0 {
+		maxLines = 900
+	}
 readln:
 	for dec.readLine() {
 		line := dec.line()
+
+		if dec.lineNum == 1 {
+			if !strings.Contains(line, "RINEX VERS") { // "CRINEX VERS   / TYPE" or "RINEX VERSION / TYPE"
+				err = ErrNoHeader
+				return
+			}
+		}
+
 		if len(line) < 60 {
 			continue
 		}
@@ -289,7 +300,7 @@ readln:
 			if date, err := parseHeaderDate(strings.TrimSpace(val[40:])); err == nil {
 				hdr.Date = date
 			} else {
-				log.Printf("header date: %q, %v", val[40:], err)
+				log.Printf("parse header date: %q, %v", val[40:], err)
 			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
@@ -428,12 +439,16 @@ readln:
 		case "END OF HEADER":
 			break readln
 		default:
-			fmt.Printf("Header field %q not handled yet\n", key)
+			log.Printf("Header field %q not handled yet", key)
 		}
 
 		if maxLines > 0 && dec.lineNum == maxLines {
 			break readln
 		}
+	}
+
+	if hdr.RINEXVersion == 0 {
+		return hdr, ErrNoHeader
 	}
 
 	// Check for short obs types in RINEX-3 file. Usually in RINEX-2 to 3 converted files.
@@ -602,7 +617,7 @@ readln:
 		}
 
 		if !strings.HasPrefix(line, "> ") {
-			fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
+			log.Printf("rinex: stream does not start with epoch line: %q", line) // must not be an error
 			continue
 		}
 
@@ -712,11 +727,9 @@ func (dec *ObsDecoder) SyncEpoch() SyncEpochs {
 	return SyncEpochs{dec.epo, dec.syncEpo}
 }
 
-// setErr records the first error encountered.
+// setErr adds an error.
 func (dec *ObsDecoder) setErr(err error) {
-	if dec.err == nil || dec.err == io.EOF {
-		dec.err = err
-	}
+	dec.err = errors.Join(dec.err, err)
 }
 
 // sync returns a stream of time-synchronized epochs from two RINEX Obs input streams.
@@ -880,7 +893,7 @@ func (f *ObsFile) Diff(obsFil2 *ObsFile) error {
 
 		diff := diffEpo(syncEpo, *f.Opts)
 		if diff != "" {
-			fmt.Printf("diff: %s\n", diff)
+			log.Printf("diff: %s", diff)
 		}
 	}
 	if err := dec.Err(); err != nil {
@@ -1095,17 +1108,28 @@ func (f *ObsFile) Rnx3Filename() (string, error) {
 
 // IsHatanakaCompressed returns true if the obs file is Hatanaka compressed, otherwise false.
 func (f *ObsFile) IsHatanakaCompressed() bool {
-	return f.Format == "crx"
+	if f.Format != "" {
+		return f.Format == "crx"
+	}
+	return IsHatanakaCompressed(f.Path)
+}
+
+// Returns true if the file giveb by filename is Hatanaka compressed.
+// This is checked by the filenames' extension.
+func IsHatanakaCompressed(filename string) bool {
+	ext := strings.ToLower(filepath.Ext(filename))
+	if ext == ".crx" || strings.HasSuffix(ext, "d") { // .21d
+		return true
+	}
+	return false
 }
 
 // Rnx2crx Hatanaka compresses a RINEX obs file (compact RINEX) and returns the compressed filename.
 // The rnxFilename must be a valid RINEX filename.
 // see http://terras.gsi.go.jp/ja/crx2rnx.html
 func Rnx2crx(rnxFilename string) (string, error) {
-	ext := strings.ToLower(filepath.Ext(rnxFilename))
-
-	// Check if file is already Hata decompressed
-	if ext == ".crx" || strings.HasSuffix(ext, "d") { // .21d
+	// Check if file is already Hata decompressed.
+	if IsHatanakaCompressed(rnxFilename) {
 		return rnxFilename, nil
 	}
 
@@ -1116,10 +1140,14 @@ func Rnx2crx(rnxFilename string) (string, error) {
 
 	dir, rnxFil := filepath.Split(rnxFilename)
 
-	// Build name of target file
+	// Build name of target file.
 	crxFil := ""
 	if Rnx2FileNamePattern.MatchString(rnxFil) {
-		crxFil = Rnx2FileNamePattern.ReplaceAllString(rnxFil, "${2}${3}${4}${5}.${6}d")
+		typ := "d"
+		if strings.HasSuffix(rnxFil, "O") {
+			typ = "D"
+		}
+		crxFil = Rnx2FileNamePattern.ReplaceAllString(rnxFil, "${2}${3}${4}${5}.${6}"+typ)
 	} else if Rnx3FileNamePattern.MatchString(rnxFil) {
 		crxFil = Rnx3FileNamePattern.ReplaceAllString(rnxFil, "${2}.crx")
 	} else {
@@ -1140,27 +1168,30 @@ func Rnx2crx(rnxFilename string) (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
-		if _, err := os.Stat(crxFilePath); !errors.Is(err, os.ErrNotExist) {
-			os.Remove(crxFilePath)
+		rc := cmd.ProcessState.ExitCode()
+		if rc == 2 { // Warning
+			log.Printf("W! rnx2crx: %s", stderr.Bytes())
+		} else { // Error
+			if _, err := os.Stat(crxFilePath); !errors.Is(err, os.ErrNotExist) {
+				os.Remove(crxFilePath)
+			}
+			return "", fmt.Errorf("rnx2crx: rc:%d: %v: %s", rc, err, stderr.Bytes())
 		}
-		return "", fmt.Errorf("rnx2crx failed: %v: %s", err, stderr.Bytes())
 	}
 
 	// Return filepath
-	if _, err := os.Stat(crxFilePath); os.IsNotExist(err) {
-		return "", fmt.Errorf("rnx2crx failed: compressed file does not exist: %s", crxFilePath)
+	if _, err := os.Stat(crxFilePath); errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("rnx2crx: no such file: %s", crxFilePath)
 	}
 	return crxFilePath, nil
 }
 
 // Crx2rnx decompresses a Hatanaka-compressed RINEX obs file and returns the decompressed filename.
-// The crxFilename must be a valid RINEX filename.
+// The crxFilename must be a valid RINEX filename, RINEX v2 lowercase and RINEX v3 uppercase.
 // see http://terras.gsi.go.jp/ja/crx2rnx.html
 func Crx2rnx(crxFilename string) (string, error) {
-	ext := strings.ToLower(filepath.Ext(crxFilename))
-
-	// Check if file is already Hata decompressed
-	if ext == ".rnx" || strings.HasSuffix(ext, "o") { // .21o
+	// Check if file is already Hata decompressed.
+	if !IsHatanakaCompressed(crxFilename) {
 		return crxFilename, nil
 	}
 
@@ -1174,7 +1205,11 @@ func Crx2rnx(crxFilename string) (string, error) {
 	// Build name of target file
 	rnxFil := ""
 	if Rnx2FileNamePattern.MatchString(crxFil) {
-		rnxFil = Rnx2FileNamePattern.ReplaceAllString(crxFil, "${2}${3}${4}${5}.${6}o")
+		typ := "o"
+		if strings.HasSuffix(crxFil, "D") {
+			typ = "O"
+		}
+		rnxFil = Rnx2FileNamePattern.ReplaceAllString(crxFil, "${2}${3}${4}${5}.${6}"+typ)
 	} else if Rnx3FileNamePattern.MatchString(crxFil) {
 		rnxFil = Rnx3FileNamePattern.ReplaceAllString(crxFil, "${2}.rnx")
 	} else {
@@ -1193,15 +1228,20 @@ func Crx2rnx(crxFilename string) (string, error) {
 
 	err = cmd.Run()
 	if err != nil {
-		if _, err := os.Stat(rnxFilePath); !errors.Is(err, os.ErrNotExist) {
-			os.Remove(rnxFilePath)
+		rc := cmd.ProcessState.ExitCode()
+		if rc == 2 { // Warning
+			log.Printf("W! crx2rnx: %s", stderr.Bytes())
+		} else { // Error
+			if _, err := os.Stat(rnxFilePath); !errors.Is(err, os.ErrNotExist) {
+				os.Remove(rnxFilePath)
+			}
+			return "", fmt.Errorf("crx2rnx: rc:%d: %v: %s", rc, err, stderr.Bytes())
 		}
-		return "", fmt.Errorf("crx2rnx failed: %v: %s", err, stderr.Bytes())
 	}
 
 	// Return filepath
-	if _, err := os.Stat(rnxFilePath); os.IsNotExist(err) {
-		return "", fmt.Errorf("crx2rnx failed: compressed file does not exist: %s", rnxFilePath)
+	if _, err := os.Stat(rnxFilePath); errors.Is(err, os.ErrNotExist) {
+		return "", fmt.Errorf("crx2rnx: no such file: %s", rnxFilePath)
 	}
 	return rnxFilePath, nil
 }
@@ -1211,25 +1251,6 @@ func parseFlag(str string) (int, error) {
 		return 0, nil
 	}
 	return strconv.Atoi(str)
-}
-
-// Parse the Date/Time in the PGM / RUN BY / DATE header record.
-// It is recommended to use UTC as the time zone. Set zone to LCL if an unknown local time was used.
-func parseHeaderDate(date string) (time.Time, error) {
-	format := headerDateFormat
-	if len(date) == 19 || len(date) == 20 {
-		format = headerDateWithZoneFormat
-	} else if len(date) == 15 && strings.Contains(date, "-") {
-		format = headerDateFormatv2
-	} else if len(date) == 16 && strings.Contains(date, "-") {
-		format = "2006-01-02 15:04" // This is inofficial!
-	}
-
-	ti, err := time.Parse(format, date)
-	if err != nil {
-		return time.Time{}, err
-	}
-	return ti, nil
 }
 
 // get decimal part of a float.
@@ -1267,7 +1288,7 @@ func diffEpo(epochs SyncEpochs, opts Options) string {
 
 		obs2, err := getObsByPRN(epo2.ObsList, obs.Prn)
 		if err != nil {
-			fmt.Printf("%v\n", err)
+			log.Printf("%v", err)
 			continue
 		}
 
@@ -1298,9 +1319,9 @@ func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
 				val2 = getDecimal(val2)
 			}
 			if (o1.LLI != o2.LLI) || (math.Abs(val1-val2) > deltaPhase) {
-				fmt.Printf("%s %v %02d %s %s %14.03f %d %d | %14.03f %d %d\n", epoTime.Format(time.RFC3339Nano), prn.Sys, prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
+				log.Printf("%s %v %02d %s %s %14.03f %d %d | %14.03f %d %d", epoTime.Format(time.RFC3339Nano), prn.Sys, prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
 			} else if checkSNR && o1.SNR != o2.SNR {
-				fmt.Printf("%s %v %02d %s %s %14.03f %d %d | %14.03f %d %d\n", epoTime.Format(time.RFC3339Nano), prn.Sys, prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
+				log.Printf("%s %v %02d %s %s %14.03f %d %d | %14.03f %d %d", epoTime.Format(time.RFC3339Nano), prn.Sys, prn.Num, k[:1], k, val1, o1.LLI, o1.SNR, val2, o2.LLI, o2.SNR)
 			}
 
 			// if o1.SNR != o2.SNR {
@@ -1310,7 +1331,7 @@ func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
 			// 	fmt.Printf("%s: val: %s: %14.03f %14.03f\n", epoTime.Format(time.RFC3339Nano), k, val1, val2)
 			// }
 		} else {
-			fmt.Printf("Key %q does not exist\n", k)
+			log.Printf("Key %q does not exist", k)
 		}
 
 	}

@@ -357,7 +357,7 @@ func TestReadEpochs(t *testing.T) {
 			assert.Equal(wanted, obsPerSat, "1st epoch G11")
 		}
 	}
-	assert.Equal(120, numOfEpochs, "# epochs")
+	assert.Equal(120, numOfEpochs, "#epochs")
 	t.Logf("got all epochs: %d", numOfEpochs)
 
 	assert.Equal(5275, dec.lineNum, "# lines")
@@ -411,7 +411,7 @@ func TestReadEpochsRINEX2(t *testing.T) {
 	}
 
 	fmt.Printf("%+v\n", firstEpo)
-	assert.Equal(120, numOfEpochs, "# epochs")
+	assert.Equal(120, numOfEpochs, "#epochs")
 	t.Logf("got all epochs: %d", numOfEpochs)
 }
 
@@ -629,63 +629,100 @@ func TestSyncEpochs(t *testing.T) {
 }
 
 func TestRnx2crx(t *testing.T) {
-	assert := assert.New(t)
+	t.Cleanup(func() {
+		os.Remove("testdata/white/BRST155H.20O")
+	})
+
+	if _, err := copyFile("testdata/white/brst155h.20o", "testdata/white/BRST155H.20O"); err != nil {
+		t.Fatal(err)
+	}
+
 	tempDir := t.TempDir()
-	/* 	t.Cleanup(func() {
-		t.Logf("clean up dir %s", tempDir)
-		os.RemoveAll(tempDir)
-	}) */
 
-	// Rnx3
-	rnxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx", tempDir)
-	if err != nil {
-		t.Fatalf("Could not copy to temp dir: %v", err)
+	tests := []struct {
+		name        string
+		rnxFilename string
+		want        string
+		wantErr     bool
+	}{
+		{name: "t1-rnx3", rnxFilename: "testdata/white/BRUX00BEL_R_20183101900_01H_30S_MO.rnx", want: "BRUX00BEL_R_20183101900_01H_30S_MO.crx", wantErr: false},
+		{name: "t2-rnx2", rnxFilename: "testdata/white/brst155h.20o", want: "brst155h.20d", wantErr: false},
+		{name: "t2-rnx2", rnxFilename: "testdata/white/BRST155H.20O", want: "BRST155H.20D", wantErr: false},
 	}
-	crxFilePath, err := Rnx2crx(rnxFilePath)
-	if err != nil {
-		t.Fatalf("Could not Hatanaka compress file %s: %v", crxFilePath, err)
-	}
-	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20183101900_01H_30S_MO.crx"), crxFilePath, "rnx3 crx file")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rnxFilePath, err := copyToTempDir(tt.rnxFilename, tempDir)
+			if err != nil {
+				t.Fatalf("Could not copy to temp dir: %v", err)
+			}
 
-	// Rnx2
-	rnxFilePath, err = copyToTempDir("testdata/white/brst155h.20o", tempDir)
-	if err != nil {
-		t.Fatalf("Could not copy to temp dir: %v", err)
+			got, err := Rnx2crx(rnxFilePath)
+			if tt.wantErr {
+				t.Logf("%s", err)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Crx2rnx() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			filename := got
+			if got != "" {
+				filename = filepath.Base(got)
+			}
+			if filename != tt.want {
+				t.Errorf("Crx2rnx() = %v, want %v", got, tt.want)
+			}
+		})
 	}
-	crxFilePath, err = Rnx2crx(rnxFilePath)
-	if err != nil {
-		t.Fatalf("Could not Hatanaka compress file: %v", err)
-	}
-	assert.Equal(filepath.Join(tempDir, "brst155h.20d"), crxFilePath, "rnx3 crx file")
 }
 
 func TestCrx2rnx(t *testing.T) {
-	assert := assert.New(t)
+	t.Cleanup(func() {
+		os.Remove("testdata/white/BRST155H.20D")
+	})
+
+	if _, err := copyFile("testdata/white/brst155h.20d", "testdata/white/BRST155H.20D"); err != nil {
+		t.Fatal(err)
+	}
+
 	tempDir := t.TempDir()
 
-	// Rnx3
-	crxFilePath, err := copyToTempDir("testdata/white/BRUX00BEL_R_20202302000_01H_30S_MO.crx", tempDir)
-	if err != nil {
-		t.Fatalf("Could not copy to temp dir: %v", err)
+	tests := []struct {
+		name        string
+		crxFilename string
+		want        string
+		wantErr     bool
+	}{
+		{name: "t1-rnx3", crxFilename: "testdata/white/BRUX00BEL_R_20202302000_01H_30S_MO.crx", want: "BRUX00BEL_R_20202302000_01H_30S_MO.rnx", wantErr: false},
+		{name: "t2-rnx2", crxFilename: "testdata/white/brst155h.20d", want: "brst155h.20o", wantErr: false},
+		{name: "t2-rnx2-uc", crxFilename: "testdata/white/BRST155H.20D", want: "BRST155H.20O", wantErr: false},
+		{name: "t2-rnx3-err", crxFilename: "testdata/black/hubu00DEU_R_20230931500_01H_30S_MO.crx", want: "", wantErr: true},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			crxFilePath, err := copyToTempDir(tt.crxFilename, tempDir)
+			if err != nil {
+				t.Fatalf("Could not copy to temp dir: %v", err)
+			}
 
-	rnxFilePath, err := Crx2rnx(crxFilePath)
-	if err != nil {
-		t.Fatalf("Could not Hatanaka decompress file: %v", err)
-	}
-	assert.Equal(filepath.Join(tempDir, "BRUX00BEL_R_20202302000_01H_30S_MO.rnx"), rnxFilePath, "rnx2 file")
+			got, err := Crx2rnx(crxFilePath)
+			if tt.wantErr {
+				t.Logf("%s", err)
+			}
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Crx2rnx() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
 
-	// Rnx2
-	crxFilePath, err = copyToTempDir("testdata/white/brst155h.20d", tempDir)
-	if err != nil {
-		t.Fatalf("Could not copy to temp dir: %v", err)
+			filename := got
+			if got != "" {
+				filename = filepath.Base(got)
+			}
+			if filename != tt.want {
+				t.Errorf("Crx2rnx() = %v, want %v", got, tt.want)
+			}
+		})
 	}
-
-	rnxFilePath, err = Crx2rnx(crxFilePath)
-	if err != nil {
-		t.Fatalf("Could not Hatanaka decompress file: %v", err)
-	}
-	assert.Equal(filepath.Join(tempDir, "brst155h.20o"), rnxFilePath, "rnx2 file")
 }
 
 func copyToTempDir(src, targetDir string) (string, error) {
@@ -780,21 +817,4 @@ func Test_decodeEpoLineHlp(t *testing.T) {
 	assert.Equal(t, "2018 11 25 22 59 30.0000000", line[2:29], "epoch time")
 	assert.Equal(t, "0", line[31:32], "epoch flag")
 	assert.Equal(t, " 26", line[32:35], "num Satellites")
-}
-
-func Test_parseHeaderDate(t *testing.T) {
-	assert := assert.New(t)
-	tests := map[string]time.Time{
-		"20221109 140100":     time.Date(2022, 11, 9, 14, 1, 0, 0, time.UTC),
-		"20190927 095942 UTC": time.Date(2019, 9, 27, 9, 59, 42, 0, time.UTC),
-		"19-FEB-98 10:42":     time.Date(1998, 2, 19, 10, 42, 0, 0, time.UTC),
-		"2022-11-09 14:01":    time.Date(2022, 11, 9, 14, 1, 0, 0, time.UTC), // inofficial!
-	}
-
-	for k, v := range tests {
-		epTime, err := parseHeaderDate(k)
-		assert.NoError(err)
-		assert.Equal(v, epTime)
-		fmt.Printf("epoch: %s\n", epTime)
-	}
 }
