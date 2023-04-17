@@ -170,6 +170,25 @@ func TestParseDoy(t *testing.T) {
 	}
 }
 
+func Test_parseHeaderDate(t *testing.T) {
+	assert := assert.New(t)
+	tests := map[string]time.Time{
+		"20221109 140100":     time.Date(2022, 11, 9, 14, 1, 0, 0, time.UTC),
+		"20190927 095942 UTC": time.Date(2019, 9, 27, 9, 59, 42, 0, time.UTC),
+		"19-FEB-98 10:42":     time.Date(1998, 2, 19, 10, 42, 0, 0, time.UTC),
+		"05-Apr-2023 11:02":   time.Date(2023, 4, 5, 11, 2, 0, 0, time.UTC),   // inofficial!
+		"10-May-17 22:01:54":  time.Date(2017, 5, 10, 22, 1, 54, 0, time.UTC), // inofficial!
+		"2022-11-09 14:01":    time.Date(2022, 11, 9, 14, 1, 0, 0, time.UTC),  // inofficial!
+	}
+
+	for k, v := range tests {
+		epTime, err := parseHeaderDate(k)
+		assert.NoError(err)
+		assert.Equal(v, epTime)
+		fmt.Printf("epoch: %s\n", epTime)
+	}
+}
+
 func TestRnxFil_StationName(t *testing.T) {
 	fil1, err := NewObsFile("BRUX00BEL_R_20183101900_01H_30S_MO.rnx")
 	assert.NoError(t, err)

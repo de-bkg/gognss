@@ -40,6 +40,9 @@ const (
 var (
 	// ErrNoHeader is returned when reading RINEX data that does not begin with a RINEX Header.
 	ErrNoHeader = errors.New("RINEX: no header")
+
+	// ErrParser is returned on any RINEX parsing error.
+	ErrParser = errors.New("cannot parse")
 )
 
 var (
@@ -47,7 +50,7 @@ var (
 	Rnx2FileNamePattern = regexp.MustCompile(`(?i)(([a-z0-9]{4})(\d{3})([a-x0])(\d{2})?\.(\d{2})([domnglqfphs]))\.?([a-zA-Z0-9]+)?`)
 
 	// Rnx3FileNamePattern is the regex for RINEX3 filenames.
-	Rnx3FileNamePattern = regexp.MustCompile(`(?i)((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCSM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
+	Rnx3FileNamePattern = regexp.MustCompile(`(?i)((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCISM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
 
 	sysPerAbbr = map[string]gnss.System{
 		"G": gnss.SysGPS,
@@ -413,6 +416,7 @@ func GetCaseSensitiveName(path string) string {
 }
 
 // IsCompressed returns true if the src is compressed, otherwise false.
+// This checks NOT for Hatanaka compression.
 func IsCompressed(src string) bool {
 	ext := filepath.Ext(src)
 	if ext == "" {
@@ -448,6 +452,29 @@ func parseFloat(s string) (float64, error) {
 	r := strings.NewReplacer("d", "e", "D", "e")
 	scleaned := r.Replace(strings.TrimSpace(s))
 	return strconv.ParseFloat(scleaned, 64)
+}
+
+// Parse the Date/Time in the PGM / RUN BY / DATE header record.
+// It is recommended to use UTC as the time zone. Set zone to LCL if an unknown local time was used.
+func parseHeaderDate(date string) (time.Time, error) {
+	format := headerDateFormat
+	if len(date) == 19 || len(date) == 20 {
+		format = headerDateWithZoneFormat
+	} else if len(date) == 15 && strings.Contains(date, "-") {
+		format = headerDateFormatv2
+	} else if len(date) == 18 && strings.Contains(date, "-") {
+		format = "02-Jan-06 15:04:05" // unofficial!
+	} else if len(date) == 17 && strings.Contains(date, "-") {
+		format = "02-Jan-2006 15:04" // unofficial!
+	} else if len(date) == 16 && strings.Contains(date, "-") {
+		format = "2006-01-02 15:04" // unofficial!
+	}
+
+	ti, err := time.Parse(format, date)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return ti, nil
 }
 
 func getHourAsChar(hr int) string {
