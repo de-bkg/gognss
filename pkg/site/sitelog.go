@@ -996,7 +996,7 @@ func printSitelogDate(t time.Time) string {
 	if t.IsZero() {
 		return "(CCYY-MM-DD)"
 	}
-	return t.Format("2006-01-02")
+	return t.Format(time.DateOnly)
 }
 
 var sysPerAbbr = map[string]gnss.System{
