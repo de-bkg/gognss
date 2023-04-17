@@ -108,8 +108,8 @@ func TestMetDecoder_NextEpoch(t *testing.T) {
 	assert.NoError(dec.Err())
 	t.Logf("1st epoch: %+v", firstEpo)
 
-	assert.Equal(360, numOfEpochs, "# epochs")
-	assert.Equal(380, dec.lineNum, "# lines")
+	assert.Equal(360, numOfEpochs, "#epochs")
+	assert.Equal(380, dec.lineNum, "#lines")
 }
 
 func TestMeteoFile_ComputeObsStats(t *testing.T) {

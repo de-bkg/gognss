@@ -2,6 +2,7 @@ package rinex
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -141,7 +142,7 @@ readln:
 			if date, err := parseHeaderDate(strings.TrimSpace(val[40:])); err == nil {
 				hdr.Date = date
 			} else {
-				log.Printf("header date: %q, %v", val[40:], err)
+				log.Printf("parse header date: %q, %v", val[40:], err)
 			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
@@ -175,7 +176,7 @@ readln:
 		case "END OF HEADER":
 			break readln
 		default:
-			fmt.Printf("Header field %q not handled yet\n", key)
+			log.Printf("Header field %q not handled yet", key)
 		}
 	}
 
@@ -214,11 +215,9 @@ func (dec *MetDecoder) Err() error {
 	return dec.err
 }
 
-// setErr records the first error encountered.
+// setErr adds an error.
 func (dec *MetDecoder) setErr(err error) {
-	if dec.err == nil || dec.err == io.EOF {
-		dec.err = err
-	}
+	dec.err = errors.Join(dec.err, err)
 }
 
 // readLine reads the next line into buffer. It returns false if an error

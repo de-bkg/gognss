@@ -2,6 +2,7 @@ package rinex
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -48,7 +49,7 @@ type Eph interface {
 }
 
 // NewEph returns a new ephemeris having the concrete type.
-func NewEph(sys gnss.System) Eph {
+func NewEph(sys gnss.System) (Eph, error) {
 	var eph Eph
 	switch sys {
 	case gnss.SysGPS:
@@ -66,11 +67,10 @@ func NewEph(sys gnss.System) Eph {
 	case gnss.SysSBAS:
 		eph = &EphSBAS{}
 	default:
-		fmt.Printf("unknown satellite system: %v", sys)
-		os.Exit(1)
+		return eph, fmt.Errorf("unknown satellite system: %v", sys)
 	}
 
-	return eph
+	return eph, nil
 }
 
 // EphGPS describes a GPS ephemeris.
@@ -324,7 +324,7 @@ readln:
 			if date, err := parseHeaderDate(strings.TrimSpace(val[40:])); err == nil {
 				hdr.Date = date
 			} else {
-				log.Printf("header date: %q, %v", val[40:], err)
+				log.Printf("parse header date: %q, %v", val[40:], err)
 			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
@@ -339,7 +339,7 @@ readln:
 		case "END OF HEADER":
 			break readln
 		default:
-			fmt.Printf("Header field %q not handled yet\n", key)
+			log.Printf("Header field %q not handled yet", key)
 		}
 	}
 
@@ -397,7 +397,7 @@ func (dec *NavDecoder) nextEphemerisv3() bool {
 		}
 
 		if !strings.ContainsAny(line[:1], "GREJCIS") {
-			fmt.Printf("rinex: stream does not start with epoch line: %q\n", line) // must not be an error
+			log.Printf("rinex: stream does not start with epoch line: %q", line) // must not be an error
 			continue
 		}
 
@@ -466,11 +466,9 @@ func (dec *NavDecoder) Ephemeris() Eph {
 	return dec.eph
 }
 
-// setErr records the first error encountered.
+// setErr adds an error.
 func (dec *NavDecoder) setErr(err error) {
-	if dec.err == nil || dec.err == io.EOF {
-		dec.err = err
-	}
+	dec.err = errors.Join(dec.err, err)
 }
 
 // readLine reads the next line into buffer. It returns false if an error
@@ -917,6 +915,7 @@ type NavStats struct {
 	Satellites      []PRN        `json:"satellites"`      // The ephemeris' satellites.
 	EarliestEphTime time.Time    `json:"earliestEphTime"` // Time of the earliest ephemeris.
 	LatestEphTime   time.Time    `json:"latestEphTime"`   // Time of the latest ephemeris.
+	Errors          error
 }
 
 // A NavFile contains fields and methods for RINEX navigation files and includes common methods for
@@ -997,7 +996,7 @@ func (f *NavFile) GetStats() (stats NavStats, err error) {
 
 	}
 	if err := dec.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "reading ephemerides:", err)
+		stats.Errors = errors.Join(stats.Errors, err)
 	}
 
 	if nEphs == 0 {
