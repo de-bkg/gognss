@@ -17,8 +17,7 @@ import (
 )
 
 func TestObsDecoder_readHeader(t *testing.T) {
-	const header = `
-     3.03           OBSERVATION DATA    M                   RINEX VERSION / TYPE
+	const header = `     3.03           OBSERVATION DATA    M                   RINEX VERSION / TYPE
 sbf2rin-12.3.1                          20181106 200225 UTC PGM / RUN BY / DATE
 BRUX                                                        MARKER NAME
 13101M010                                                   MARKER NUMBER
