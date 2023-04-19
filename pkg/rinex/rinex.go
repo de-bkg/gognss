@@ -39,7 +39,7 @@ const (
 // errors
 var (
 	// ErrNoHeader is returned when reading RINEX data that does not begin with a RINEX Header.
-	ErrNoHeader = errors.New("RINEX: no header")
+	ErrNoHeader = errors.New("rinex: no header")
 
 	// ErrParser is returned on any RINEX parsing error.
 	ErrParser = errors.New("cannot parse")
