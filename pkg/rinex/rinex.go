@@ -42,7 +42,7 @@ var (
 	ErrNoHeader = errors.New("rinex: no header")
 
 	// ErrParser is returned on any RINEX parsing error.
-	ErrParser = errors.New("cannot parse")
+	ErrParser = errors.New("rinex: parse error")
 )
 
 var (

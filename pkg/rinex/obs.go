@@ -448,7 +448,7 @@ readln:
 	}
 
 	if hdr.RINEXVersion == 0 {
-		return hdr, ErrNoHeader
+		return hdr, fmt.Errorf("unknown RINEX Version")
 	}
 
 	// Check for short obs types in RINEX-3 file. Usually in RINEX-2 to 3 converted files.
