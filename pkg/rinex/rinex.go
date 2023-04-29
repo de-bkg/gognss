@@ -446,7 +446,7 @@ func ParseDoy(year, doy int) time.Time {
 
 func parseFloat(s string) (float64, error) {
 	//s. bncutils::readDbl
-	if s == "" {
+	if strings.TrimSpace(s) == "" {
 		return 0, nil
 	}
 	r := strings.NewReplacer("d", "e", "D", "e")
