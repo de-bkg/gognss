@@ -16,10 +16,10 @@ import (
 
 const (
 	// epochTimeFormat is the time format for a epoch in RINEX version 3 files.
-	epochTimeFormat string = "2006  1  2 15  4  5.0000000"
+	epochTimeFormat string = "2006  1  2 15  4  5.9999999" // .99... see https://stackoverflow.com/questions/41617401/how-do-i-parse-string-timestamps-of-different-length-to-time
 
 	// epochTimeFormatv2 is the time format for a epoch in RINEX version 2 files.
-	epochTimeFormatv2 string = "06  1  2 15  4  5.0000000"
+	epochTimeFormatv2 string = "06  1  2 15  4  5.9999999"
 
 	// rnx3StartTimeFormat is the time format for the start time in RINEX3 file names.
 	rnx3StartTimeFormat string = "20060021504"

@@ -511,18 +511,20 @@ func TestObsFile_ComputeObsStatsV2(t *testing.T) {
 func TestParseEpochTime(t *testing.T) {
 	assert := assert.New(t)
 	tests := map[string]time.Time{
-		"2018 11 06 19 00  0.0000000": time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC),
-		"2018 11 06 19 00 30.0000000": time.Date(2018, 11, 6, 19, 0, 30, 0, time.UTC),
-		"2019  8  6  3 44 29.0000000": time.Date(2019, 8, 6, 3, 44, 29, 0, time.UTC),
-		"2019  8  6  4 44  0.0000000": time.Date(2019, 8, 6, 4, 44, 0, 0, time.UTC),
-		"2019  8  6  5  5  8.0000000": time.Date(2019, 8, 6, 5, 5, 8, 0, time.UTC),
+		"2018 11 06 19 00  0.0000000":              time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC),
+		"2018 11 06 19 00 30.0000000":              time.Date(2018, 11, 6, 19, 0, 30, 0, time.UTC),
+		"2019  8  6  3 44 29.0000000":              time.Date(2019, 8, 6, 3, 44, 29, 0, time.UTC),
+		"2019  8  6  4 44  0.0000000":              time.Date(2019, 8, 6, 4, 44, 0, 0, time.UTC),
+		"2019  8  6  5  5  8.0000000":              time.Date(2019, 8, 6, 5, 5, 8, 0, time.UTC),
+		"2019  8  6  5  5  8.9538000":              time.Date(2019, 8, 6, 5, 5, 8, 953800000, time.UTC),
+		"2023     4    23     0     0    1.000000": time.Date(2023, 4, 23, 0, 0, 1, 0, time.UTC),
 	}
 
 	for k, v := range tests {
 		epTime, err := time.Parse(epochTimeFormat, k)
 		assert.NoError(err)
 		assert.Equal(v, epTime)
-		fmt.Printf("epoch: %s\n", epTime)
+		fmt.Printf("epoch v3: %s\n", epTime)
 	}
 
 	// RINEX version 2
@@ -536,7 +538,7 @@ func TestParseEpochTime(t *testing.T) {
 		epTime, err := time.Parse(epochTimeFormatv2, k)
 		assert.NoError(err)
 		assert.Equal(v, epTime, "RINEX-2 epoch")
-		fmt.Printf("epoch: %s\n", epTime)
+		fmt.Printf("epoch v2: %s\n", epTime)
 	}
 }
 
