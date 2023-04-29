@@ -992,8 +992,10 @@ func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 	}
 
 	// Sampling rate
-	sort.Slice(intervals, func(i, j int) bool { return intervals[i] < intervals[j] })
-	stats.Sampling = intervals[int(len(intervals)/2)]
+	if len(intervals) > 1 {
+		sort.Slice(intervals, func(i, j int) bool { return intervals[i] < intervals[j] })
+		stats.Sampling = intervals[int(len(intervals)/2)]
+	}
 
 	// LLIs
 
