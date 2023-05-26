@@ -19,6 +19,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
@@ -1168,6 +1169,13 @@ func Rnx2crx(rnxFilename string) (string, error) {
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
+	// Launch as new process group so that signals (ex: SIGINT) are not sent also the the child process,
+	// see https://stackoverflow.com/questions/66232825/child-process-receives-sigint-which-should-be-handled-only-by-parent-process-re
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		//CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP, // windows
+		Setpgid: true, // linux
+	}
+
 	err = cmd.Run()
 	if err != nil {
 		rc := cmd.ProcessState.ExitCode()
@@ -1227,6 +1235,10 @@ func Crx2rnx(crxFilename string) (string, error) {
 	cmd := exec.Command(tool, crxFilename, "-d", "-f")
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		//CreationFlags: syscall.CREATE_NEW_PROCESS_GROUP, // windows
+		Setpgid: true, // linux
+	}
 
 	err = cmd.Run()
 	if err != nil {
