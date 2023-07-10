@@ -36,7 +36,7 @@ const (
 	headerDateFormatv2 string = "02-Jan-06 15:04"
 )
 
-// errors
+// General RINEX errors.
 var (
 	// ErrNoHeader is returned when reading RINEX data that does not begin with a RINEX Header.
 	ErrNoHeader = errors.New("rinex: no header")
@@ -44,6 +44,29 @@ var (
 	// ErrParser is returned on any RINEX parsing error.
 	ErrParser = errors.New("rinex: parse error")
 )
+
+// A RinexError holds a warning or error that may occur during the processing a RINEX file.
+// RinexError implements the error interface.
+type RinexError struct {
+	Err error
+
+	// The debug level can be: TRACE, DEBUG, INFO, WARN, ERROR, FATAL.
+	//Level ErrorLevel
+
+	// Additional information. This can have any type, mainly used struct, map or string.
+	Meta any
+}
+
+// Unwrap returns the wrapped error, to allow interoperability with errors.Is(), errors.As() and errors.Unwrap()
+func (e *RinexError) Unwrap() error { return e.Err }
+
+// RinexError implements the error interface.
+func (e *RinexError) Error() string {
+	if e.Meta != nil {
+		return fmt.Sprintf("%s: %+v", e.Err.Error(), e.Meta)
+	}
+	return e.Err.Error()
+}
 
 var (
 	// Rnx2FileNamePattern is the regex for RINEX2 filenames.
