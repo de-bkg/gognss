@@ -1,6 +1,7 @@
 package rinex
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -818,4 +819,50 @@ func Test_decodeEpoLineHlp(t *testing.T) {
 	assert.Equal(t, "2018 11 25 22 59 30.0000000", line[2:29], "epoch time")
 	assert.Equal(t, "0", line[31:32], "epoch flag")
 	assert.Equal(t, " 26", line[32:35], "num Satellites")
+}
+
+func TestObsHeader_checkObstypes(t *testing.T) {
+	const header = `     3.03           OBSERVATION DATA    M (MIXED)           RINEX VERSION / TYPE
+TPP 4.3.2                               20230128 235930 UTC PGM / RUN BY / DATE
+DOMES: 12225M001                                            COMMENT
+																														COMMENT
+																														COMMENT
+GWWL                                                        MARKER NAME
+12225M001                                                   MARKER NUMBER
+ASG-EUPOS           GUGiK                                   OBSERVER / AGENCY
+5742R51348          TRIMBLE NETR9       Nav 5.45 / Boot 5.45REC # / TYPE / VERS
+5319361129          TRM59900.00     SCIS                    ANT # / TYPE
+	3734526.1661  1015012.7925  5053042.5377                  APPROX POSITION XYZ
+				0.0000        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+G   24 C1C L1C D1C S1C C2P C2W C2X L2P L2W L2X D2X S2P S2W  SYS / # / OBS TYPES
+			 S2X C5I C5Q C5X L5I L5Q L5X D5X S5I S5Q S5X          SYS / # / OBS TYPES
+R   16 C1C C1P L1C L1P D1C S1C S1P C2C C2P L2C L2P S2C S2P  SYS / # / OBS TYPES
+			 C3X L3X S3X                                          SYS / # / OBS TYPES
+E   48 C1X C1C C1B L1X L1C L1B D1X D1C D1B S1X S1C S1B C5X  SYS / # / OBS TYPES
+			 C5Q C5I L5X L5Q L5I S5X S5Q S5I C6X C6C C6B L6X L6C  SYS / # / OBS TYPES
+			 L6B S6X S6C S6B C8X C8Q C8I L8X L8Q L8I S8X S8Q S8I  SYS / # / OBS TYPES
+			 C7X C7Q C7I L7X L7Q L7I S7X S7Q S7I                  SYS / # / OBS TYPES
+J   38 C1C C1X C1C C1B C1Z L1C L1X L1C L1B L1Z D1C D1X D1C  SYS / # / OBS TYPES
+			 D1B D1Z S1C S1X S1C S1B S1Z C2X L2X D2X S2X C5I C5Q  SYS / # / OBS TYPES
+			 C5X L5I L5Q L5X D5X S5I S5Q S5X C6X L6X D6X S6X      SYS / # / OBS TYPES
+C   12 C6X L6X D6X S6X C2X L2X D2X S2X C7X L7X D7X S7X      SYS / # / OBS TYPES
+		30.000                                                  INTERVAL
+		 0                                                      RCV CLOCK OFFS APPL
+		18  2246     7                                          LEAP SECONDS
+	 101                                                      # OF SATELLITES
+	2023    01    29    00    00   00.0000000     GPS         TIME OF FIRST OBS
+ 24 R01  1 R02 -4 R03  5 R04  6 R05  1 R06 -4 R07  5 R08  6 GLONASS SLOT / FRQ #
+		R09 -2 R10 -7 R11  0 R12 -1 R13 -2 R14 -7 R15  0 R16 -1 GLONASS SLOT / FRQ #
+		R17  4 R18 -3 R19  3 R20  2 R21  4 R22 -3 R23  3 R24  2 GLONASS SLOT / FRQ #
+ C1C   19.070 C1P   19.070 C2C   19.070 C2P   19.070        GLONASS COD/PHS/BIS
+																														END OF HEADER`
+
+	assert := assert.New(t)
+	dec, err := NewObsDecoder(strings.NewReader(header))
+	if !errors.Is(err, ErrMultipleObsTypes) {
+		t.Logf("wanted a ErrMultipleObsTypes error")
+		t.Fail()
+	}
+	t.Logf("err: %v", err)
+	assert.NotNil(t, dec)
 }
