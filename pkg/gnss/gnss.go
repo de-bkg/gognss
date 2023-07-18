@@ -1,7 +1,10 @@
 // Package gnss contains common constants and type definitions.
 package gnss
 
-import "strings"
+import (
+	"encoding/json"
+	"strings"
+)
 
 // System is a satellite system.
 type System int
@@ -25,6 +28,11 @@ func (sys System) String() string {
 // Abbr returns the systems' abbreviation used in RINEX.
 func (sys System) Abbr() string {
 	return [...]string{"", "G", "R", "E", "J", "C", "I", "S", "M"}[sys]
+}
+
+// For JSON encoding implement the json.Marshaler interface.
+func (sys System) MarshalJSON() ([]byte, error) {
+	return json.Marshal(sys.Abbr())
 }
 
 // Systems specifies a list of satellite systems.
