@@ -239,7 +239,7 @@ func (hdr *ObsHeader) checkObstypes() (err error) {
 		mymap := make(map[ObsCode]struct{}, len(obscodes))
 		for _, obscode := range obscodes {
 			// Check for short RINEX-2 obs types.
-			if len(obscode) == 2 {
+			if len(obscode) == 2 && !strings.HasPrefix(string(obscode), "X") { // Channel numbers as pseudo-observables X1-X9
 				return &RinexError{Err: ErrShortObsType,
 					Meta: fmt.Sprintf("type %q for system %s", obscode, sys)}
 			}
