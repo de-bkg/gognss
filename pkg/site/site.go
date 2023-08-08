@@ -468,7 +468,7 @@ func (s *Site) cleanReceivers(force bool) error {
 			return nil
 		}
 		next := func() *Receiver {
-			if n+1 < nReceivers {
+			if i+1 < nReceivers {
 				return list[i+1]
 			}
 			return nil
@@ -542,7 +542,7 @@ func (s *Site) cleanAntennas(force bool) error {
 			return nil
 		}
 		next := func() *Antenna {
-			if n+1 < nAntennas {
+			if i+1 < nAntennas {
 				return list[i+1]
 			}
 			return nil
@@ -606,7 +606,7 @@ func (s *Site) cleanAntennas(force bool) error {
 	return nil
 }
 
-// StationInfo retuns the station information with all receiver and antenna
+// StationInfo returns the station information with all receiver and antenna
 // changes since the installation of the site, as it is used for the bernese
 // Station Information (STA file).
 func (s *Site) StationInfo() ([]StationInfo, error) {
