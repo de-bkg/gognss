@@ -401,14 +401,19 @@ func (dec *NavDecoder) nextEphemerisv3() bool {
 		}
 
 		if !strings.ContainsAny(line[:1], "GREJCIS") {
-			log.Printf("rinex: stream does not start with epoch line: %q", line) // must not be an error
+			log.Printf("rinex: line %d: stream does not start with epoch line: %q", dec.lineNum, line) // must not be an error
 			continue
 		}
 
 		sys, ok := sysPerAbbr[line[:1]]
 		if !ok {
-			dec.setErr(fmt.Errorf("rinex: invalid satellite system: %q: line %d", line[:1], dec.lineNum))
+			dec.setErr(fmt.Errorf("rinex: line %d: invalid satellite system: %q", dec.lineNum, line[:1]))
 			return false
+		}
+
+		if len(line) < 23 { // ToC. simple test to prevent panicing.
+			dec.setErr(fmt.Errorf("rinex: invalid line %d: %q", dec.lineNum, line))
+			continue
 		}
 
 		err := dec.decodeEPH(sys)
@@ -515,6 +520,7 @@ func (dec *NavDecoder) parseToC() (time.Time, error) {
 	if dec.Header.RINEXVersion < 3 {
 		return time.Parse(TimeOfClockFormatv2, line[3:22])
 	}
+
 	return time.Parse(TimeOfClockFormat, line[4:23])
 }
 
