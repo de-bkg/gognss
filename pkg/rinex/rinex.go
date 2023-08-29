@@ -50,8 +50,8 @@ var (
 type RinexError struct {
 	Err error
 
-	// The debug level can be: TRACE, DEBUG, INFO, WARN, ERROR, FATAL.
-	//Level ErrorLevel
+	// The line where the error occured.
+	// Line int
 
 	// Additional information. This can have any type, mainly used struct, map or string.
 	Meta any
@@ -215,6 +215,12 @@ func (f *RnxFil) IsNavType() bool {
 func (f *RnxFil) IsMeteoType() bool {
 	return strings.HasSuffix(f.DataType, "M")
 }
+
+// Returns true if it is a hourly file.
+func (f *RnxFil) IsHourly() bool { return f.FilePeriod == FilePeriodHourly }
+
+// Returns true if it is a daily file.
+func (f *RnxFil) IsDaily() bool { return f.FilePeriod == FilePeriodDaily }
 
 // ParseFilename parses the specified filename, which must be a valid RINEX filename,
 // and fills its fields.
@@ -385,7 +391,7 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 	var fn strings.Builder
 	fn.WriteString(strings.ToLower(rnx.FourCharID))
 	fn.WriteString(fmt.Sprintf("%03d", rnx.StartTime.YearDay()))
-	if rnx.FilePeriod == FilePeriodDaily {
+	if rnx.IsDaily() {
 		fn.WriteString("0")
 	} else {
 		fn.WriteString(getHourAsChar(rnx.StartTime.Hour()))
