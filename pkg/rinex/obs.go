@@ -25,17 +25,6 @@ import (
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
-// RINEX obs errors.
-// TODO add existing errors.
-var (
-	// ErrMultipleObsTypes is returned if a observation type is defined multiples times in a RINEX obs header.
-	ErrMultipleObsTypes = errors.New("rinex: multiple observation type definitions")
-
-	// ErrShortObsType is returned if a short (RINEX-2 2-char) observation type is found in a RINEX header with version 3 or higher.
-	// Often found in RINEX-2 to 3 converted files.
-	ErrShortObsType = errors.New("rinex: short observation type")
-)
-
 // The RINEX observation code that specifies frequency, signal and tracking mode like "L1C".
 type ObsCode string
 
@@ -227,35 +216,6 @@ func (hdr *ObsHeader) SatSystems() []gnss.System {
 		sysList = append(sysList, sys)
 	}
 	return sysList
-}
-
-// Check observation types
-func (hdr *ObsHeader) checkObstypes() (err error) {
-	if hdr.RINEXVersion < 3 {
-		return nil
-	}
-
-	for sys, obscodes := range hdr.ObsTypes {
-		mymap := make(map[ObsCode]struct{}, len(obscodes))
-		for _, obscode := range obscodes {
-			// Check for short RINEX-2 obs types.
-			if len(obscode) == 2 && !strings.HasPrefix(string(obscode), "X") { // Channel numbers as pseudo-observables X1-X9
-				return &RinexError{Err: ErrShortObsType,
-					Meta: fmt.Sprintf("type %q for system %s", obscode, sys)}
-			}
-
-			// Check for multiple definitions of observation types
-			// E.g. 'J   38 C1C C1X C1C C1B ... SYS / # / OBS TYPES'
-			if _, ok := mymap[obscode]; !ok {
-				mymap[obscode] = struct{}{}
-			} else {
-				err = errors.Join(err, &RinexError{Err: ErrMultipleObsTypes,
-					Meta: fmt.Sprintf("type %q for system %s", obscode, sys)})
-			}
-		}
-	}
-
-	return err
 }
 
 // ObsDecoder reads and decodes header and data records from a RINEX Obs input stream.
@@ -494,12 +454,6 @@ readln:
 
 	if err = dec.sc.Err(); err != nil {
 		return hdr, err
-	}
-
-	// Check observation types
-	err = hdr.checkObstypes()
-	if err != nil {
-		dec.setErr(err)
 	}
 
 	return hdr, err
