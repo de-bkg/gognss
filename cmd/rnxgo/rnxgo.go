@@ -90,8 +90,7 @@ func main() {
 					}
 
 					//obs1.Opts.SatSys = []rune("GR")
-					err = obs1.Diff(obs2)
-					return nil
+					return obs1.Diff(obs2)
 				},
 				OnUsageError: func(c *cli.Context, err error, isSubcommand bool) error {
 					fmt.Fprintf(c.App.Writer, "for shame\n")

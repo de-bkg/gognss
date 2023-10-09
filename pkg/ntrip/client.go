@@ -94,7 +94,7 @@ func NewClient(addr string, opts Options) (*Client, error) {
 		return nil, err
 	}
 	if casterURL.Scheme != "http" && casterURL.Scheme != "https" {
-		return nil, fmt.Errorf("Unsupported protocol scheme: %s: your address must start with http:// or https://", casterURL.Scheme)
+		return nil, fmt.Errorf("unsupported protocol scheme: %s: your address must start with http:// or https://", casterURL.Scheme)
 	}
 
 	if opts.UserAgent == "" {
@@ -119,7 +119,7 @@ func NewClient(addr string, opts Options) (*Client, error) {
 	// if opts.TLSConfig != nil {
 	// 	tr.TLSClientConfig = opts.TLSConfig
 	// }
-	var timeout time.Duration = 15 * time.Second // default
+	timeout := 15 * time.Second // default
 	if opts.Timeout != 0 {
 		timeout = time.Duration(opts.Timeout) * time.Second
 	}
@@ -201,6 +201,7 @@ func (c *Client) ParseSourcetable() (*Sourcetable, error) {
 	st.Streams = make([]Stream, 0, 200)
 	scanner := bufio.NewScanner(reader)
 	ln := ""
+readln:
 	for scanner.Scan() {
 		ln = scanner.Text()
 		if strings.HasPrefix(ln, "#") { // comment
@@ -221,7 +222,7 @@ func (c *Client) ParseSourcetable() (*Sourcetable, error) {
 				st.Streams = append(st.Streams, str)
 			}
 		case "ENDSOURCETABLE":
-			break
+			break readln
 		default:
 			return nil, fmt.Errorf("%s: illegal sourcetable line: '%s'", c.URL.String(), ln)
 		}

@@ -9,10 +9,10 @@ GOFLAGS = -ldflags "$(GOLDFLAGS)"
 
 help:
 	@echo 'Targets:'
-	@echo '  test         - run short unit tests'
-	@echo '  govulncheck  - detect vulnerabilities in Go packages see https://github.com/golang/vuln'
-	@echo '  tidy         - tidy go modules'
-	@echo '  clear        - clear test cache'
+	@echo '  test  - run short unit tests'
+	@echo '  audit - run quality control checks (vet, govulncheck, staticcheck)'
+	@echo '  tidy  - tidy go modules'
+	@echo '  clear - clear test cache'
 
 clear:
 	go clean -testcache
@@ -20,8 +20,14 @@ clear:
 test:
 	go test -short -race ./...
 
-govulncheck:
-	govulncheck ./...
+## audit: run quality control checks
+.PHONY: audit
+audit:
+	go mod verify
+	go vet ./...
+	go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-ST1000,-ST1020,-U1000 ./...
+	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+	go test -short -race -buildvcs -vet=off ./...
 
 tidy:
 	go mod verify

@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// Meteorological observation type abbreviation PR, TD, etc.
+// MeteoObsType is a meteorological observation type abbreviation PR, TD, etc.
 type MeteoObsType string
 
 /* type MeteoObsType int

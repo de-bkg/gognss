@@ -25,7 +25,7 @@ import (
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
-// The RINEX observation code that specifies frequency, signal and tracking mode like "L1C".
+// ObsCode is the RINEX observation code that specifies frequency, signal and tracking mode like "L1C".
 type ObsCode string
 
 // Options for global settings.
@@ -1170,7 +1170,7 @@ func Rnx2crx(rnxFilename string) (string, error) {
 	if err != nil {
 		rc := cmd.ProcessState.ExitCode()
 		if rc == 2 { // Warning
-			log.Printf("W! rnx2crx: %s", stderr.Bytes())
+			log.Printf("WARN! rnx2crx: %s", stderr.Bytes())
 		} else { // Error
 			if _, err := os.Stat(crxFilePath); !errors.Is(err, os.ErrNotExist) {
 				os.Remove(crxFilePath)
@@ -1234,7 +1234,7 @@ func Crx2rnx(crxFilename string) (string, error) {
 	if err != nil {
 		rc := cmd.ProcessState.ExitCode()
 		if rc == 2 { // Warning
-			log.Printf("W! crx2rnx: %s", stderr.Bytes())
+			log.Printf("WARN! crx2rnx: %s", stderr.Bytes())
 		} else { // Error
 			if _, err := os.Stat(rnxFilePath); !errors.Is(err, os.ErrNotExist) {
 				os.Remove(rnxFilePath)

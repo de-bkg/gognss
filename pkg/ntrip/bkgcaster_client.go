@@ -123,7 +123,6 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 	listeners := make([]CasterListener, 0, 1000)
 
 	li := CasterListener{}
-	fields := make([]string, 12)
 	scanner := bufio.NewScanner(reader)
 	ln := ""
 	for scanner.Scan() {
@@ -132,7 +131,7 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 			ln = strings.TrimPrefix(ln, "<li>[")
 			ln = strings.TrimSuffix(ln, "]<br>")
 			li = CasterListener{}
-			fields = strings.Split(ln, "] [")
+			fields := strings.Split(ln, "] [")
 			for _, v := range fields {
 				hlp := strings.Split(v, ":")
 				// fixed in caster version 2.0.3?
@@ -212,7 +211,6 @@ func (c *Client) GetSources() ([]CasterSource, error) {
 
 	sources := make([]CasterSource, 0, 200)
 
-	fields := make([]string, 12)
 	headline := make([]string, 12)
 	src := CasterSource{}
 	scanner := bufio.NewScanner(reader)
@@ -226,7 +224,7 @@ line:
 
 			src = CasterSource{}
 
-			fields = strings.Split(ln, "</td><td>")
+			fields := strings.Split(ln, "</td><td>")
 			for i, val := range fields {
 				val = strings.TrimSpace(val)
 				if val == "Mountpoint" { // Headline
@@ -286,7 +284,7 @@ line:
 				case "Source Agent":
 					src.Agent = val
 				default:
-					return nil, fmt.Errorf("Unknown field %q", headline[i])
+					return nil, fmt.Errorf("unknown field %q", headline[i])
 				}
 
 			}
@@ -315,7 +313,6 @@ func (c *Client) GetConnections() ([]CasterConn, error) {
 
 	conns := make([]CasterConn, 0, 1000)
 
-	fields := make([]string, 8)
 	header := [7]string{"Mountpoint", "Type", "Id", "Agent", "IP", "User", "Connected for"}
 
 	// <a href="/admin?mode=kick&amp;argument=915">915</a>
@@ -333,7 +330,7 @@ line:
 
 			conn = CasterConn{} // reset
 
-			fields = strings.Split(ln, "</td><td>")
+			fields := strings.Split(ln, "</td><td>")
 			for i, val := range fields {
 				if val == "Mountpoint" { // Headline
 					continue line
@@ -357,7 +354,7 @@ line:
 							return nil, err
 						}
 					} else {
-						return nil, fmt.Errorf("RegEx for \"Id\" did not match")
+						return nil, fmt.Errorf("regex for \"Id\" did not match")
 					}
 				case "Connected for":
 					if d, err := parseDuration(val); err == nil {
@@ -368,7 +365,7 @@ line:
 				case "Agent":
 					conn.UserAgent = val
 				default:
-					return nil, fmt.Errorf("Unknown key %q", header[i])
+					return nil, fmt.Errorf("unknown key %q", header[i])
 				}
 			}
 			conns = append(conns, conn)
@@ -385,7 +382,7 @@ line:
 // KickConnection stops an active client connection.
 func (c *Client) KickConnection(id int) error {
 	if id < 1 {
-		return fmt.Errorf("Invalid id: %d", id) // kann das ueberhaupt vorkommen?
+		return fmt.Errorf("invalid id: %d", id) // kann das ueberhaupt vorkommen?
 	}
 
 	c.URL.Path = "admin"
@@ -416,18 +413,17 @@ func (c *Client) GetStats() (*CasterStats, error) {
 	scanner := bufio.NewScanner(reader)
 	ln := ""
 	isBody := false
-	fields := make([]string, 12)
 	i := 0
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse the number of sources in line: %s", ln)
+		return nil, fmt.Errorf("could not parse the number of sources in line: %s", ln)
 	}
 	for scanner.Scan() {
 		ln = scanner.Text()
-		if isBody == false && strings.HasPrefix(ln, "<body>") {
+		if !isBody && strings.HasPrefix(ln, "<body>") {
 			isBody = true
 			continue
 		}
-		if isBody == false {
+		if !isBody {
 			continue
 		}
 		if strings.HasPrefix(ln, "<div") {
@@ -436,7 +432,7 @@ func (c *Client) GetStats() (*CasterStats, error) {
 
 		ln = strings.TrimSuffix(ln, "<br>")
 
-		fields = strings.Split(ln, ":")
+		fields := strings.Split(ln, ":")
 		if len(fields) < 2 {
 			//fmt.Printf(">>>>>>>>>>>>>>>>>> %s\n", ln)
 			continue
@@ -446,19 +442,19 @@ func (c *Client) GetStats() (*CasterStats, error) {
 		if key == "Admins" {
 			i, err = strconv.Atoi(val)
 			if err != nil {
-				return nil, fmt.Errorf("Could not parse the number of Admins in line: %s", ln)
+				return nil, fmt.Errorf("could not parse the number of Admins in line: %s", ln)
 			}
 			stats.Admins = i
 		} else if key == "Sources" {
 			i, err = strconv.Atoi(val)
 			if err != nil {
-				return nil, fmt.Errorf("Could not parse the number of Sources in line: %s", ln)
+				return nil, fmt.Errorf("could not parse the number of Sources in line: %s", ln)
 			}
 			stats.Sources = i
 		} else if key == "Listeners" {
 			i, err = strconv.Atoi(val)
 			if err != nil {
-				return nil, fmt.Errorf("Could not parse the number of Listeners in line: %s", ln)
+				return nil, fmt.Errorf("could not parse the number of Listeners in line: %s", ln)
 			}
 			stats.Listeners = i
 		} else if strings.Contains(key, "uptime") {
@@ -509,5 +505,5 @@ func parseDuration(dur string) (time.Duration, error) {
 			time.Duration(min)*time.Minute + time.Duration(secs)*time.Second, nil
 	}
 
-	return 0, fmt.Errorf("Could not parse duration from: %s (%+v)", dur, res)
+	return 0, fmt.Errorf("could not parse duration from: %s (%+v)", dur, res)
 }

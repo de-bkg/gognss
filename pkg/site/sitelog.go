@@ -585,9 +585,10 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					tempSensor = TemperatureSensor{Type: val}
 				} else if strings.HasPrefix(key, "8.4") {
 					watervapSensor = WaterVaporSensor{Type: val}
-				} else if strings.HasPrefix(key, "8.5") {
-					// TODO Other instrument
 				}
+				// else if strings.HasPrefix(key, "8.5") {
+				// 	TODO Other instrument
+				// }
 				continue
 			}
 
