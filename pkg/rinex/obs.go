@@ -784,7 +784,11 @@ func decodeObs(s string, flag int) (obs Obs, err error) {
 	}
 
 	// Value
-	valStr := strings.TrimSpace(s[:14])
+	oEnd := 14
+	if len(s) < oEnd {
+		oEnd = len(s)
+	}
+	valStr := strings.TrimSpace(s[:oEnd])
 	if valStr != "" {
 		val, err = strconv.ParseFloat(valStr, 64)
 		if err != nil {
