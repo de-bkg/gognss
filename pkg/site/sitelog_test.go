@@ -164,6 +164,7 @@ func Test_parseDate(t *testing.T) {
 	tests := map[string]time.Time{
 		"2018-08-23":           time.Date(2018, 8, 23, 0, 0, 0, 0, time.UTC),
 		"2018-02-01T08:15Z":    time.Date(2018, 2, 1, 8, 15, 0, 0, time.UTC),
+		"2021-07-19T20:00":     time.Date(2021, 7, 19, 20, 0, 0, 0, time.UTC),
 		"2003-02-01 12:00":     time.Date(2003, 2, 1, 12, 0, 0, 0, time.UTC),
 		"2014-11-13T09:50:00Z": time.Date(2014, 11, 13, 9, 50, 0, 0, time.UTC),
 		"1991-07-22Thh:mmZ":    time.Date(1991, 7, 22, 0, 0, 0, 0, time.UTC),

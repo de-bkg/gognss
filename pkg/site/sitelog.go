@@ -954,6 +954,7 @@ func parseDate(s string) (t time.Time, err error) {
 	case 8, 9, 10:
 		t, err = time.Parse("2006-1-2", s)
 	case 16:
+		s := strings.Replace(s, "T", " ", 1)
 		t, err = time.Parse("2006-1-2 15:04", s) // 2003-02-01 12:00
 	case 20:
 		t, err = time.Parse("2006-1-2T15:04:05Z", s)
