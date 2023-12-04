@@ -3,10 +3,10 @@ package site
 
 import (
 	"fmt"
-	"html/template"
 	"io"
 	"regexp"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
@@ -43,7 +43,6 @@ type Site struct {
 	MoreInformation             MoreInformation       `json:"moreInformation"`             // 13
 	MetadataCustodians          []MetadataCustodian   `json:"siteMetadataCustodians"`
 	//EquipmentLogItems         []EquipmentLogItems      `json:"equipmentLogItems"` // ??
-	//Links                     Links                    `json:"_links"`
 
 	Warnings []error `json:"-"`
 }

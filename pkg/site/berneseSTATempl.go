@@ -20,7 +20,7 @@ TYPE 002: STATION INFORMATION
 
 STATION NAME          FLG          FROM                   TO         RECEIVER TYPE         RECEIVER SERIAL NBR   REC #   ANTENNA TYPE          ANTENNA SERIAL NBR    ANT #    NORTH      EAST      UP      DESCRIPTION             REMARK
 ****************      ***  YYYY MM DD HH MM SS  YYYY MM DD HH MM SS  ********************  ********************  ******  ********************  ********************  ******  ***.****  ***.****  ***.****  **********************  ************************
-{{range .}}{{encodeTyp2 . "1.01" | html}}{{end}}
+{{range .}}{{encodeTyp2 . "1.01"}}{{end}}
 
 TYPE 003: HANDLING OF STATION PROBLEMS
 --------------------------------------
@@ -64,7 +64,7 @@ TYPE 002: STATION INFORMATION
 
 STATION NAME          FLG          FROM                   TO         RECEIVER TYPE         RECEIVER SERIAL NBR   REC #   ANTENNA TYPE          ANTENNA SERIAL NBR    ANT #    NORTH      EAST      UP     AZIMUTH  LONG NAME  DESCRIPTION             REMARK
 ****************      ***  YYYY MM DD HH MM SS  YYYY MM DD HH MM SS  ********************  ********************  ******  ********************  ********************  ******  ***.****  ***.****  ***.****  ****.*  *********  **********************  ************************
-{{range .}}{{encodeTyp2 . "1.03" | html}}{{end}}
+{{range .}}{{encodeTyp2 . "1.03"}}{{end}}
 
 TYPE 003: HANDLING OF STATION PROBLEMS
 --------------------------------------
