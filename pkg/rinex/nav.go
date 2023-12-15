@@ -518,7 +518,11 @@ func (dec *NavDecoder) parsePRN() (PRN, error) {
 func (dec *NavDecoder) parseToC() (time.Time, error) {
 	line := dec.line()
 	if dec.Header.RINEXVersion < 3 {
-		return time.Parse(TimeOfClockFormatv2, line[3:22])
+		toc := line[3:22]
+		if toc[0] == ' ' { // year can be only 1 char, so pad with 0.
+			toc = strings.Replace(toc, " ", "0", 1)
+		}
+		return time.Parse(TimeOfClockFormatv2, toc)
 	}
 
 	return time.Parse(TimeOfClockFormat, line[4:23])

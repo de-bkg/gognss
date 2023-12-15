@@ -422,3 +422,30 @@ func Test_decodeEphLineHlp(t *testing.T) {
 	assert.Equal(t, "G22", line[6:9], "prn")
 	assert.Equal(t, "LNAV", strings.TrimSpace(line[10:]), "mess type")
 }
+
+func TestNavDecoder_parseToC(t *testing.T) {
+	assert := assert.New(t)
+	tests := map[string]time.Time{
+		"2022 11 29 04 00 00": time.Date(2022, 11, 29, 4, 0, 0, 0, time.UTC),
+	}
+
+	for k, v := range tests {
+		epTime, err := time.Parse(TimeOfClockFormat, k)
+		assert.NoError(err)
+		assert.Equal(v, epTime)
+		fmt.Printf("RINEX-3: %s\n", epTime)
+	}
+
+	// RINEX version 2
+	tests = map[string]time.Time{
+		"22 11 24 20  0  0.0": time.Date(2022, 11, 24, 20, 0, 0, 0, time.UTC),
+		"06 11 25  1 59 44.0": time.Date(2006, 11, 25, 1, 59, 44, 0, time.UTC),
+	}
+
+	for k, v := range tests {
+		epTime, err := time.Parse(TimeOfClockFormatv2, k)
+		assert.NoError(err)
+		assert.Equal(v, epTime, "RINEX-2 epoch")
+		fmt.Printf("RINEX-2: %s\n", epTime)
+	}
+}
