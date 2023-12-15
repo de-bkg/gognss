@@ -18,6 +18,11 @@ const (
 	version = "0.1"
 )
 
+var (
+	outpFormat  string
+	printHeader bool
+)
+
 func main() {
 	opts := ntrip.Options{}
 	opts.UserAgent = "BKGStatsClient/" + version
@@ -27,8 +32,8 @@ func main() {
 	fs.BoolVar(&opts.UnsafeSSL, "unsafeSSL", false, "If true, it will skip https certificate verification. Defaults to false.")
 	printListeners := fs.Bool("listeners", false, "Print the currently connected listeners.")
 	printSources := fs.Bool("sources", false, "Print the currently available Ntrip sources.")
-	outpFormat := fs.String("format", "column", "Format specifies the format of the output: column, json.")
-	printHeader := fs.Bool("H", false, "Print the header line. Defaults to false.")
+	fs.StringVar(&outpFormat, "format", "column", "Format specifies the format of the output: column, json.")
+	fs.BoolVar(&printHeader, "H", false, "Print the header line. Defaults to false.")
 	//fs.StringVar(&conf.Proxy, "proxy", "", "the http proxy to use. Default: read the proxy settings from your environment.")
 
 	fs.Usage = func() {
@@ -70,21 +75,8 @@ Examples:
 	defer c.CloseIdleConnections()
 
 	if *printListeners {
-		listeners, err := c.GetListeners()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
-		if *outpFormat == "json" {
-			json.NewEncoder(os.Stdout).Encode(listeners)
-		} else {
-			if *printHeader {
-				fmt.Printf("%-17s %-20s %-12s %-10s %-13s %-14s %-30s %-12s %s\n",
-					"# IP", "Username", "MP", "ID", "ConnectedFor", "BytesWritten", "UserAgent", "Type", "Errors")
-			}
-			for _, li := range listeners {
-				fmt.Printf("%-17s %-20s %-12s %-10d %-13s %-14d %-30s %-12s %d\n",
-					li.IP, li.User, li.MP, li.ID, li.ConnectedFor, li.BytesWritten, li.UserAgent, li.Type, li.Errors)
-			}
+		if err := _printListeners(c); err != nil {
+			log.Printf("E! %v", err)
 		}
 
 		/*  connsPerUser := make(map[string]int)
@@ -96,47 +88,77 @@ Examples:
 		for user, nofConns := range connsPerUser {
 			fmt.Printf("%-15s: %d\n", user, nofConns)
 		} */
+	} else if *printSources {
+		if err := _printSources(c); err != nil {
+			log.Printf("E! %v", err)
+		}
+	} else {
+		if err := _printStats(c); err != nil {
+			log.Printf("E! %v", err)
+		}
+	}
+}
 
-		os.Exit(0)
+func _printListeners(c *ntrip.Client) error {
+	listeners, err := c.GetListeners()
+	if err != nil {
+		return err
 	}
 
-	if *printSources {
-		sources, err := c.GetSources()
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
-		if *outpFormat == "json" {
-			json.NewEncoder(os.Stdout).Encode(sources)
-		} else {
-			if *printHeader {
-				fmt.Printf("%-17s %-12s %-9s %-45s %-13s %-21s %-8s %-12s %-14s %-14s\n",
-					"# IP", "MP", "ID", "Agent", "ConnectedFor", "ConnectTime", "Clients", "ClientConns", "KBytesRead", "KBytesWritten")
-			}
-			for _, s := range sources {
-				fmt.Printf("%-17s %-12s %-9d %-45s %-13s %-21s %-8d %-12d %-14d %-14d\n",
-					s.IP, s.MP, s.ID, s.Agent, s.ConnectedFor, s.ConnectionTime.Format(time.RFC3339), s.Clients, s.ClientConnections, s.KBytesRead, s.KBytesWritten)
-			}
-		}
-		os.Exit(0)
+	if outpFormat == "json" {
+		return json.NewEncoder(os.Stdout).Encode(listeners)
 	}
 
-	// default action
+	if printHeader {
+		fmt.Printf("%-17s %-20s %-12s %-10s %-13s %-14s %-30s %-12s %s\n",
+			"# IP", "Username", "MP", "ID", "ConnectedFor", "BytesWritten", "UserAgent", "Type", "Errors")
+	}
+	for _, li := range listeners {
+		fmt.Printf("%-17s %-20s %-12s %-10d %-13s %-14d %-30s %-12s %d\n",
+			li.IP, li.User, li.MP, li.ID, li.ConnectedFor, li.BytesWritten, li.UserAgent, li.Type, li.Errors)
+	}
+	return nil
+}
+
+func _printSources(c *ntrip.Client) error {
+	sources, err := c.GetSources()
+	if err != nil {
+		return err
+	}
+	if outpFormat == "json" {
+		return json.NewEncoder(os.Stdout).Encode(sources)
+	}
+
+	if printHeader {
+		fmt.Printf("%-17s %-12s %-9s %-45s %-13s %-21s %-8s %-12s %-14s %-14s\n",
+			"# IP", "MP", "ID", "Agent", "ConnectedFor", "ConnectTime", "Clients", "ClientConns", "KBytesRead", "KBytesWritten")
+	}
+	for _, s := range sources {
+		fmt.Printf("%-17s %-12s %-9d %-45s %-13s %-21s %-8d %-12d %-14d %-14d\n",
+			s.IP, s.MP, s.ID, s.Agent, s.ConnectedFor, s.ConnectionTime.Format(time.RFC3339), s.Clients, s.ClientConnections, s.KBytesRead, s.KBytesWritten)
+	}
+
+	return nil
+}
+
+func _printStats(c *ntrip.Client) error {
 	stats, err := c.GetStats()
 	if err != nil {
-		log.Fatalf("%v", err)
+		return err
 	}
 
-	if *outpFormat == "json" {
-		json.NewEncoder(os.Stdout).Encode(stats)
-	} else {
-		if *printHeader {
-			fmt.Printf("%-8s %-8s %-10s %-14s %-21s %-15s %-15s\n",
-				"# Admins", "Sources", "Listeners", "Uptime", "LastResync", "KBytesRead", "KBytesWritten")
-		}
-		fmt.Printf("%-8d %-8d %-10d %-14s %-21s %-15d %-15d\n",
-			stats.Admins, stats.Sources, stats.Listeners, stats.Uptime, stats.LastResync.Format(time.RFC3339), stats.KBytesRead, stats.KBytesWritten)
+	if outpFormat == "json" {
+		return json.NewEncoder(os.Stdout).Encode(stats)
 	}
 
+	if printHeader {
+		fmt.Printf("%-8s %-8s %-10s %-14s %-21s %-15s %-15s\n",
+			"# Admins", "Sources", "Listeners", "Uptime", "LastResync", "KBytesRead", "KBytesWritten")
+	}
+	fmt.Printf("%-8d %-8d %-10d %-14s %-21s %-15d %-15d\n",
+		stats.Admins, stats.Sources, stats.Listeners, stats.Uptime, stats.LastResync.Format(time.RFC3339), stats.KBytesRead, stats.KBytesWritten)
+
+	return nil
 }
 
 func checkError(errStr string, err error) {
