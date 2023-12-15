@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "0.0.7"
+	version = "0.0.8"
 )
 
 func main() {
@@ -41,37 +41,11 @@ EXAMPLES:
 
 	var sites site.Sites
 	for _, slPath := range fs.Args() {
-		f, err := os.Open(slPath)
+		s, err := readSL(slPath)
 		if err != nil {
-			log.Fatalf("%v", err)
-		}
-		defer f.Close()
-
-		s, err := site.DecodeSitelog(f)
-		if err != nil {
-			log.Printf("decoding sitelog %s: %v", slPath, err)
+			log.Printf("E! %s: %v", slPath, err)
 			continue
 		}
-		for _, warn := range s.Warnings {
-			log.Printf("WARN: %s: %v", slPath, warn)
-		}
-
-		err = s.ValidateAndClean(false)
-		if err != nil {
-			log.Printf("validate sitelog %s: %v", slPath, err)
-			continue
-		}
-
-		// Try to get the NineCharID from the filename.
-		// This is necessary until the the NineCharID is official part of the sitelog.
-		if s.Ident.NineCharacterID == "" {
-			if nineCharID := nineCharIDByFilename(filepath.Base(slPath)); len(nineCharID) == 9 {
-				if nineCharID[:4] == strings.ToUpper(s.Ident.FourCharacterID) {
-					s.Ident.NineCharacterID = nineCharID
-				}
-			}
-		}
-
 		sites = append(sites, s)
 	}
 
@@ -79,6 +53,38 @@ EXAMPLES:
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
+}
+
+func readSL(slPath string) (*site.Site, error) {
+	f, err := os.Open(slPath)
+	if err != nil {
+		log.Fatalf("%v", err)
+	}
+	defer f.Close()
+
+	s, err := site.DecodeSitelog(f)
+	if err != nil {
+		return nil, fmt.Errorf("decode sitelog: %v", err)
+	}
+	for _, warn := range s.Warnings {
+		log.Printf("WARN: %s: %v", slPath, warn)
+	}
+
+	err = s.ValidateAndClean(false)
+	if err != nil {
+		return nil, fmt.Errorf("validate sitelog: %v", err)
+	}
+
+	// Try to get the NineCharID from the filename.
+	// This is necessary until the the NineCharID is official part of the sitelog.
+	if s.Ident.NineCharacterID == "" {
+		if nineCharID := nineCharIDByFilename(filepath.Base(slPath)); len(nineCharID) == 9 {
+			if nineCharID[:4] == strings.ToUpper(s.Ident.FourCharacterID) {
+				s.Ident.NineCharacterID = nineCharID
+			}
+		}
+	}
+	return s, nil
 }
 
 // stationNameRegex is the compiled regex for a 9char station name.
