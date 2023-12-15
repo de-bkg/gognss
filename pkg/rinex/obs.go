@@ -534,12 +534,13 @@ readln:
 				pos = 32
 			}
 
-			// sysShort := string(line[pos])
-			// if sysShort == " " {
-			// 	sysShort = "G"
-			// }
+			// G or blank: GPS
+			myprn := line[pos : pos+3]
+			if myprn[0] == ' ' {
+				myprn = "G" + myprn[1:3]
+			}
 
-			prn, err := newPRN(line[pos : pos+3])
+			prn, err := newPRN(myprn)
 			if err != nil {
 				dec.setErr(fmt.Errorf("rinex2: new PRN in line %d: %q: %v", dec.lineNum, line, err))
 				return false
