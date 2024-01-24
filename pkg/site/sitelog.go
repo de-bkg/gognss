@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -162,7 +163,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				if key == "Additional Information" {
 					val = line
 				} else {
-					fmt.Printf("could not handle line %d: %q\n", i, line)
+					fmt.Fprintf(os.Stderr, "could not handle line %d: %q\n", i, line)
 					continue
 				}
 			}

@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -215,7 +216,7 @@ func (dec *decoder) decode(snx *SINEX) (err error) {
 			case "INPUT":
 				snx.Ref.Input = val
 			default:
-				fmt.Printf("invalid FILE/REFERENCE field: %q\n", key)
+				fmt.Fprintf(os.Stderr, "invalid FILE/REFERENCE field: %q\n", key)
 			}
 		} else if block == "SITE/ID" {
 			s := &site.Site{}
