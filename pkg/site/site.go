@@ -759,7 +759,7 @@ type Sites []*Site
 
 // Write sites to w in Bernese STA file format, with the given format version.
 func (sites *Sites) WriteBerneseSTA(w io.Writer, fmtVers string) error {
-	templ := bernStaTemplv103
+	templ := ""
 	if fmtVers == "1.01" {
 		templ = bernStaTemplv101
 	} else if fmtVers == "1.03" {
