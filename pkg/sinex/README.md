@@ -8,6 +8,7 @@ So far decoding is implemented for the following blocks:
 - FILE/REFERENCE
 - SITE/ID
 - SITE/RECEIVER
+- SITE/ANTENNA
 - SOLUTION/ESTIMATE
 
 ### Install

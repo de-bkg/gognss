@@ -288,18 +288,51 @@ func (s *Site) UnmarshalSINEX(in string) error {
 	return nil
 }
 
+// Unmarshall a SITE/ANTENNA record.
+func (ant *Antenna) UnmarshalSINEX(in string) error {
+	if ant.Antenna == nil {
+		ant.Antenna = &site.Antenna{}
+	}
+
+	ant.SiteCode = SiteCode(cleanField(in[1:5]))
+	ant.PointCode = cleanField(in[6:8])
+	ant.SolID = cleanField(in[9:13])
+
+	if techn, ok := obsTechnMap[in[14:15]]; ok {
+		ant.ObsTech = techn
+	} else {
+		return fmt.Errorf("unknown observation code: %q", in[14:15])
+	}
+
+	if installedAt, err := parseTime(in[16:28]); err == nil {
+		ant.DateInstalled = installedAt
+	} else {
+		return fmt.Errorf("parse DATA START %q: %v", in, err)
+	}
+
+	if remAt, err := parseTime(in[29:41]); err == nil {
+		ant.DateRemoved = remAt
+	} else {
+		return fmt.Errorf("parse DATA_END %q: %v", in, err)
+	}
+
+	ant.Type = cleanField(in[42:62])
+	radom := cleanField(in[58:62])
+	if len(radom) == 4 {
+		ant.Radome = radom
+	}
+	ant.SerialNum = cleanField(in[63:])
+	return nil
+}
+
 // Unmarshall a SITE/RECEIVER record.
 func (recv *Receiver) UnmarshalSINEX(in string) error {
-	// *CODE PT SOLN T _DATA START_ __DATA_END__ ___RECEIVER_TYPE____ _S/N_ _FIRMWARE__
-	//  ABMF  A ---- P 20:038:36000 00:000:00000 SEPT POLARX5         45014 5.3.2
 	if recv.Receiver == nil {
 		recv.Receiver = &site.Receiver{}
 	}
 
 	recv.SiteCode = SiteCode(cleanField(in[1:5]))
-
 	recv.PointCode = cleanField(in[6:8])
-
 	recv.SolID = cleanField(in[9:13])
 
 	if techn, ok := obsTechnMap[in[14:15]]; ok {

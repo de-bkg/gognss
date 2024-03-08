@@ -116,6 +116,15 @@ type Site struct {
 	Antennas  []*site.Antenna
 }
 
+// Antenna for GNSS.
+type Antenna struct {
+	SiteCode  SiteCode             // 4-char site code, e.g. WTZR.
+	PointCode string               // A 2-char code identifying physical monument within a site.
+	SolID     string               // Solution ID at a Site/Point code for which the parameter is estimated.
+	ObsTech   ObservationTechnique // Technique(s) used to generate the SINEX solution.
+	*site.Antenna
+}
+
 // Receiver for GNSS.
 type Receiver struct {
 	SiteCode  SiteCode             // 4-char site code, e.g. WTZR.

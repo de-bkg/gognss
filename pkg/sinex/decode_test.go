@@ -23,11 +23,7 @@ func TestNewDecoder(t *testing.T) {
 	hdr := dec.Header
 	assert.Equal("2.02", hdr.Version, "Format Version")
 	assert.Equal("IGN", hdr.Agency, "Agency")
-	t.Logf("Header: %+v\n", hdr)
-
-	//recvFirst := &site.Receiver{Type: "SEPT POLARX5", SerialNum: "45014", Firmware: "5.3.2", ElevationCutoff: 0,
-	//	TemperatureStabiliz: "", DateInstalled: time.Date(2020, 2, 7, 10, 0, 0, 0, time.UTC), DateRemoved: time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC)}
-
+	//t.Logf("Header: %+v\n", hdr)
 }
 
 func TestHeader_UnmarshalSINEX(t *testing.T) {
@@ -56,6 +52,23 @@ func TestSite_UnmarshalSINEX(t *testing.T) {
 	err := s.UnmarshalSINEX(str)
 	assert.NoError(err)
 	t.Logf("%+v", s)
+}
+
+func TestAntenna_UnmarshalSINEX(t *testing.T) {
+	assert := assert.New(t)
+	str := " ABMF  A ---- P 12:024:43200 00:000:00000 TRM57971.00     NONE 14411"
+	ant := &Antenna{}
+	err := ant.UnmarshalSINEX(str)
+	assert.NoError(err)
+	assert.Equal("ABMF", string(ant.SiteCode), "sitecode")
+	assert.Equal("A", ant.PointCode, "pointcode")
+	assert.Equal("", ant.SolID, "solution nbr")
+	assert.Equal(ObsTechGPS, ant.ObsTech, "techn")
+	assert.Equal(time.Date(2012, 1, 24, 12, 0, 0, 0, time.UTC), ant.DateInstalled, "date installed")
+	assert.True(ant.DateRemoved.IsZero(), "date removed")
+	assert.Equal("TRM57971.00     NONE", ant.Type, "ant type")
+	assert.Equal("NONE", ant.Radome, "radome")
+	assert.Equal("14411", ant.SerialNum)
 }
 
 func TestReceiver_UnmarshalSINEX(t *testing.T) {
