@@ -20,43 +20,44 @@ $ go get -u github.com/de-bkg/gognss
 package main
 
 import (
-  "fmt"
+	"fmt"
 	"log"
 	"os"
+
 	"github.com/de-bkg/gognss/pkg/sinex"
 )
 
 func main() {
-  r, err := os.Open("path/to/sinexfile")
-  if err != nil {
-	  log.Fatal(err)
-  }
-  defer r.Close()
+	r, err := os.Open("path/to/sinexfile")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer r.Close()
 
-  dec, err := sinex.NewDecoder(r)
-  if err != nil {
-	  log.Fatal(err)
-  }
+	dec, err := sinex.NewDecoder(r)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-  // Get the header
-  hdr := dec.Header
+	// Get the header
+	hdr := dec.Header
 
-  // Iterate over blocks.
-  for dec.NextBlock() {
-	  name := dec.CurrentBlock()
+	// Iterate over blocks.
+	for dec.NextBlock() {
+		name := dec.CurrentBlock()
 
-    // Decode all SOLUTION/ESTIMATE records.
-	  if name == sinex.BlockSolEstimate {
-		  for dec.NextBlockLine() {
-			  var est Estimate
-			  if err := dec.Decode(&est); err != nil {
-				  log.Fatal(err)
-			  }
+		// Decode all SOLUTION/ESTIMATE records.
+		if name == sinex.BlockSolEstimate {
+			for dec.NextBlockLine() {
+				var est Estimate
+				if err := dec.Decode(&est); err != nil {
+					log.Fatal(err)
+				}
 
-			  // Do something with est.
-			  fmt.Printf("%s: %.5f\n", est.SiteCode, est.Value)
-		  }
-	  }
-  }
+				// Do something with est.
+				fmt.Printf("%s: %.5f\n", est.SiteCode, est.Value)
+			}
+		}
+	}
 }
 ```
