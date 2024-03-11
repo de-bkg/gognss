@@ -23,8 +23,8 @@ type Site struct {
 	Ident    Identification  `json:"siteIdentification"`
 	Location Location        `json:"siteLocation"`
 
-	Receivers []*Receiver `json:"gnssReceivers" validate:"required,min=1,dive,required"`
-	Antennas  []*Antenna  `json:"gnssAntennas" validate:"required,min=1,dive,required"`
+	Receivers []*gnss.Receiver `json:"gnssReceivers" validate:"required,min=1,dive,required"`
+	Antennas  []*gnss.Antenna  `json:"gnssAntennas" validate:"required,min=1,dive,required"`
 
 	LocalTies                   []LocalTies           `json:"surveyedLocalTies"`
 	FrequencyStandards          []FrequencyStandard   `json:"frequencyStandards"`
@@ -88,66 +88,6 @@ type Location struct {
 	TectonicPlate       string              `json:"tectonicPlate"`
 	ApproximatePosition ApproximatePosition `json:"approximatePosition" validate:"required"` // ITRF
 	Notes               string              `json:"notes"`
-}
-
-// Receiver is a GNSS receiver.
-type Receiver struct {
-	Type                 string       `json:"type" validate:"required"`
-	SatSystemsDeprecated string       `json:"satelliteSystem"`                      // Sattelite System for compatibility with GA JSON, deprecated!
-	SatSystems           gnss.Systems `json:"satelliteSystems" validate:"required"` // Sattelite System
-	SerialNum            string       `json:"serialNumber" validate:"required"`
-	Firmware             string       `json:"firmwareVersion"`
-	ElevationCutoff      float64      `json:"elevationCutoffSetting"`   // degree
-	TemperatureStabiliz  string       `json:"temperatureStabilization"` // none or tolerance in degrees C
-	DateInstalled        time.Time    `json:"dateInstalled" validate:"required"`
-	DateRemoved          time.Time    `json:"dateRemoved"`
-	Notes                string       `json:"notes"` // Additional Information
-
-	/* 	"dateInserted": "1999-07-31T01:00:00Z",
-	   	"dateDeleted": null,
-	   	"deletedReason": null,
-	   	"effectiveDates": {
-	   	  "from": "1999-07-31T01:00:00Z",
-	   	  "to": "2000-01-14T01:50:00Z"
-	   	} */
-}
-
-// Equal reports whether two receivers have the same values for the significant parameters.
-// Note for STATION INFOTMATION files: Some generators do not consider the receiver firmware
-// for this comparision, e.g. EUREF.STA.
-func (recv Receiver) Equal(recv2 *Receiver) bool {
-	return recv.Type == recv2.Type && recv.SerialNum == recv2.SerialNum && recv.Firmware == recv2.Firmware
-}
-
-// Antenna is a GNSS antenna.
-type Antenna struct {
-	Type                   string    `json:"type" validate:"required"`
-	Radome                 string    `json:"antennaRadomeType"`
-	RadomeSerialNum        string    `json:"radomeSerialNumber"`
-	SerialNum              string    `json:"serialNumber" validate:"required"`
-	ReferencePoint         string    `json:"antennaReferencePoint"`
-	EccUp                  float64   `json:"markerArpUpEcc"`
-	EccNorth               float64   `json:"markerArpNorthEcc"`
-	EccEast                float64   `json:"markerArpEastEcc"`
-	AlignmentFromTrueNorth float64   `json:"alignmentFromTrueNorth"` // in deg; + is clockwise/east
-	CableType              string    `json:"antennaCableType"`       // vendor & type number
-	CableLength            float32   `json:"antennaCableLength"`     // in meter
-	DateInstalled          time.Time `json:"dateInstalled"`
-	DateRemoved            time.Time `json:"dateRemoved"`
-	Notes                  string    `json:"notes"` // Additional Information
-
-	/* 	"dateInserted": "2003-06-15T03:30:00Z",
-	   	"dateDeleted": null,
-	   	"deletedReason": null,
-	   	"effectiveDates": {
-	   	  "from": "2003-06-15T03:30:00Z",
-	   	  "to": "2011-07-20T00:00:00Z"
-	   	} */
-}
-
-// Equal reports whether two antennas have the same values for the significant parameters.
-func (ant Antenna) Equal(ant2 *Antenna) bool {
-	return ant.Type == ant2.Type && ant.Radome == ant2.Radome && ant.SerialNum == ant2.SerialNum && ant.EccNorth == ant2.EccNorth && ant.EccEast == ant2.EccEast && ant.EccUp == ant2.EccUp
 }
 
 // CartesianPosition is a point specified by its XYZ-coordinates.
@@ -460,13 +400,13 @@ func (s *Site) cleanReceivers(force bool) error {
 	for i, curr := range s.Receivers {
 		n := i + 1 // receiver number
 
-		prev := func() *Receiver {
+		prev := func() *gnss.Receiver {
 			if i-1 >= 0 {
 				return list[i-1]
 			}
 			return nil
 		}
-		next := func() *Receiver {
+		next := func() *gnss.Receiver {
 			if i+1 < nReceivers {
 				return list[i+1]
 			}
@@ -534,13 +474,13 @@ func (s *Site) cleanAntennas(force bool) error {
 	for i, curr := range s.Antennas {
 		n := i + 1 // antenna number
 
-		prev := func() *Antenna {
+		prev := func() *gnss.Antenna {
 			if i-1 >= 0 {
 				return list[i-1]
 			}
 			return nil
 		}
-		next := func() *Antenna {
+		next := func() *gnss.Antenna {
 			if i+1 < nAntennas {
 				return list[i+1]
 			}
@@ -623,7 +563,7 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 
 	for ir, recv := range s.Receivers {
 
-		nextRecv := func() *Receiver {
+		nextRecv := func() *gnss.Receiver {
 			if ir+1 < nReceivers {
 				return s.Receivers[ir+1]
 			}
@@ -656,7 +596,7 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 				break
 			}
 
-			nextAnt := func() *Antenna {
+			nextAnt := func() *gnss.Antenna {
 				if ia+1 < nAntennas {
 					return s.Antennas[ia+1]
 				}
@@ -699,8 +639,8 @@ type StationInfo struct {
 	DOMESNumber string
 	Flag        string //  "001"
 	From, To    time.Time
-	Recv        *Receiver
-	Ant         *Antenna
+	Recv        *gnss.Receiver
+	Ant         *gnss.Antenna
 	Remark      string // could be the Recv.Firmware if not otherwise used
 }
 

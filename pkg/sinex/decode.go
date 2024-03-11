@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/de-bkg/gognss/pkg/site"
+	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
 const (
@@ -291,7 +291,7 @@ func (s *Site) UnmarshalSINEX(in string) error {
 // Unmarshall a SITE/ANTENNA record.
 func (ant *Antenna) UnmarshalSINEX(in string) error {
 	if ant.Antenna == nil {
-		ant.Antenna = &site.Antenna{}
+		ant.Antenna = &gnss.Antenna{}
 	}
 
 	ant.SiteCode = SiteCode(cleanField(in[1:5]))
@@ -328,7 +328,7 @@ func (ant *Antenna) UnmarshalSINEX(in string) error {
 // Unmarshall a SITE/RECEIVER record.
 func (recv *Receiver) UnmarshalSINEX(in string) error {
 	if recv.Receiver == nil {
-		recv.Receiver = &site.Receiver{}
+		recv.Receiver = &gnss.Receiver{}
 	}
 
 	recv.SiteCode = SiteCode(cleanField(in[1:5]))

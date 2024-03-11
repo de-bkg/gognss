@@ -6,7 +6,7 @@ package sinex
 import (
 	"time"
 
-	"github.com/de-bkg/gognss/pkg/site"
+	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
 const (
@@ -112,8 +112,8 @@ type Site struct {
 	Lat         string               // Latitude
 	Height      float64
 
-	Receivers []*site.Receiver
-	Antennas  []*site.Antenna
+	Receivers []*gnss.Receiver
+	Antennas  []*gnss.Antenna
 }
 
 // Antenna for GNSS.
@@ -122,7 +122,7 @@ type Antenna struct {
 	PointCode string               // A 2-char code identifying physical monument within a site.
 	SolID     string               // Solution ID at a Site/Point code for which the parameter is estimated.
 	ObsTech   ObservationTechnique // Technique(s) used to generate the SINEX solution.
-	*site.Antenna
+	*gnss.Antenna
 }
 
 // Receiver for GNSS.
@@ -131,7 +131,7 @@ type Receiver struct {
 	PointCode string               // A 2-char code identifying physical monument within a site.
 	SolID     string               // Solution ID at a Site/Point code for which the parameter is estimated.
 	ObsTech   ObservationTechnique // Technique(s) used to generate the SINEX solution.
-	*site.Receiver
+	*gnss.Receiver
 }
 
 // Estimate stores the estimated solution parameters.

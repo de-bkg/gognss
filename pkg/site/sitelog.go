@@ -72,8 +72,8 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 	cartesianPos := NewCartesianPosition()
 	geodPos := NewGeodeticPosition()
 	freq := FrequencyStandard{}
-	recv := &Receiver{}
-	ant := &Antenna{}
+	recv := &gnss.Receiver{}
+	ant := &gnss.Antenna{}
 	lTies := LocalTies{}
 	coll := Collocation{}
 	humSensor := HumiditySensor{}
@@ -314,7 +314,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			// Receivers
 
 			if strings.HasPrefix(key, "3.") {
-				recv = &Receiver{Type: val}
+				recv = &gnss.Receiver{Type: val}
 				// check if block is unique
 				subBlock = strings.Fields(key)[0]
 				if _, ok := blocks[subBlock]; ok {
@@ -354,7 +354,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				// Save last block if empty line
 				if recv.Type != "" {
 					site.Receivers = append(site.Receivers, recv)
-					recv = &Receiver{}
+					recv = &gnss.Receiver{}
 				}
 			default:
 				return nil, unknownKeyError()
@@ -365,7 +365,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			// Antennas
 
 			if strings.HasPrefix(key, "4.") {
-				ant = &Antenna{Type: val}
+				ant = &gnss.Antenna{Type: val}
 				// check if block is unique
 				subBlock = strings.Fields(key)[0]
 				if _, ok := blocks[subBlock]; ok {
@@ -428,7 +428,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			case "":
 				if ant.Type != "" {
 					site.Antennas = append(site.Antennas, ant)
-					ant = &Antenna{}
+					ant = &gnss.Antenna{}
 				}
 			default:
 				return nil, unknownKeyError()

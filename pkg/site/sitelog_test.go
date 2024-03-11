@@ -24,17 +24,17 @@ func TestEncodeSitelog(t *testing.T) {
 		GeologicCharacteristic: "SAND", BedrockType: "SEDIMENTARY", BedrockCondition: "FRESH", FractureSpacing: "0 cm",
 		FaultZonesNearby: "NO", DistanceActivity: "", Notes: ""}
 
-	s.Receivers = append(s.Receivers, &Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436", Firmware: "2.6.2",
+	s.Receivers = append(s.Receivers, &gnss.Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436", Firmware: "2.6.2",
 		ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"},
-		&Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysNavIC, gnss.SysSBAS}, SerialNum: "3057609", Firmware: "5.3.2",
+		&gnss.Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysNavIC, gnss.SysSBAS}, SerialNum: "3057609", Firmware: "5.3.2",
 			ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2", DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC),
 			DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""})
 
-	s.Antennas = append(s.Antennas, &Antenna{Type: "ASH701945E_M    NONE", Radome: "NONE", RadomeSerialNum: "", SerialNum: "CR620023301", ReferencePoint: "BPA", EccUp: 0.1266, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0,
+	s.Antennas = append(s.Antennas, &gnss.Antenna{Type: "ASH701945E_M    NONE", Radome: "NONE", RadomeSerialNum: "", SerialNum: "CR620023301", ReferencePoint: "BPA", EccUp: 0.1266, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0,
 		CableType: "ANDREW heliax LDF2-50A", CableLength: 60, DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 03, 19, 8, 45, 0, 0, time.UTC), Notes: ""},
-		&Antenna{Type: "JAVRINGANT_DM   NONE", Radome: "NONE", RadomeSerialNum: "", SerialNum: "00464", ReferencePoint: "BPA",
+		&gnss.Antenna{Type: "JAVRINGANT_DM   NONE", Radome: "NONE", RadomeSerialNum: "", SerialNum: "00464", ReferencePoint: "BPA",
 			EccUp: 0.4689, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0, CableType: "ANDREW heliax LDF2-50A", CableLength: 60,
 			DateInstalled: time.Date(2018, 02, 01, 8, 15, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC),
 			Notes: "To shield the antenna from reflections on the dome below it, a 0.8x0.8 m^2 metal shield was installed with Eccosorb ANW-77 on top. The spacing between the ARP and the top of the Eccosorb ANW-77 is 17.8 cm. On 2015-12-09, the Eccosorb was replaced by a new more resistant version. Surge protection device, dly: L2 553, L1 525 ps."})
@@ -82,10 +82,10 @@ func TestReadSitelog(t *testing.T) {
 
 	// Receiver
 	assert.Len(site.Receivers, 14, "number of receivers")
-	recvFirst := Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436",
+	recvFirst := gnss.Receiver{Type: "SEPT POLARX2", SatSystems: gnss.Systems{gnss.SysGPS}, SerialNum: "1436",
 		Firmware: "2.6.2", ElevationCutoff: 0, TemperatureStabiliz: "", DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 02, 14, 9, 0, 0, 0, time.UTC), Notes: "hardware replacement of receiver with SN 1128, same receiver, but different serial number (now 1436)"}
-	recvLast := Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysNavIC, gnss.SysSBAS},
+	recvLast := gnss.Receiver{Type: "SEPT POLARX5TR", SatSystems: gnss.Systems{gnss.SysGPS, gnss.SysGLO, gnss.SysGAL, gnss.SysBDS, gnss.SysQZSS, gnss.SysNavIC, gnss.SysSBAS},
 		SerialNum: "3057609", Firmware: "5.3.2", ElevationCutoff: 0, TemperatureStabiliz: "20.1 +/- 0.2",
 		DateInstalled: time.Date(2020, 02, 25, 13, 30, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC), Notes: ""}
 	assert.Equal(recvFirst, *site.Receivers[0], "first receiver")
@@ -94,11 +94,11 @@ func TestReadSitelog(t *testing.T) {
 
 	// Antennas
 	assert.Len(site.Antennas, 9, "number of antennas")
-	antFirst := Antenna{Type: "ASH701945E_M    NONE", Radome: "NONE", RadomeSerialNum: "",
+	antFirst := gnss.Antenna{Type: "ASH701945E_M    NONE", Radome: "NONE", RadomeSerialNum: "",
 		SerialNum: "CR620023301", ReferencePoint: "BPA", EccUp: 0.1266, EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0,
 		CableType: "ANDREW heliax LDF2-50A", CableLength: 60, DateInstalled: time.Date(2006, 07, 07, 0, 0, 0, 0, time.UTC),
 		DateRemoved: time.Date(2008, 03, 19, 8, 45, 0, 0, time.UTC), Notes: ""}
-	antLast := Antenna{Type: "JAVRINGANT_DM   NONE", Radome: "NONE",
+	antLast := gnss.Antenna{Type: "JAVRINGANT_DM   NONE", Radome: "NONE",
 		RadomeSerialNum: "", SerialNum: "00464", ReferencePoint: "BPA", EccUp: 0.4689,
 		EccNorth: 0.001, EccEast: 0, AlignmentFromTrueNorth: 0, CableType: "ANDREW heliax LDF2-50A", CableLength: 60,
 		DateInstalled: time.Date(2018, 02, 01, 8, 15, 0, 0, time.UTC), DateRemoved: time.Date(0001, 01, 01, 0, 0, 0, 0, time.UTC),
