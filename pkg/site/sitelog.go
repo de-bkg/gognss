@@ -402,7 +402,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				}
 			case "Antenna Radome Type":
 				if len(val) != 4 {
-					return nil, fmt.Errorf("Antenna Radome Type must be 4 char long: %q", val)
+					return nil, fmt.Errorf("antenna radome type must be 4 char long: %q", val)
 				}
 				ant.Radome = val
 			case "Radome Serial Number":
