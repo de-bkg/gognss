@@ -23,6 +23,23 @@ import (
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
+// EpochFlag for indicating special occurrences during the tracking in RINEX observation files.
+type EpochFlag uint8
+
+const (
+	EpochFlagOK            EpochFlag = iota // 0: OK
+	EpochFlagPowerFailure                   // 1: power failure between previous and current epoch
+	EpochFlagMovingAntenna                  // 2: start moving antenna
+	EpochFlagNewSite                        // 3: new site occupation (end of kinematic data) (at least MARKER NAME record follows)
+	EpochFlagHeaderInfo                     // 4: header information follows
+	EpochFlagExternalEvent                  // 5: external event (epoch is significant, same time frame as observation time tags)
+	EpochFlagCycleSlip                      // 6: cycle slip records follow to optionally report detected and repaired cycle slips
+)
+
+func (flag EpochFlag) String() string {
+	return [...]string{"OK", "Power Failure", "Moving Antenna", "New Site", "Header Info", "External Event", "Cycle Slip Records"}[flag]
+}
+
 // ObsCode is the RINEX observation code that specifies frequency, signal and tracking mode like "L1C".
 type ObsCode string
 
@@ -110,7 +127,7 @@ type SyncEpochs struct {
 // Epoch contains a RINEX obs data epoch.
 type Epoch struct {
 	Time    time.Time // The epoch time.
-	Flag    int8      // The epoch flag 0:OK, 1:power failure between previous and current epoch, >1 : Special event.
+	Flag    EpochFlag // The epoch flag 0:OK, 1:power failure between previous and current epoch, >1 : Special event.
 	NumSat  uint8     // The number of satellites per epoch.
 	ObsList []SatObs  // The list of observations per epoch.
 	//Error   error // e.g. parse error

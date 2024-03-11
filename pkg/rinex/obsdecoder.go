@@ -273,20 +273,20 @@ readln:
 			continue
 		}
 
-		epoFlag, err := strconv.Atoi(line[28:29])
+		flag, err := parseEpochFlag(line[28:29])
 		if err != nil {
-			dec.setErr(fmt.Errorf("rinex2: parse epoch flag in line %d: %q", dec.lineNum, line))
+			dec.setErr(fmt.Errorf("rinex2: parse epoch flag in line %d: %q: %v", dec.lineNum, line, err))
 			return false
 		}
 
 		// flag == 2: start moving antenna - no action
-		if epoFlag >= 3 {
+		if int8(flag) >= 3 {
 			numSpecialRecords, err := strconv.Atoi(strings.TrimSpace(line[29:32]))
 			if err != nil {
 				dec.setErr(fmt.Errorf("rinex: line %d: %v", dec.lineNum, err))
 				return false
 			}
-			if epoFlag == 3 || epoFlag == 4 {
+			if flag == EpochFlagNewSite || flag == EpochFlagHeaderInfo {
 				// TODO reread header
 				// dec.readHeader(numSpecialRecords)
 				for ii := 1; ii <= numSpecialRecords; ii++ {
@@ -344,7 +344,7 @@ readln:
 			pos += 3
 		}
 
-		dec.epo = &Epoch{Time: epoTime, Flag: int8(epoFlag), NumSat: uint8(numSat),
+		dec.epo = &Epoch{Time: epoTime, Flag: flag, NumSat: uint8(numSat),
 			ObsList: make([]SatObs, 0, numSat)}
 
 		// Read observations
@@ -375,7 +375,7 @@ readln:
 				if end > linelen {
 					end = linelen
 				}
-				obs, err := decodeObs(line[pos:end], epoFlag)
+				obs, err := decodeObs(line[pos:end], flag)
 				if err != nil {
 					dec.setErr(fmt.Errorf("rinex2: parse %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
 					return false
@@ -408,20 +408,20 @@ readln:
 			continue
 		}
 
-		epoFlag, err := strconv.Atoi(line[31:32])
+		flag, err := parseEpochFlag(line[31:32])
 		if err != nil {
 			dec.setErr(fmt.Errorf("rinex: parse epoch flag in line %d: %q: %v", dec.lineNum, line, err))
 			return false
 		}
 
 		// flag == 2: start moving antenna - no action
-		if epoFlag >= 3 {
+		if int8(flag) >= 3 {
 			numSpecialRecords, err := strconv.Atoi(strings.TrimSpace(line[32:35]))
 			if err != nil {
 				dec.setErr(fmt.Errorf("rinex: line %d: %v", dec.lineNum, err))
 				return false
 			}
-			if epoFlag == 3 || epoFlag == 4 {
+			if flag == EpochFlagNewSite || flag == EpochFlagHeaderInfo {
 				// TODO reread header
 				// dec.readHeader(numSpecialRecords)
 				for ii := 1; ii <= numSpecialRecords; ii++ {
@@ -451,7 +451,7 @@ readln:
 			return false
 		}
 
-		dec.epo = &Epoch{Time: epoTime, Flag: int8(epoFlag), NumSat: uint8(numSat),
+		dec.epo = &Epoch{Time: epoTime, Flag: flag, NumSat: uint8(numSat),
 			ObsList: make([]SatObs, 0, numSat)}
 
 		// Read observations
@@ -485,7 +485,7 @@ readln:
 				if end > linelen {
 					end = linelen
 				}
-				obs, err := decodeObs(line[pos:end], epoFlag)
+				obs, err := decodeObs(line[pos:end], flag)
 				if err != nil {
 					dec.setErr(fmt.Errorf("rinex: parse %s observation in line %d: %q: %v", typ, dec.lineNum, line, err))
 					return false
@@ -570,7 +570,7 @@ func (dec *ObsDecoder) line() string {
 }
 
 // decode an observation of a GNSS obs file.
-func decodeObs(s string, flag int) (obs Obs, err error) {
+func decodeObs(s string, flag EpochFlag) (obs Obs, err error) {
 	val := 0.0
 	lli := 0
 	snr := 0
@@ -603,7 +603,7 @@ func decodeObs(s string, flag int) (obs Obs, err error) {
 		}
 	}
 	// flag power failure
-	if flag == 1 {
+	if flag == EpochFlagPowerFailure {
 		lli |= 1
 	}
 	obs.LLI = int8(lli)
@@ -619,4 +619,27 @@ func decodeObs(s string, flag int) (obs Obs, err error) {
 	}
 	obs.SNR = int8(snr)
 	return obs, err
+}
+
+// lookup table for epoch flags.
+var epochFlagMap = map[int8]EpochFlag{
+	0: EpochFlagOK,
+	1: EpochFlagPowerFailure,
+	2: EpochFlagMovingAntenna,
+	3: EpochFlagNewSite,
+	4: EpochFlagHeaderInfo,
+	5: EpochFlagExternalEvent,
+	6: EpochFlagCycleSlip,
+}
+
+func parseEpochFlag(in string) (EpochFlag, error) {
+	flag, err := strconv.ParseUint(in, 10, 8)
+	if err != nil {
+		return 0, err
+	}
+
+	if epochFlag, ok := epochFlagMap[int8(flag)]; ok {
+		return epochFlag, nil
+	}
+	return 0, fmt.Errorf("invalid epoch flag")
 }

@@ -317,10 +317,10 @@ func Test_decodeObs(t *testing.T) {
 		{name: "t4", s: "      -105.814  ", wantObs: Obs{Val: float64(-105.814), LLI: int8(0), SNR: int8(0)}, wantErr: false},
 		{name: "t5", s: "      -105.814a_", wantObs: Obs{Val: float64(-105.814)}, wantErr: true},
 	}
-	epoFlag := 0
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotObs, err := decodeObs(tt.s, epoFlag)
+			gotObs, err := decodeObs(tt.s, EpochFlagOK)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("decodeObs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -470,4 +470,33 @@ func TestReadEpochsWithFlag4(t *testing.T) {
 	}
 	err = dec.Err()
 	assert.NoError(err)
+}
+
+func Test_parseEpochFlag(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      string
+		want    EpochFlag
+		wantErr bool
+	}{
+		{name: "t1-2", in: "2", want: EpochFlagMovingAntenna, wantErr: false},
+		{name: "t1-6", in: "6", want: EpochFlagCycleSlip, wantErr: false},
+		{name: "t-neg", in: "-1", want: EpochFlagMovingAntenna, wantErr: true},
+		{name: "t-toobig", in: "7", want: EpochFlagMovingAntenna, wantErr: true},
+		{name: "t-toobig", in: "2000", want: EpochFlagMovingAntenna, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseEpochFlag(tt.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseEpochFlag() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err == nil {
+				if got != tt.want {
+					t.Errorf("parseEpochFlag() = %v, want %v", got, tt.want)
+				}
+			}
+		})
+	}
 }
