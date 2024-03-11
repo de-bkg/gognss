@@ -14,8 +14,7 @@ Golang packages for
 
 ## Installation
 
-Make sure you have a working Go environment.  Go version 1.15+ is supported.  [See
-the install instructions for Go](http://golang.org/doc/install.html).
+Make sure you have a working Go environment. [See the install instructions for Go](http://golang.org/doc/install.html).
 
 To install, simply run:
 ```go
