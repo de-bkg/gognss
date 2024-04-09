@@ -952,6 +952,8 @@ func parseDate(s string) (t time.Time, err error) {
 	case 4: // 2002
 		//fmt.Printf("DEBUG: malformed date string: %q\n", s)
 		t, err = time.Parse("2006", s)
+	case 7:
+		t, err = time.Parse("2006-1", s)
 	case 8, 9, 10:
 		t, err = time.Parse("2006-1-2", s)
 	case 16:

@@ -170,6 +170,7 @@ func Test_parseDate(t *testing.T) {
 		"1991-07-22Thh:mmZ":    time.Date(1991, 7, 22, 0, 0, 0, 0, time.UTC),
 		"2009-9-29":            time.Date(2009, 9, 29, 0, 0, 0, 0, time.UTC),
 		"1999-04-DD":           time.Date(1999, 4, 1, 0, 0, 0, 0, time.UTC),
+		"1999-04":              time.Date(1999, 4, 1, 0, 0, 0, 0, time.UTC),
 		"2002":                 time.Date(2002, 1, 1, 0, 0, 0, 0, time.UTC),
 		"CCYY-MM-DD":           time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
 		"YYYY-MM-DDThh:mmZ":    time.Date(0001, 1, 1, 0, 0, 0, 0, time.UTC),
