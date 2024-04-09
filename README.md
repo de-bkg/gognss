@@ -1,4 +1,4 @@
-# GNSS
+# Go GNSS
 [![PkgGoDev](https://pkg.go.dev/badge/de-bkg/gognss)](https://pkg.go.dev/github.com/de-bkg/gognss)
 
 Please note that all packages are not stable yet and can change any time!
