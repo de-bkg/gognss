@@ -1,6 +1,8 @@
 // Command-line tool for handling RINEX files - TODO -
+// TODO: dismiss urfave/cli, use standard lib
 package main
 
+/*
 import (
 	"fmt"
 	"log"
@@ -104,7 +106,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
+} */
 
 /* func compressRINEXFiles(rootdir string) error {
 	err := os.Chdir(rootdir)
