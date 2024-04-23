@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/de-bkg/gognss/pkg/gnss"
-	"github.com/mholt/archiver/v3"
 )
 
 // The ContentType defines the content of a RINEX file.
@@ -477,22 +476,6 @@ func GetCaseSensitiveName(path string) string {
 	ext := filepath.Ext(fname)
 	fnameWoExt := strings.TrimSuffix(fname, ext)
 	return filepath.Join(dir, strings.ToUpper(fnameWoExt)+strings.ToLower(ext))
-}
-
-// IsCompressed returns true if the src is compressed, otherwise false.
-// This checks NOT for Hatanaka compression.
-func IsCompressed(src string) bool {
-	ext := filepath.Ext(src)
-	if ext == "" {
-		return false
-	}
-
-	if ext == ".z" || ext == ".Z" {
-		return true
-	}
-
-	_, err := archiver.ByExtension(src)
-	return err == nil
 }
 
 // ParseDoy returns the UTC-Time corresponding to the given year and day of year.
