@@ -59,23 +59,23 @@ type FormInformation struct {
 
 // Identification holds common fields about this site.
 type Identification struct {
-	Name                   string    `json:"siteName" validate:"required"` // City or nearest town
-	FourCharacterID        string    `json:"fourCharacterId"`
-	NineCharacterID        string    `json:"nineCharacterId"`        // or store singel fields? ID
-	MonumentInscription    string    `json:"monumentInscription"`    //
-	DOMESNumber            string    `json:"iersDOMESNumber"`        // IERS Domes number, A9
-	CDPNumber              string    `json:"cdpNumber"`              // whats that? A4
-	MonumentDescription    string    `json:"monumentDescription"`    // PILLAR/BRASS PLATE/STEEL MAST/etc
-	HeightOfMonument       float64   `json:"heightOfMonument"`       // in meter?
-	MonumentFoundation     string    `json:"monumentFoundation"`     // STEEL RODS, CONCRETE BLOCK, ROOF, etc
-	FoundationDepth        float64   `json:"foundationDepth"`        // in meter
-	MarkerDescription      string    `json:"markerDescription"`      // CHISELLED CROSS/DIVOT/BRASS NAIL/etc
-	DateInstalled          time.Time `json:"dateInstalled"`          //
-	GeologicCharacteristic string    `json:"geologicCharacteristic"` // BEDROCK/CLAY/CONGLOMERATE/GRAVEL/SAND/etc
-	BedrockType            string    `json:"bedrockType"`            // IGNEOUS/METAMORPHIC/SEDIMENTARY  -> new type BedrockType
-	BedrockCondition       string    `json:"bedrockCondition"`       // FRESH/JOINTED/WEATHERED
-	FractureSpacing        string    `json:"fractureSpacing"`        // 1-10 cm/11-50 cm/51-200 cm/over 200 cm
-	FaultZonesNearby       string    `json:"faultZonesNearby"`       // YES/NO/Name of the zone
+	Name                   string    `json:"siteName" validate:"required"`                        // City or nearest town
+	FourCharacterID        string    `json:"fourCharacterId"`                                     // deprecated, use NineCharacterID
+	NineCharacterID        string    `json:"nineCharacterId" validate:"omitempty,alphanum,len=9"` // or store singel fields? ID
+	MonumentInscription    string    `json:"monumentInscription"`                                 //
+	DOMESNumber            string    `json:"iersDOMESNumber"`                                     // IERS Domes number, A9
+	CDPNumber              string    `json:"cdpNumber"`                                           // whats that? A4
+	MonumentDescription    string    `json:"monumentDescription"`                                 // PILLAR/BRASS PLATE/STEEL MAST/etc
+	HeightOfMonument       float64   `json:"heightOfMonument"`                                    // in meter?
+	MonumentFoundation     string    `json:"monumentFoundation"`                                  // STEEL RODS, CONCRETE BLOCK, ROOF, etc
+	FoundationDepth        float64   `json:"foundationDepth"`                                     // in meter
+	MarkerDescription      string    `json:"markerDescription"`                                   // CHISELLED CROSS/DIVOT/BRASS NAIL/etc
+	DateInstalled          time.Time `json:"dateInstalled"`                                       //
+	GeologicCharacteristic string    `json:"geologicCharacteristic"`                              // BEDROCK/CLAY/CONGLOMERATE/GRAVEL/SAND/etc
+	BedrockType            string    `json:"bedrockType"`                                         // IGNEOUS/METAMORPHIC/SEDIMENTARY  -> new type BedrockType
+	BedrockCondition       string    `json:"bedrockCondition"`                                    // FRESH/JOINTED/WEATHERED
+	FractureSpacing        string    `json:"fractureSpacing"`                                     // 1-10 cm/11-50 cm/51-200 cm/over 200 cm
+	FaultZonesNearby       string    `json:"faultZonesNearby"`                                    // YES/NO/Name of the zone
 	DistanceActivity       string    `json:"distanceActivity"`
 	Notes                  string    `json:"notes"`
 }

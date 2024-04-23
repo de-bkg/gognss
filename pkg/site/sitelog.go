@@ -196,6 +196,8 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				ident.Name = val
 			case "Four Character ID":
 				ident.FourCharacterID = val
+			case "Nine Character ID":
+				ident.NineCharacterID = strings.ToUpper(val)
 			case "Monument Inscription":
 				ident.MonumentDescription = val
 			case "IERS DOMES Number":
@@ -259,8 +261,14 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				location.City = val
 			case "State or Province":
 				location.State = val
-			case "Country":
+			case "Country": // deprecated, use "Country or Region"
 				location.Country = val
+			case "Country or Region":
+				if len(val) == 3 {
+					location.Country = strings.ToUpper(val)
+				} else {
+					site.Warnings = append(site.Warnings, fmt.Errorf("%q must be 3 character long: %q", key, val))
+				}
 			case "Tectonic Plate":
 				location.TectonicPlate = val
 			case "X coordinate (m)":
