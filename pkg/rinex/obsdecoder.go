@@ -389,7 +389,7 @@ readln:
 	}
 
 	if err := dec.sc.Err(); err != nil {
-		dec.setErr(fmt.Errorf("rinex2: read epochs: %v", err))
+		dec.setErr(fmt.Errorf("rinex2: read epochs: %v (L%d)", err, dec.lineNum))
 	}
 
 	return false // EOF
@@ -498,7 +498,7 @@ readln:
 	}
 
 	if err := dec.sc.Err(); err != nil {
-		dec.setErr(fmt.Errorf("rinex: read epochs: %v", err))
+		dec.setErr(fmt.Errorf("rinex: read epochs: %v (L%d)", err, dec.lineNum))
 	}
 
 	return false // EOF
