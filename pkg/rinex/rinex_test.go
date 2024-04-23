@@ -238,3 +238,21 @@ func TestGetCaseSensitiveName(t *testing.T) {
 		})
 	}
 }
+
+func TestFilePeriod_Duration(t *testing.T) {
+	tests := []struct {
+		name string
+		p    FilePeriod
+		want time.Duration
+	}{
+		{name: "t-15M", p: FilePeriod15Min, want: 15 * time.Minute},
+		{name: "t-01D", p: FilePeriodDaily, want: 24 * time.Hour},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.p.Duration(); got != tt.want {
+				t.Errorf("FilePeriod.Duration() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

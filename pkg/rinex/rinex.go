@@ -14,6 +14,48 @@ import (
 	"github.com/mholt/archiver/v3"
 )
 
+// The ContentType defines the content of a RINEX file.
+type ContentType int
+
+const (
+	ContentTypeObs ContentType = iota + 1 // Observation content.
+	ContentTypeNav                        // Navigation content.
+	ContentTypeMet                        // Meteo content.
+)
+
+func (c ContentType) String() string {
+	return [...]string{"", "obs", "nav", "met"}[c]
+}
+
+// The FilePeriod specifies the intended (nominal) collection period of a file.
+type FilePeriod string
+
+const (
+	FilePeriodUnspecified FilePeriod = "00U"
+	FilePeriod15Min       FilePeriod = "15M" // 15 minutes, usually for high-rate 1Hz files.
+	FilePeriodHourly      FilePeriod = "01H"
+	FilePeriodDaily       FilePeriod = "01D"
+	FilePeriodYearly      FilePeriod = "01Y"
+)
+
+// Duration returns the duration of the file period.
+func (p FilePeriod) Duration() time.Duration {
+	switch p {
+	case FilePeriodUnspecified:
+		return 0
+	case FilePeriod15Min:
+		return 15 * time.Minute
+	case FilePeriodHourly:
+		return 1 * time.Hour
+	case FilePeriodDaily:
+		return 24 * time.Hour
+	case FilePeriodYearly:
+		return 365 * 24 * time.Hour
+	default:
+		return 0
+	}
+}
+
 const (
 	// epochTimeFormat is the time format for a epoch in RINEX version 3 files.
 	epochTimeFormat string = "2006  1  2 15  4  5.9999999" // .99... see https://stackoverflow.com/questions/41617401/how-do-i-parse-string-timestamps-of-different-length-to-time
@@ -98,18 +140,6 @@ var (
 	// rnxTypMap maps RINEX3 data-types to RINEX2 types.
 	rnxTypMap = map[string]string{"GO": "o", "RO": "o", "EO": "o", "JO": "o", "CO": "o", "IO": "o", "SO": "o", "MO": "o",
 		"GN": "n", "RN": "g", "EN": "l", "JN": "q", "CN": "f", "SN": "h", "MN": "p", "MM": "m"}
-)
-
-// The FilePeriod specifies the intended (nominal) collection period of a file.
-type FilePeriod string
-
-// The file periods of the RINEX format specification.
-const (
-	FilePeriodUnspecified FilePeriod = "00U"
-	FilePeriod15Min       FilePeriod = "15M" // 15 minutes, usually for high-rate 1Hz files.
-	FilePeriodHourly      FilePeriod = "01H"
-	FilePeriodDaily       FilePeriod = "01D"
-	FilePeriodYearly      FilePeriod = "01Y"
 )
 
 // FilerHandler is the interface for RINEX files..
@@ -349,6 +379,54 @@ func (f *RnxFil) ParseFilename() error {
 	return nil
 }
 
+// Rnx2Filename returns the filename following the RINEX2 convention.
+func (f *RnxFil) Rnx2Filename() (string, error) {
+	// Station Identifier
+	if len(f.FourCharID) != 4 {
+		return "", fmt.Errorf("FourCharID: %s", f.FourCharID)
+	}
+
+	var fn strings.Builder
+	fn.WriteString(strings.ToLower(f.FourCharID))
+	fn.WriteString(fmt.Sprintf("%03d", f.StartTime.YearDay()))
+	if f.IsDaily() {
+		fn.WriteString("0")
+	} else {
+		fn.WriteString(getHourAsChar(f.StartTime.Hour()))
+	}
+
+	if f.FilePeriod == FilePeriod15Min { // 15min highrates
+		d := time.Duration(f.StartTime.Minute()) * time.Minute
+		fn.WriteString(fmt.Sprintf("%02d", int(d.Truncate(15*time.Minute).Minutes())))
+	}
+
+	yyyy := strconv.Itoa(f.StartTime.Year())
+	fn.WriteString("." + yyyy[2:])
+
+	rnx2Typ, ok := rnxTypMap[f.DataType]
+	if !ok {
+		return "", fmt.Errorf("could not map type %s to RINEX2", f.DataType)
+	}
+	if f.IsObsType() && f.Format == "crx" {
+		fn.WriteString("d")
+	} else {
+		fn.WriteString(rnx2Typ)
+	}
+
+	// Checks
+	shouldLength := 12
+	if f.FilePeriod == FilePeriod15Min { // 15min highrates
+		shouldLength = 14
+	}
+
+	length := len(fn.String())
+	if length != shouldLength {
+		return "", fmt.Errorf("wrong filename length: %s: %d (should: %d)", fn.String(), length, shouldLength)
+	}
+
+	return fn.String(), nil
+}
+
 // Rnx3Filename returns the RTCM RINEX-3 compliant filename for the given RINEX-2 file.
 // The countryCode must be the 3 char ISO ?? code.
 // Datasource as option!?
@@ -383,50 +461,7 @@ func Rnx2Filename(rnx3filepath string) (string, error) {
 		return "", err
 	}
 
-	// Station Identifier
-	if len(rnx.FourCharID) != 4 {
-		return "", fmt.Errorf("FourCharID: %s", rnx.FourCharID)
-	}
-
-	var fn strings.Builder
-	fn.WriteString(strings.ToLower(rnx.FourCharID))
-	fn.WriteString(fmt.Sprintf("%03d", rnx.StartTime.YearDay()))
-	if rnx.IsDaily() {
-		fn.WriteString("0")
-	} else {
-		fn.WriteString(getHourAsChar(rnx.StartTime.Hour()))
-	}
-
-	if rnx.FilePeriod == FilePeriod15Min { // 15min highrates
-		d := time.Duration(rnx.StartTime.Minute()) * time.Minute
-		fn.WriteString(fmt.Sprintf("%02d", int(d.Truncate(15*time.Minute).Minutes())))
-	}
-
-	yyyy := strconv.Itoa(rnx.StartTime.Year())
-	fn.WriteString("." + yyyy[2:])
-
-	rnx2Typ, ok := rnxTypMap[rnx.DataType]
-	if !ok {
-		return "", fmt.Errorf("could not map type %s to RINEX2", rnx.DataType)
-	}
-	if rnx.IsObsType() && rnx.Format == "crx" {
-		fn.WriteString("d")
-	} else {
-		fn.WriteString(rnx2Typ)
-	}
-
-	// Checks
-	shouldLength := 12
-	if rnx.FilePeriod == FilePeriod15Min { // 15min highrates
-		shouldLength = 14
-	}
-
-	length := len(fn.String())
-	if length != shouldLength {
-		return "", fmt.Errorf("wrong filename length: %s: %d (should: %d)", fn.String(), length, shouldLength)
-	}
-
-	return fn.String(), nil
+	return rnx.Rnx2Filename()
 }
 
 // Returns the RINEX filename with the correct case sensitivity. RINEX-3 long filenames must be uppercase
