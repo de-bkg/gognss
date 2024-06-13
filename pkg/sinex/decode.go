@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -157,7 +158,7 @@ func (dec *Decoder) decodeHeader() error {
 			dec.fileRef.Input = val
 		default:
 			//dec.setErr()
-			return fmt.Errorf("invalid %s field: %q", BlockFileReference, key)
+			log.Printf("invalid %s field: %q", BlockFileReference, key)
 		}
 	}
 
