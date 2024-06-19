@@ -198,6 +198,9 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				ident.FourCharacterID = val
 			case "Nine Character ID":
 				ident.NineCharacterID = strings.ToUpper(val)
+				if ident.FourCharacterID == "" && len(val) >= 9 {
+					ident.FourCharacterID = ident.NineCharacterID[:4]
+				}
 			case "Monument Inscription":
 				ident.MonumentDescription = val
 			case "IERS DOMES Number":
