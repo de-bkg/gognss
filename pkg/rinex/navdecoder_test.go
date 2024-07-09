@@ -210,7 +210,7 @@ Concatenated RINEX files (6)                                COMMENT
     4.104180000000D+05 4.000000000000D+00
 		`
 
-	wantGPS := &EphGPS{PRN: PRN{gnss.SysGPS, 26}, TOC: time.Date(2022, 11, 24, 20, 0, 0, 0, time.UTC), ClockBias: 2.367375418544e-04, ClockDrift: 1.023181539495e-12, ClockDriftRate: 0,
+	wantGPS := &EphGPS{PRN: gnss.PRN{Sys: gnss.SysGPS, Num: 26}, TOC: time.Date(2022, 11, 24, 20, 0, 0, 0, time.UTC), ClockBias: 2.367375418544e-04, ClockDrift: 1.023181539495e-12, ClockDriftRate: 0,
 		IODE: 82, Crs: 1.376562500000e+02, DeltaN: 4.792342477443e-09, M0: 4.269679655010e-01,
 		Cuc: 7.273629307747e-06, Ecc: 7.515437668189e-03, Cus: 1.032091677189e-05, SqrtA: 5.153605495453e+03,
 		Toe: 4.176000000000e+05, Cic: 5.215406417847e-08, Omega0: -2.808004081807e+00, Cis: 7.823109626770e-08,
@@ -339,7 +339,7 @@ E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
      3.120000000000E+00 0.000000000000E+00 3.958120942116E-09 4.423782229424E-09
      2.754650000000E+05
 	`
-	wantGPS := &EphGPS{PRN: PRN{gnss.SysGPS, 20}, TOC: time.Date(2020, 6, 18, 0, 0, 0, 0, time.UTC), ClockBias: 5.274894647300e-04, ClockDrift: -1.136868377216e-13, ClockDriftRate: 0,
+	wantGPS := &EphGPS{PRN: gnss.PRN{Sys: gnss.SysGPS, Num: 20}, TOC: time.Date(2020, 6, 18, 0, 0, 0, 0, time.UTC), ClockBias: 5.274894647300e-04, ClockDrift: -1.136868377216e-13, ClockDriftRate: 0,
 		IODE: 83, Crs: 2.078125000000e+01, DeltaN: 5.373438110980e-09, M0: -2.252452975616,
 		Cuc: 1.156702637672e-06, Ecc: 5.203154985793e-03, Cus: 7.405877113342e-06, SqrtA: 5.153647661209e+03,
 		Toe: 3.456000000000e+05, Cic: -1.247972249985e-07, Omega0: -2.679776962713, Cis: 2.048909664154e-08,
@@ -348,7 +348,7 @@ E26 2020 06 17 04 20 00 3.064073505811E-03-4.352784799266E-11 0.000000000000E+00
 		URA: 2.0, Health: 0, TGD: -8.847564458847e-09, IODC: 83,
 		Tom: 3.393480000000e+05, FitInterval: 4}
 
-	wantGAL := &EphGAL{PRN: PRN{gnss.SysGAL, 26}, TOC: time.Date(2020, 6, 17, 4, 20, 0, 0, time.UTC)}
+	wantGAL := &EphGAL{PRN: gnss.PRN{Sys: gnss.SysGAL, Num: 26}, TOC: time.Date(2020, 6, 17, 4, 20, 0, 0, time.UTC)}
 
 	dec, err := NewNavDecoder(strings.NewReader(navdata))
 	assert.NoError(err)

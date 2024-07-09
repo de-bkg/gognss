@@ -318,12 +318,12 @@ func (dec *NavDecoder) line() string {
 }
 
 // parse the prn from the data record.
-func (dec *NavDecoder) parsePRN() (PRN, error) {
+func (dec *NavDecoder) parsePRN() (gnss.PRN, error) {
 	line := dec.line()
 	if dec.Header.RINEXVersion < 3 {
-		return newPRN(fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), line[0:2]))
+		return gnss.NewPRN(fmt.Sprintf("%s%s", dec.Header.SatSystem.Abbr(), line[0:2]))
 	}
-	return newPRN(line[0:3])
+	return gnss.NewPRN(line[0:3])
 }
 
 // parse the time of eph from the data record.

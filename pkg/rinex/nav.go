@@ -29,7 +29,7 @@ type Eph interface {
 	Validate() error
 
 	// Returns the ephemermis' PRN.
-	GetPRN() PRN
+	GetPRN() gnss.PRN
 
 	// Returns the ephemermis' time of clock (toc).
 	GetTime() time.Time
@@ -64,7 +64,7 @@ func NewEph(sys gnss.System) (Eph, error) {
 
 // EphGPS describes a GPS ephemeris.
 type EphGPS struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // Navigation Message Type, LNAV etc., see RINEX 4 spec.
 
 	// Clock
@@ -107,73 +107,73 @@ type EphGPS struct {
 	FitInterval float64 // Fit interval in hours
 }
 
-func (eph *EphGPS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphGPS) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphGPS) GetTime() time.Time { return eph.TOC }
 func (EphGPS) Validate() error         { return nil }
 
 // EphGLO describes a GLONASS ephemeris.
 type EphGLO struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // Navigation Message Type.
 	TOC         time.Time
 }
 
-func (eph *EphGLO) GetPRN() PRN        { return eph.PRN }
+func (eph *EphGLO) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphGLO) GetTime() time.Time { return eph.TOC }
 func (EphGLO) Validate() error         { return nil }
 
 // EphGAL describes a Galileo ephemeris.
 type EphGAL struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // Navigation Message Type.
 	TOC         time.Time
 }
 
-func (eph *EphGAL) GetPRN() PRN        { return eph.PRN }
+func (eph *EphGAL) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphGAL) GetTime() time.Time { return eph.TOC }
 func (EphGAL) Validate() error         { return nil }
 
 // EphQZSS describes a QZSS ephemeris.
 type EphQZSS struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // Navigation Message Type.
 	TOC         time.Time
 }
 
-func (eph *EphQZSS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphQZSS) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphQZSS) GetTime() time.Time { return eph.TOC }
 func (EphQZSS) Validate() error         { return nil }
 
 // EphBDS describes a chinese BDS ephemeris.
 type EphBDS struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // Navigation Message Type.
 	TOC         time.Time
 }
 
-func (eph *EphBDS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphBDS) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphBDS) GetTime() time.Time { return eph.TOC }
 func (EphBDS) Validate() error         { return nil }
 
 // EphNavIC describes an indian IRNSS/NavIC ephemeris.
 type EphNavIC struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // EPH Navigation Message Type.
 	TOC         time.Time
 }
 
-func (eph *EphNavIC) GetPRN() PRN        { return eph.PRN }
+func (eph *EphNavIC) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphNavIC) GetTime() time.Time { return eph.TOC }
 func (EphNavIC) Validate() error         { return nil }
 
 // EphSBAS describes a SBAS payload.
 type EphSBAS struct {
-	PRN         PRN
+	PRN         gnss.PRN
 	MessageType string // EPH Navigation Message Type.
 	TOC         time.Time
 }
 
-func (eph *EphSBAS) GetPRN() PRN        { return eph.PRN }
+func (eph *EphSBAS) GetPRN() gnss.PRN   { return eph.PRN }
 func (eph *EphSBAS) GetTime() time.Time { return eph.TOC }
 func (EphSBAS) Validate() error         { return nil }
 
@@ -202,7 +202,7 @@ type NavHeader struct {
 type NavStats struct {
 	NumEphemeris    int          `json:"numEphemeris"`    // The number of epochs in the file.
 	SatSystems      gnss.Systems `json:"systems"`         // The satellite systems contained.
-	Satellites      []PRN        `json:"satellites"`      // The ephemeris' satellites.
+	Satellites      []gnss.PRN   `json:"satellites"`      // The ephemeris' satellites.
 	EarliestEphTime time.Time    `json:"earliestEphTime"` // Time of the earliest ephemeris.
 	LatestEphTime   time.Time    `json:"latestEphTime"`   // Time of the latest ephemeris.
 	Errors          error
@@ -259,7 +259,7 @@ func (f *NavFile) GetStats() (stats NavStats, err error) {
 
 	earliestTOC, latestTOC := time.Time{}, time.Time{}
 	seenSystems := make(map[gnss.System]int, 5)
-	seenSatellites := make(map[PRN]int, 50)
+	seenSatellites := make(map[gnss.PRN]int, 50)
 	nEphs := 0
 	for dec.NextEphemeris() {
 		eph := dec.Ephemeris()
@@ -304,11 +304,11 @@ func (f *NavFile) GetStats() (stats NavStats, err error) {
 		stats.SatSystems = append(stats.SatSystems, sys)
 	}
 
-	stats.Satellites = make([]PRN, 0, len(seenSatellites))
+	stats.Satellites = make([]gnss.PRN, 0, len(seenSatellites))
 	for prn := range seenSatellites {
 		stats.Satellites = append(stats.Satellites, prn)
 	}
-	sort.Sort(ByPRN(stats.Satellites))
+	sort.Sort(gnss.ByPRN(stats.Satellites))
 
 	f.Stats = &stats
 

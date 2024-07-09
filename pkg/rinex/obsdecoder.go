@@ -202,11 +202,11 @@ readln:
 				if err != nil {
 					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
-				hdr.GloSlots = make(map[PRN]int, nSat)
+				hdr.GloSlots = make(map[gnss.PRN]int, nSat)
 			}
 			fields := strings.Fields(val[4:])
 			for i := 0; i < len(fields)-1; i++ {
-				prn, err := newPRN(fields[i])
+				prn, err := gnss.NewPRN(fields[i])
 				if err != nil {
 					return hdr, fmt.Errorf("parse %q: %v", key, err)
 				}
@@ -319,7 +319,7 @@ readln:
 
 		// Read list of PRNs
 		pos := 32
-		sats := make([]PRN, 0, numSat)
+		sats := make([]gnss.PRN, 0, numSat)
 		for iSat := 0; iSat < numSat; iSat++ {
 			if iSat > 0 && iSat%12 == 0 {
 				if ok := dec.readLine(); !ok {
@@ -335,7 +335,7 @@ readln:
 				myprn = "G" + myprn[1:3]
 			}
 
-			prn, err := newPRN(myprn)
+			prn, err := gnss.NewPRN(myprn)
 			if err != nil {
 				dec.setErr(fmt.Errorf("rinex2: new PRN in line %d: %q: %v", dec.lineNum, line, err))
 				return false
@@ -462,7 +462,7 @@ readln:
 			line = dec.line()
 			linelen := len(line)
 
-			prn, err := newPRN(line[0:3])
+			prn, err := gnss.NewPRN(line[0:3])
 			if err != nil {
 				dec.setErr(fmt.Errorf("rinex: parse sat num in line %d: %q: %v", dec.lineNum, line, err))
 				return false

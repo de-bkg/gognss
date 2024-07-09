@@ -71,50 +71,9 @@ type Obs struct {
 	SNR int8    // SNR is the signal-to-noise ratio.
 }
 
-// PRN specifies a GNSS satellite.
-type PRN struct {
-	Sys gnss.System // The satellite system.
-	Num int8        // The satellite number.
-	// flags
-}
-
-// newPRN returns a new PRN for the string prn that is e.g. G12.
-func newPRN(prn string) (PRN, error) {
-	sys, ok := sysPerAbbr[prn[:1]]
-	if !ok {
-		return PRN{}, fmt.Errorf("invalid satellite system: %q", prn)
-	}
-	snum, err := strconv.Atoi(strings.TrimSpace(prn[1:3]))
-	if err != nil {
-		return PRN{}, fmt.Errorf("parse sat num: %q: %v", prn, err)
-	}
-	if snum < 1 {
-		return PRN{}, fmt.Errorf("check satellite number '%v%d'", sys, snum)
-	}
-	return PRN{Sys: sys, Num: int8(snum)}, nil
-}
-
-// String is a PRN Stringer.
-func (prn PRN) String() string {
-	return fmt.Sprintf("%s%02d", prn.Sys.Abbr(), prn.Num)
-}
-
-// ByPRN implements sort.Interface based on the PRN.
-type ByPRN []PRN
-
-func (p ByPRN) Len() int {
-	return len(p)
-}
-func (p ByPRN) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
-}
-func (p ByPRN) Less(i, j int) bool {
-	return p[i].String() < p[j].String()
-}
-
 // SatObs contains all observations for a satellite per epoch.
 type SatObs struct {
-	Prn  PRN             // The satellite number or PRN.
+	Prn  gnss.PRN        // The satellite number or PRN.
 	Obss map[ObsCode]Obs // A map of observations with the obs-code as key. L1C: Obs{Val:0, LLI:0, SNR:0}, L2C: Obs{Val:...},...
 }
 
@@ -170,12 +129,12 @@ func (epo *Epoch) PrintTab(opts Options) {
 
 // ObsStats holds some statistics about a RINEX obs file, derived from the data.
 type ObsStats struct {
-	NumEpochs      int                     `json:"numEpochs"`      // The number of epochs in the file.
-	NumSatellites  int                     `json:"numSatellites"`  // The number of satellites derived from the header.
-	Sampling       time.Duration           `json:"sampling"`       // The sampling interval derived from the data.
-	TimeOfFirstObs time.Time               `json:"timeOfFirstObs"` // Time of the first observation.
-	TimeOfLastObs  time.Time               `json:"timeOfLastObs"`  // Time of the last observation.
-	ObsPerSat      map[PRN]map[ObsCode]int `json:"obsstats"`       // Number of observations per PRN and observation-type.
+	NumEpochs      int                          `json:"numEpochs"`      // The number of epochs in the file.
+	NumSatellites  int                          `json:"numSatellites"`  // The number of satellites derived from the header.
+	Sampling       time.Duration                `json:"sampling"`       // The sampling interval derived from the data.
+	TimeOfFirstObs time.Time                    `json:"timeOfFirstObs"` // Time of the first observation.
+	TimeOfLastObs  time.Time                    `json:"timeOfLastObs"`  // Time of the last observation.
+	ObsPerSat      map[gnss.PRN]map[ObsCode]int `json:"obsstats"`       // Number of observations per PRN and observation-type.
 }
 
 // A ObsHeader provides the RINEX Observation Header information.
@@ -213,9 +172,9 @@ type ObsHeader struct {
 	Interval           float64 // Observation interval in seconds
 	TimeOfFirstObs     time.Time
 	TimeOfLastObs      time.Time
-	GloSlots           map[PRN]int // GLONASS slot and frequency numbers.
-	LeapSeconds        int         // The current number of leap seconds
-	NSatellites        int         // Number of satellites, for which observations are stored in the file
+	GloSlots           map[gnss.PRN]int // GLONASS slot and frequency numbers.
+	LeapSeconds        int              // The current number of leap seconds
+	NSatellites        int              // Number of satellites, for which observations are stored in the file
 
 	Labels []string // all Header Labels found.
 }
@@ -329,7 +288,7 @@ func (f *ObsFile) ComputeObsStats() (stats ObsStats, err error) {
 
 	satmap := make(map[string]int, numSat)
 
-	obsstats := make(map[PRN]map[ObsCode]int, numSat)
+	obsstats := make(map[gnss.PRN]map[ObsCode]int, numSat)
 	numOfEpochs := 0
 	intervals := make([]time.Duration, 0, 10)
 	var epo, epoPrev *Epoch
@@ -707,7 +666,7 @@ func diffEpo(epochs SyncEpochs, opts Options) string {
 	return ""
 }
 
-func getObsByPRN(obslist []SatObs, prn PRN) (SatObs, error) {
+func getObsByPRN(obslist []SatObs, prn gnss.PRN) (SatObs, error) {
 	for _, obs := range obslist {
 		if obs.Prn == prn {
 			return obs, nil
@@ -717,7 +676,7 @@ func getObsByPRN(obslist []SatObs, prn PRN) (SatObs, error) {
 	return SatObs{}, fmt.Errorf("no oberservations found for prn %v", prn)
 }
 
-func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn PRN) string {
+func diffObs(obs1, obs2 SatObs, epoTime time.Time, prn gnss.PRN) string {
 	deltaPhase := 0.005
 	checkSNR := false
 	for k, o1 := range obs1.Obss {

@@ -62,7 +62,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	assert.NotNil(dec)
 
 	obsCodesGPSWanted := []ObsCode{"C1C", "L1C", "S1C", "C1W", "S1W", "C2W", "L2W", "S2W", "C2L", "L2L", "S2L", "C5Q", "L5Q", "S5Q"}
-	gloSlotsWanted := map[PRN]int{{Sys: gnss.SysGLO, Num: 3}: 5, {Sys: gnss.SysGLO, Num: 4}: 6, {Sys: gnss.SysGLO, Num: 5}: 1,
+	gloSlotsWanted := map[gnss.PRN]int{{Sys: gnss.SysGLO, Num: 3}: 5, {Sys: gnss.SysGLO, Num: 4}: 6, {Sys: gnss.SysGLO, Num: 5}: 1,
 		{Sys: gnss.SysGLO, Num: 6}: -4, {Sys: gnss.SysGLO, Num: 13}: -2, {Sys: gnss.SysGLO, Num: 14}: -7, {Sys: gnss.SysGLO, Num: 15}: 0,
 		{Sys: gnss.SysGLO, Num: 16}: -1, {Sys: gnss.SysGLO, Num: 22}: -3, {Sys: gnss.SysGLO, Num: 23}: 3, {Sys: gnss.SysGLO, Num: 24}: 2}
 

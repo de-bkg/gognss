@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/de-bkg/gognss/pkg/gnss"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -143,20 +144,20 @@ func TestObsFile_ComputeObsStats(t *testing.T) {
 	assert.Equal(time.Date(2019, 9, 27, 10, 59, 30, 0, time.UTC), stat.TimeOfLastObs)
 
 	// Sort by PRNS
-	prns := make([]PRN, 0, len(stat.ObsPerSat))
+	prns := make([]gnss.PRN, 0, len(stat.ObsPerSat))
 	for k := range stat.ObsPerSat {
 		prns = append(prns, k)
 	}
-	sort.Sort(ByPRN(prns))
+	sort.Sort(gnss.ByPRN(prns))
 	for _, prn := range prns {
 		fmt.Printf("%s: %+v\n", prn, stat.ObsPerSat[prn])
 	}
 
-	assert.Equal(map[ObsCode]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.ObsPerSat[PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
-	assert.Equal(map[ObsCode]int{"C1C": 120, "C2S": 0, "C2W": 120, "C5Q": 0, "D1C": 120, "D2S": 0, "D2W": 120, "D5Q": 0, "L1C": 120, "L2S": 0, "L2W": 120, "L5Q": 0, "S1C": 120, "S2S": 0, "S2W": 120, "S5Q": 0}, stat.ObsPerSat[PRN{Sys: sysPerAbbr["G"], Num: 11}], "obs G11")
-	assert.Equal(map[ObsCode]int{"C5A": 119, "D5A": 119, "L5A": 72, "S5A": 119}, stat.ObsPerSat[PRN{Sys: sysPerAbbr["I"], Num: 6}], "obs I06")
-	assert.Equal(map[ObsCode]int{"C1C": 94, "C2C": 94, "C2P": 94, "D1C": 94, "D2C": 94, "D2P": 94, "L1C": 92, "L2C": 92, "L2P": 92, "S1C": 94, "S2C": 94, "S2P": 94}, stat.ObsPerSat[PRN{Sys: sysPerAbbr["R"], Num: 19}], "obs R19")
-	assert.Equal(map[ObsCode]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.ObsPerSat[PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
+	assert.Equal(map[ObsCode]int{"C1C": 7, "C5Q": 7, "C7Q": 7, "C8Q": 7, "D1C": 7, "D5Q": 7, "D7Q": 7, "D8Q": 7, "L1C": 7, "L5Q": 7, "L7Q": 7, "L8Q": 7, "S1C": 7, "S5Q": 7, "S7Q": 7, "S8Q": 7}, stat.ObsPerSat[gnss.PRN{Sys: sysPerAbbr["E"], Num: 7}], "obs E07")
+	assert.Equal(map[ObsCode]int{"C1C": 120, "C2S": 0, "C2W": 120, "C5Q": 0, "D1C": 120, "D2S": 0, "D2W": 120, "D5Q": 0, "L1C": 120, "L2S": 0, "L2W": 120, "L5Q": 0, "S1C": 120, "S2S": 0, "S2W": 120, "S5Q": 0}, stat.ObsPerSat[gnss.PRN{Sys: sysPerAbbr["G"], Num: 11}], "obs G11")
+	assert.Equal(map[ObsCode]int{"C5A": 119, "D5A": 119, "L5A": 72, "S5A": 119}, stat.ObsPerSat[gnss.PRN{Sys: sysPerAbbr["I"], Num: 6}], "obs I06")
+	assert.Equal(map[ObsCode]int{"C1C": 94, "C2C": 94, "C2P": 94, "D1C": 94, "D2C": 94, "D2P": 94, "L1C": 92, "L2C": 92, "L2P": 92, "S1C": 94, "S2C": 94, "S2P": 94}, stat.ObsPerSat[gnss.PRN{Sys: sysPerAbbr["R"], Num: 19}], "obs R19")
+	assert.Equal(map[ObsCode]int{"C2I": 117, "C7I": 0, "D2I": 117, "D7I": 0, "L2I": 116, "L7I": 0, "S2I": 117, "S7I": 0}, stat.ObsPerSat[gnss.PRN{Sys: sysPerAbbr["C"], Num: 22}], "obs C22")
 }
 
 func TestObsFile_ComputeObsStatsV211(t *testing.T) {
@@ -177,11 +178,11 @@ func TestObsFile_ComputeObsStatsV211(t *testing.T) {
 	assert.Equal(time.Date(2020, 6, 3, 7, 0, 0, 0, time.UTC), stat.TimeOfFirstObs)
 	assert.Equal(time.Date(2020, 6, 3, 7, 59, 30, 0, time.UTC), stat.TimeOfLastObs)
 
-	prns := make([]PRN, 0, len(stat.ObsPerSat))
+	prns := make([]gnss.PRN, 0, len(stat.ObsPerSat))
 	for k := range stat.ObsPerSat {
 		prns = append(prns, k)
 	}
-	sort.Sort(ByPRN(prns))
+	sort.Sort(gnss.ByPRN(prns))
 	for _, prn := range prns {
 		fmt.Printf("%s: %+v\n", prn, stat.ObsPerSat[prn])
 	}
@@ -208,11 +209,11 @@ func TestObsFile_ComputeObsStatsV2(t *testing.T) {
 	assert.Equal(time.Date(2006, 11, 25, 0, 0, 0, 0, time.UTC), stat.TimeOfFirstObs)
 	assert.Equal(time.Date(2006, 11, 25, 23, 59, 30, 0, time.UTC), stat.TimeOfLastObs)
 
-	prns := make([]PRN, 0, len(stat.ObsPerSat))
+	prns := make([]gnss.PRN, 0, len(stat.ObsPerSat))
 	for k := range stat.ObsPerSat {
 		prns = append(prns, k)
 	}
-	sort.Sort(ByPRN(prns))
+	sort.Sort(gnss.ByPRN(prns))
 	for _, prn := range prns {
 		fmt.Printf("%s: %+v\n", prn, stat.ObsPerSat[prn])
 	}
