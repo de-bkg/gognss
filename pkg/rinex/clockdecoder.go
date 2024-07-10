@@ -25,10 +25,11 @@ type ClockHeader struct {
 	RunBy string    // name of agency creating this file
 	Date  time.Time // Date and time of file creation
 
-	TimeSystemID string     // Time system used for time tags, 3 char (GPS, GAL, UTC, TAI,...)
-	AC           string     // Analysis Center as 3-character IGS AC designator
-	NumSolnSats  int        // Number of different satellites in the clock data records.
-	Sats         []gnss.PRN // List of all satellites reported in this file.
+	TimeSystemID   string     // Time system used for time tags, 3 char (GPS, GAL, UTC, TAI,...)
+	AC             string     // Analysis Center as 3-character IGS AC designator
+	NumSolnSats    int        // Number of different satellites in the clock data records.
+	StaCoordinates []string   // List of stations/receivers with coordinates.
+	Sats           []gnss.PRN // List of all satellites reported in this file (PRN LIST).
 
 	Comments []string // comments
 	Labels   []string // all Header Labels found
@@ -161,6 +162,8 @@ readln:
 				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.NumSolnSats = nSats
+		case "SOLN STA NAME / NUM":
+			hdr.StaCoordinates = append(hdr.StaCoordinates, val)
 		case "PRN LIST":
 			if err := dec.parseHeaderPRNList(val); err != nil {
 				return hdr, err
@@ -223,6 +226,8 @@ readln:
 				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.NumSolnSats = nSats
+		case "SOLN STA NAME / NUM":
+			hdr.StaCoordinates = append(hdr.StaCoordinates, val)
 		case "PRN LIST":
 			if err := dec.parseHeaderPRNList(val); err != nil {
 				return hdr, err
@@ -248,7 +253,8 @@ func (dec *ClockDecoder) parseHeaderPRNList(s string) error {
 	for _, sat := range sats {
 		prn, err := gnss.NewPRN(sat)
 		if err != nil {
-			return fmt.Errorf("parse %q: %v", "PRN LIST", err)
+			log.Printf("WARN: read header: %s: %v", "PRN LIST", err)
+			continue
 		}
 		dec.Header.Sats = append(dec.Header.Sats, prn)
 	}
