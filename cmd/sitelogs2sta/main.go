@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/de-bkg/gognss/pkg/site"
@@ -78,26 +77,11 @@ func readSL(slPath string) (*site.Site, error) {
 	// Try to get the NineCharID from the filename.
 	// This is necessary until the the NineCharID is official part of the sitelog.
 	if s.Ident.NineCharacterID == "" {
-		if nineCharID := nineCharIDByFilename(filepath.Base(slPath)); len(nineCharID) == 9 {
+		if nineCharID := site.IDByFilename(filepath.Base(slPath)); len(nineCharID) == 9 {
 			if nineCharID[:4] == strings.ToUpper(s.Ident.FourCharacterID) {
 				s.Ident.NineCharacterID = nineCharID
 			}
 		}
 	}
 	return s, nil
-}
-
-// stationNameRegex is the compiled regex for a 9char station name.
-var stationNameRegex = regexp.MustCompile(`(?i)([A-Z0-9]{4})(\d)(\d)([A-Z]{3})`)
-
-func nineCharIDByFilename(filename string) string {
-	if len(filename) < 9 {
-		return ""
-	}
-
-	res := stationNameRegex.FindStringSubmatch(filename)
-	if res == nil || len(res) < 4 {
-		return ""
-	}
-	return strings.ToUpper(res[0])
 }

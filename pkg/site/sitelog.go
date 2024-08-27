@@ -14,6 +14,27 @@ import (
 	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
+// siteNameRegex is the compiled regex for a 9char site name.
+var siteNameRegex = regexp.MustCompile(`(?i)([A-Z0-9]{4})(\d)(\d)([A-Z]{3})`)
+
+// IDByFilename extracts the siteID (usually nineCharID) from a IGS sitelog filename.
+// The returned value is upper case. On failure an empty string is returned.
+// The filename must comply to the IGS conventions, that means e.g.
+// "wtzr00deu_20231030.log" or the deprecated short name "wtzr_20231030.log".
+func IDByFilename(filename string) string {
+	filename = strings.TrimSpace(filename)
+
+	if len(filename) == 17 { // old name
+		return strings.ToUpper(filename[:4])
+	}
+
+	res := siteNameRegex.FindStringSubmatch(filename)
+	if res == nil || len(res) < 1 {
+		return ""
+	}
+	return strings.ToUpper(res[0])
+}
+
 var (
 	// main block. e.g. '1.   Site Identification of the GNSS Monument'
 	blockPattern = regexp.MustCompile(`^(\d+)\.\s+([\w\s]+)`)
@@ -264,7 +285,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 				location.City = val
 			case "State or Province":
 				location.State = val
-			case "Country": // deprecated, use "Country or Region"
+			case "Country": // Deprecated, use "Country or Region"
 				location.Country = val
 			case "Country or Region":
 				if len(val) == 3 {
@@ -806,21 +827,11 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			// 12. Responsible Agency (if different from 11.)
 
 			if strings.HasPrefix(key, "11.") || strings.HasPrefix(key, "12.") {
-				/* 				localEpiEff = LocalEpisodicEffect{}
-				   				if localEpiEff.EffectiveDates, err = parseEffectiveDates(val); err != nil {
-				   					return nil, parseError()
-				   				}
-				   				// check if block is unique
-				   				subBlock = strings.Fields(key)[0]
-				   				if _, ok := blocks[subBlock]; ok {
-				   					return nil, fmt.Errorf("Local Episodic Effect block exists twice: %q", subBlock)
-				   				}
-				   				blocks[subBlock] = 1 */
 				continue
 			}
 
 			if strings.Contains(line, "Secondary Contact") {
-				// store Primary Contact
+				// now store Primary Contact
 				if blockNumber == 11 {
 					site.Contacts = append(site.Contacts, Contact{Party: party})
 				} else { // 12
