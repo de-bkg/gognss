@@ -82,10 +82,12 @@ func TestBuildFilename(t *testing.T) {
 		FilePeriod: FilePeriodHourly, DataFreq: "30S", DataType: "MO", Format: "rnx"}}
 
 	assert.NotNil(rnx)
-	rnx.SetStationName("WTZR")
+	err := rnx.SetStationName("WTZR")
+	assert.NoError(err)
 	assert.Equal("WTZR", rnx.FourCharID, "FourCharID")
 
-	rnx.SetStationName("BRUX00BEL")
+	err = rnx.SetStationName("BRUX00BEL")
+	assert.NoError(err)
 	assert.Equal("BRUX", rnx.FourCharID, "FourCharID")
 	assert.Equal(0, rnx.MonumentNumber, "MonumentNumber")
 	assert.Equal(0, rnx.ReceiverNumber, "ReceiverNumber")

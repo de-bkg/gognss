@@ -720,7 +720,7 @@ func (sites *Sites) WriteBerneseSTA(w io.Writer, fmtVers string) error {
 	} else if fmtVers == "1.03" {
 		templ = bernStaTemplv103
 	} else {
-		return fmt.Errorf("write Bernese STA: format version sot supported: " + fmtVers)
+		return fmt.Errorf("write Bernese STA: format version sot supported: %q", fmtVers)
 	}
 	t := template.Must(template.New("stafile").Funcs(tmplFuncMap).Parse(templ))
 	return t.Execute(w, sites)

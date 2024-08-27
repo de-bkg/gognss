@@ -106,7 +106,7 @@ func (p ByPRN) Less(i, j int) bool {
 // Receiver is a GNSS receiver.
 type Receiver struct {
 	Type                 string    `json:"type" validate:"required"`
-	SatSystemsDeprecated string    `json:"satelliteSystem"`                      // Sattelite System for compatibility with GA JSON, deprecated!
+	SatSystemsDeprecated string    `json:"satelliteSystem"`                      // Deprecated: Sattelite System for compatibility with GA JSON
 	SatSystems           Systems   `json:"satelliteSystems" validate:"required"` // Sattelite System
 	SerialNum            string    `json:"serialNumber" validate:"required"`
 	Firmware             string    `json:"firmwareVersion"`

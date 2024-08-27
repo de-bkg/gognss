@@ -70,7 +70,8 @@ func TestMeteoFile_Rnx3Filename(t *testing.T) {
 		FilePeriod: FilePeriodHourly, DataFreq: "10S", Format: "rnx"}}
 	assert.NotNil(rnx)
 
-	rnx.SetStationName("BRUX00BEL")
+	err := rnx.SetStationName("BRUX00BEL")
+	assert.NoError(err)
 	assert.Equal("BRUX", rnx.FourCharID, "FourCharID")
 	assert.Equal(0, rnx.MonumentNumber, "MonumentNumber")
 	assert.Equal(0, rnx.ReceiverNumber, "ReceiverNumber")
