@@ -5,15 +5,18 @@ package rinex
 // TODO: read headers that may occur at any position in the file.
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"math/big"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -190,6 +193,109 @@ func (hdr *ObsHeader) SatSystems() []gnss.System {
 		sysList = append(sysList, sys)
 	}
 	return sysList
+}
+
+// Write the header to w.
+func (hdr *ObsHeader) Write(w io.Writer) error {
+	bw := bufio.NewWriter(w)
+
+	fmt.Fprintf(bw, "%9.2f%-11s%-20s%-20s%-s\n", hdr.RINEXVersion, " ", "OBSERVATION DATA", hdr.SatSystem.Abbr(), "RINEX VERSION / TYPE")
+	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.Pgm, hdr.RunBy, hdr.Date.Format("20060102 150405 UTC"), "PGM / RUN BY / DATE")
+	if len(hdr.Comments) > 0 {
+		for _, c := range hdr.Comments {
+			fmt.Fprintf(bw, "%-60.60s%-s\n", c, "COMMENT")
+		}
+	}
+	fmt.Fprintf(bw, "%-60s%-s\n", hdr.MarkerName, "MARKER NAME")
+	if hdr.MarkerNumber != "" {
+		fmt.Fprintf(bw, "%-20s%-40s%-s\n", hdr.MarkerNumber, " ", "MARKER NUMBER")
+	}
+	fmt.Fprintf(bw, "%-20s%-40s%-s\n", hdr.MarkerType, " ", "MARKER TYPE")
+	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.Observer, hdr.Agency, " ", "OBSERVER / AGENCY")
+	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.ReceiverNumber, hdr.ReceiverType, hdr.ReceiverVersion, "REC # / TYPE / VERS")
+	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.AntennaNumber, hdr.AntennaType, "", "ANT # / TYPE")
+	fmt.Fprintf(bw, "%14.4f%14.4f%14.4f%-18s%-s\n", hdr.Position.X, hdr.Position.Y, hdr.Position.Z, " ", "APPROX POSITION XYZ")
+	fmt.Fprintf(bw, "%14.4f%14.4f%14.4f%-18s%-s\n", hdr.AntennaDelta.Up, hdr.AntennaDelta.E, hdr.AntennaDelta.N, " ", "ANTENNA: DELTA H/E/N")
+	if hdr.DOI != "" {
+		fmt.Fprintf(bw, "%-60s%-s\n", hdr.DOI, "DOI")
+	}
+	hdr.writeObsCodes(bw)
+	if hdr.Interval != 0 {
+		fmt.Fprintf(bw, "%10.3f%-50s%-s\n", hdr.Interval, " ", "INTERVAL")
+	}
+
+	// TODO must not be GPS!
+	if !hdr.TimeOfFirstObs.IsZero() {
+		fmt.Fprintf(bw, "%s%-5s%-12s%-s\n", hdr.formatFirstObsTime(hdr.TimeOfFirstObs), " ", "GPS", "TIME OF FIRST OBS")
+	}
+
+	if !hdr.TimeOfLastObs.IsZero() {
+		fmt.Fprintf(bw, "%s%-5s%-12s%-s\n", hdr.formatFirstObsTime(hdr.TimeOfLastObs), " ", "GPS", "TIME OF LAST OBS")
+	}
+
+	hdr.writeGloSlotsAndFreqs(bw)
+
+	fmt.Fprintf(bw, "%-60s%-s\n", " ", "END OF HEADER")
+
+	return bw.Flush()
+}
+
+// writes the Observation Types to w, in the format of a RINEX header.
+func (hdr *ObsHeader) writeObsCodes(w io.Writer) {
+	for sys, codes := range hdr.ObsTypes {
+		numCodes := len(codes)
+		if numCodes < 1 {
+			continue
+		}
+
+		fmt.Fprintf(w, "%-3s%3d", sys.Abbr(), numCodes)
+		iChunk := 0
+		for chunk := range slices.Chunk(codes, 13) {
+			if iChunk > 0 {
+				fmt.Fprint(w, "      ")
+			}
+			numCodesInLine := len(chunk)
+			for _, code := range chunk {
+				fmt.Fprintf(w, " %-3s", code)
+			}
+			pad := strings.Repeat("    ", 13-numCodesInLine)
+			fmt.Fprintf(w, "%s  %-s\n", pad, "SYS / # / OBS TYPES")
+			iChunk++
+		}
+	}
+}
+
+// writes the GLONASS slots & frequency header to w.
+func (hdr *ObsHeader) writeGloSlotsAndFreqs(w io.Writer) {
+	// Sort by prn
+	keys := make([]gnss.PRN, 0, len(hdr.GloSlots))
+	for k := range hdr.GloSlots {
+		keys = append(keys, k)
+	}
+	sort.Sort(gnss.ByPRN(keys))
+
+	iChunk := 0
+	for chunk := range slices.Chunk(keys, 8) {
+		if iChunk == 0 {
+			fmt.Fprintf(w, "%3d ", len(keys))
+		} else {
+			fmt.Fprintf(w, "%4s", " ")
+		}
+		numCodesInLine := len(chunk)
+		for _, prn := range chunk {
+			fmt.Fprintf(w, "%-3s %2d ", prn, hdr.GloSlots[prn])
+		}
+
+		pad := strings.Repeat("       ", 8-numCodesInLine)
+		fmt.Fprintf(w, "%s%-s\n", pad, "GLONASS SLOT / FRQ #")
+		iChunk++
+	}
+}
+
+// Formats the given time ti in the layout of TIME OF FIRST OBS and TIME OF LAST OBS.
+func (hdr *ObsHeader) formatFirstObsTime(ti time.Time) string {
+	return fmt.Sprintf("%6d%6d%6d%6d%6d%13.7f", ti.Year(), ti.Month(), ti.Day(), ti.Hour(), ti.Minute(),
+		float64(ti.Second())+float64(ti.Nanosecond())/1e9)
 }
 
 // ObsFile contains fields and methods for RINEX observation files.
