@@ -60,7 +60,7 @@ type FormInformation struct {
 // Identification holds common fields about this site.
 type Identification struct {
 	Name                   string    `json:"siteName" validate:"required"`                        // City or nearest town
-	FourCharacterID        string    `json:"fourCharacterId"`                                     // deprecated, use NineCharacterID
+	FourCharacterID        string    `json:"fourCharacterId"`                                     // Deprecated: use NineCharacterID
 	NineCharacterID        string    `json:"nineCharacterId" validate:"omitempty,alphanum,len=9"` // or store singel fields? ID
 	MonumentInscription    string    `json:"monumentInscription"`                                 //
 	DOMESNumber            string    `json:"iersDOMESNumber"`                                     // IERS Domes number, A9
@@ -630,6 +630,21 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 	}
 
 	return staHistory, nil
+}
+
+// GetResponsibleAgency returns the responsible agency for questions about the operation of the site,
+// regarding site log or RINEX errors etc.
+// In the sitelog this is section "12. Responsible Agency" if available. If not available, return the "11. On-Site Point of Contact".
+func (s *Site) GetResponsibleAgency() (Party, error) {
+	if len(s.ResponsibleAgencies) > 0 && s.ResponsibleAgencies[0].Party.IndividualName != "" {
+		return s.ResponsibleAgencies[0].Party, nil
+	}
+
+	if len(s.Contacts) > 0 && s.Contacts[0].Party.IndividualName != "" {
+		return s.Contacts[0].Party, nil
+	}
+
+	return Party{}, fmt.Errorf("no responsible agency found")
 }
 
 // StationInfo represents the receiver and antenna state for a time range.

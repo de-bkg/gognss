@@ -1,7 +1,6 @@
 package site
 
 import (
-	"log"
 	"os"
 	"testing"
 	"time"
@@ -148,11 +147,18 @@ func TestReadSitelog(t *testing.T) {
 		SitePictures: "", Notes: "", AntennaGraphicsWithDimensions: "", InsertTextGraphicFromAntenna: "", Doi: ""}
 	assert.Equal(moreInf, site.MoreInformation, "More Information")
 
-	log.Printf("%+v", site)
+	t.Logf("%+v", site)
 
 	// Clean data
 	err = site.ValidateAndClean(false)
 	assert.NoError(err)
+
+	// Contact
+	assert.Equal("Kevin De Bruyne", site.Contacts[0].Party.IndividualName, "On site contact (11.)")
+	party, err := site.GetResponsibleAgency()
+	assert.NoError(err)
+	assert.Equal("Kevin De Bruyne", party.IndividualName, "responsible contact")
+	//t.Logf("party: %+v", party)
 
 	assert.Equal(time.Date(2017, 3, 19, 23, 59, 59, 0, time.UTC), site.Receivers[10].DateRemoved, "Set Date Removed from receiver 3.11")
 	assert.Equal(time.Date(2008, 6, 17, 9, 0, 1, 0, time.UTC), site.Antennas[2].DateInstalled, "Set Date Installed from antenna 4.3")
@@ -199,5 +205,26 @@ func Test_parseEffectiveDates(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(v, effDates)
 		//t.Logf("epoch: %s\n", ti)
+	}
+}
+
+func TestSiteIDByFilename(t *testing.T) {
+	tests := []struct {
+		name     string
+		filename string
+		want     string
+	}{
+		{name: "t1-short", filename: "brux_20200225.log", want: "BRUX"},
+		{name: "t1-tooshort", filename: "brux.log", want: ""},
+		{name: "t2-long", filename: "abpo00mdg_20230525.log", want: "ABPO00MDG"},
+		{name: "t2-long-space", filename: "abpo00mdg_20230525.log ", want: "ABPO00MDG"},
+		{name: "t2-long-uc", filename: "ABPO00MDG_20230525.LOG ", want: "ABPO00MDG"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IDByFilename(tt.filename); got != tt.want {
+				t.Errorf("SiteIDByFilename() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
