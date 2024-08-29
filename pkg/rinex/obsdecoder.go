@@ -175,6 +175,10 @@ readln:
 			}
 			obscodes := convStringsToObscodes(strings.Fields(val[7:]))
 			hdr.ObsTypes[sys] = append(hdr.ObsTypes[sys], obscodes...)
+		case "DOI":
+			hdr.DOI = strings.TrimSpace(val)
+		case "LICENSE OF USE":
+			hdr.Licenses = append(hdr.Licenses, strings.TrimSpace(val))
 		case "SIGNAL STRENGTH UNIT":
 			hdr.SignalStrengthUnit = strings.TrimSpace(val[:20])
 		case "INTERVAL":

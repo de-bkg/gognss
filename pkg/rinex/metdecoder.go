@@ -95,7 +95,7 @@ readln:
 		case "DOI":
 			hdr.DOI = strings.TrimSpace(val)
 		case "LICENSE OF USE":
-			hdr.License = strings.TrimSpace(val)
+			hdr.Licenses = append(hdr.Licenses, strings.TrimSpace(val))
 		case "STATION INFORMATION":
 			hdr.StationInfos = append(hdr.StationInfos, strings.TrimSpace(val))
 		case "# / TYPES OF OBSERV":

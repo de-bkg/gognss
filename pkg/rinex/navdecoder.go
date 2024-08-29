@@ -140,6 +140,10 @@ readln:
 			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
+		case "DOI":
+			hdr.DOI = strings.TrimSpace(val)
+		case "LICENSE OF USE":
+			hdr.Licenses = append(hdr.Licenses, strings.TrimSpace(val))
 		case "IONOSPHERIC CORR":
 			// TODO
 		case "TIME SYSTEM CORR":
