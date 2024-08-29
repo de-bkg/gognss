@@ -31,6 +31,38 @@ func TestNavDecoder_readHeader(t *testing.T) {
 	t.Logf("RINEX Header: %+v\n", dec)
 }
 
+func TestNavDecoder_readHeaderV4(t *testing.T) {
+	const header = `     4.02           NAVIGATION DATA     M                   RINEX VERSION / TYPE
+BCEmerge            congi               20240829 004604 GMT PGM / RUN BY / DATE
+Merged GPS/GLO/GAL/BDS/QZS/SBAS/IRNSS navigation file       COMMENT
+based on CONGO and IGS tracking data                        COMMENT
+https://doi.org/10.57677/BRD400DLR                          DOI
+       98                                                   MERGED FILE
+    18    18  1929     7                                    LEAP SECONDS
+                                                            END OF HEADER
+> STO C34 CNVX`
+
+	assert := assert.New(t)
+	dec, err := NewNavDecoder(strings.NewReader(header))
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	hdr := dec.Header
+
+	assert.Equal(float32(4.02), hdr.RINEXVersion, "RINEX Version")
+	assert.Equal("N", hdr.RINEXType, "RINEX Type")
+	assert.Equal("BCEmerge", hdr.Pgm)
+	assert.Equal("congi", hdr.RunBy)
+
+	loc, err := time.LoadLocation("GMT")
+	assert.NoError(err)
+	assert.True(hdr.Date.Equal(time.Date(2024, 8, 29, 0, 46, 4, 0, loc)))
+
+	assert.Equal("https://doi.org/10.57677/BRD400DLR", hdr.DOI)
+	assert.Equal(98, dec.Header.MergedFiles)
+	// TODO assert.Equal(, hdr.Leap)
+}
+
 func BenchmarkNavDecoder_Ephemerides(b *testing.B) {
 	b.ReportAllocs()
 	filepath := "testdata/white/AREG00PER_R_20201690000_01D_MN.rnx"

@@ -140,6 +140,15 @@ readln:
 			}
 		case "COMMENT":
 			hdr.Comments = append(hdr.Comments, strings.TrimSpace(val))
+		case "MERGED FILE":
+			nStr := strings.TrimSpace(val[:9])
+			if nStr != "" {
+				n, err := strconv.Atoi(nStr)
+				if err != nil {
+					return hdr, fmt.Errorf("parse %q: %v", key, err)
+				}
+				hdr.MergedFiles = n
+			}
 		case "DOI":
 			hdr.DOI = strings.TrimSpace(val)
 		case "LICENSE OF USE":

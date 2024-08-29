@@ -193,7 +193,8 @@ type NavHeader struct {
 	Licenses     []string // Line(s) with the data license of use. Name of the license plus link to the specific version of the license. Using standard data license as from https://creativecommons.org/licenses/
 	StationInfos []string // Line(s) with the link(s) to persistent URL with the station metadata (site log, GeodesyML, etc).
 
-	Comments []string // Comment lines
+	Comments    []string // Comment lines
+	MergedFiles int      // The number of files merged, if any.
 
 	Labels []string // all Header Labels found
 }
