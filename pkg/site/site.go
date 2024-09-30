@@ -562,7 +562,6 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 	}
 
 	for ir, recv := range s.Receivers {
-
 		nextRecv := func() *gnss.Receiver {
 			if ir+1 < nReceivers {
 				return s.Receivers[ir+1]
@@ -580,7 +579,6 @@ func (s *Site) StationInfo() ([]StationInfo, error) {
 		}
 
 		for ia, ant := range s.Antennas {
-
 			antEnd := ant.DateRemoved
 			if antEnd.IsZero() {
 				antEnd = dateInfinite

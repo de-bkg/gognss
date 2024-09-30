@@ -1041,14 +1041,14 @@ func parseSatSystems(s string) (gnss.Systems, error) {
 	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "IRNSS", "NavIC")
 	s = r.Replace(s)
 
-	sysList := make([]gnss.System, 0, 5)
-
 	systems := strings.Split(s, "+")
+	sysList := make([]gnss.System, 0, len(systems))
 	for _, sys := range systems {
-		if _, exists := sysPerAbbr[sys]; !exists {
+		if ms, exists := sysPerAbbr[sys]; exists {
+			sysList = append(sysList, ms)
+		} else {
 			return nil, fmt.Errorf("invalid satellite system: %q", sys)
 		}
-		sysList = append(sysList, sysPerAbbr[sys])
 	}
 
 	return sysList, nil
