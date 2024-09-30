@@ -175,10 +175,6 @@ readln:
 		}
 	}
 
-	if hdr.RINEXVersion == 0 {
-		return hdr, fmt.Errorf("unknown RINEX Version")
-	}
-
 	err := dec.sc.Err()
 	return hdr, err
 }
@@ -237,10 +233,6 @@ readln:
 		default:
 			log.Printf("Header field %q not handled yet", key)
 		}
-	}
-
-	if hdr.RINEXVersion == 0 {
-		return hdr, fmt.Errorf("unknown RINEX Version")
 	}
 
 	err := dec.sc.Err()

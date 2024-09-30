@@ -244,10 +244,6 @@ readln:
 		}
 	}
 
-	if hdr.RINEXVersion == 0 {
-		return hdr, fmt.Errorf("unknown RINEX Version")
-	}
-
 	if err := dec.sc.Err(); err != nil {
 		return hdr, err
 	}
