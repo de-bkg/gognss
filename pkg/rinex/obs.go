@@ -211,9 +211,9 @@ func (hdr *ObsHeader) Write(w io.Writer) error {
 		fmt.Fprintf(bw, "%-20s%-40s%-s\n", hdr.MarkerNumber, " ", "MARKER NUMBER")
 	}
 	fmt.Fprintf(bw, "%-20s%-40s%-s\n", hdr.MarkerType, " ", "MARKER TYPE")
-	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.Observer, hdr.Agency, " ", "OBSERVER / AGENCY")
-	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.ReceiverNumber, hdr.ReceiverType, hdr.ReceiverVersion, "REC # / TYPE / VERS")
-	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.AntennaNumber, hdr.AntennaType, "", "ANT # / TYPE")
+	fmt.Fprintf(bw, "%-20s%-20.20s%-20.20s%-s\n", hdr.Observer, hdr.Agency, " ", "OBSERVER / AGENCY")
+	fmt.Fprintf(bw, "%-20.20s%-20.20s%-20.20s%-s\n", hdr.ReceiverNumber, hdr.ReceiverType, hdr.ReceiverVersion, "REC # / TYPE / VERS")
+	fmt.Fprintf(bw, "%-20s%-20.20s%-20.20s%-s\n", hdr.AntennaNumber, hdr.AntennaType, "", "ANT # / TYPE")
 	fmt.Fprintf(bw, "%14.4f%14.4f%14.4f%-18s%-s\n", hdr.Position.X, hdr.Position.Y, hdr.Position.Z, " ", "APPROX POSITION XYZ")
 	fmt.Fprintf(bw, "%14.4f%14.4f%14.4f%-18s%-s\n", hdr.AntennaDelta.Up, hdr.AntennaDelta.E, hdr.AntennaDelta.N, " ", "ANTENNA: DELTA H/E/N")
 	if hdr.DOI != "" {
