@@ -58,7 +58,6 @@ readln:
 		if dec.lineNum == 1 {
 			if !strings.Contains(line, "RINEX VERS") { // "CRINEX VERS   / TYPE" or "RINEX VERSION / TYPE"
 				err = ErrNoHeader
-				return
 			}
 		}
 
@@ -82,8 +81,7 @@ readln:
 			if sys, ok := sysPerAbbr[strings.TrimSpace(val[40:41])]; ok {
 				hdr.SatSystem = sys
 			} else {
-				err = fmt.Errorf("read header: invalid satellite system in line %d: %s", dec.lineNum, line)
-				return
+				return hdr, fmt.Errorf("read header: invalid satellite system in line %d: %s", dec.lineNum, line)
 			}
 		case "PGM / RUN BY / DATE":
 			// Additional lines of this type can appear together after the second line, if needed to preserve the history of previous actions on the file.
@@ -152,8 +150,7 @@ readln:
 			} else {
 				ok := false
 				if sys, ok = sysPerAbbr[val[:1]]; !ok {
-					err = fmt.Errorf("read header: invalid satellite system: %q: line %d", val[:1], dec.lineNum)
-					return
+					return hdr, fmt.Errorf("read header: invalid satellite system: %q: line %d", val[:1], dec.lineNum)
 				}
 				rememberSys = sys
 				nTypes, err := strconv.Atoi(strings.TrimSpace(val[3:6]))
@@ -251,7 +248,7 @@ readln:
 		return hdr, fmt.Errorf("unknown RINEX Version")
 	}
 
-	if err = dec.sc.Err(); err != nil {
+	if err := dec.sc.Err(); err != nil {
 		return hdr, err
 	}
 

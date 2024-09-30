@@ -72,7 +72,6 @@ readln:
 		if dec.lineNum == 1 {
 			if !strings.Contains(line, "RINEX VERSION / TYPE") {
 				err = ErrNoHeader
-				return
 			}
 		}
 		if dec.lineNum > maxLines {
@@ -172,7 +171,10 @@ readln:
 		return hdr, fmt.Errorf("unknown RINEX Version")
 	}
 
-	err = dec.sc.Err()
+	if err := dec.sc.Err(); err != nil {
+		return hdr, err
+	}
+
 	return hdr, err
 }
 

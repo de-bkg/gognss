@@ -149,7 +149,10 @@ readln:
 		return hdr, fmt.Errorf("unknown RINEX Version")
 	}
 
-	err = dec.sc.Err()
+	if err := dec.sc.Err(); err != nil {
+		return hdr, err
+	}
+
 	return hdr, err
 }
 
