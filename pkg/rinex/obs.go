@@ -200,7 +200,10 @@ func (hdr *ObsHeader) Write(w io.Writer) error {
 	bw := bufio.NewWriter(w)
 
 	fmt.Fprintf(bw, "%9.2f%-11s%-20s%-20s%-s\n", hdr.RINEXVersion, " ", "OBSERVATION DATA", hdr.SatSystem.Abbr(), "RINEX VERSION / TYPE")
-	fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.Pgm, hdr.RunBy, hdr.Date.Format("20060102 150405 UTC"), "PGM / RUN BY / DATE")
+	if hdr.Pgm != "" {
+		fmt.Fprintf(bw, "%-20s%-20s%-20s%-s\n", hdr.Pgm, hdr.RunBy, hdr.Date.Format("20060102 150405 UTC"), "PGM / RUN BY / DATE")
+	}
+
 	if len(hdr.Comments) > 0 {
 		for _, c := range hdr.Comments {
 			fmt.Fprintf(bw, "%-60.60s%-s\n", c, "COMMENT")
