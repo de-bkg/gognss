@@ -84,7 +84,7 @@ type Identification struct {
 type Location struct {
 	City                string              `json:"city"`
 	State               string              `json:"state"`
-	Country             string              `json:"country"`
+	Country             string              `json:"country"` // The 3-char country code is prefered.
 	TectonicPlate       string              `json:"tectonicPlate"`
 	ApproximatePosition ApproximatePosition `json:"approximatePosition" validate:"required"` // ITRF
 	Notes               string              `json:"notes"`
@@ -92,8 +92,8 @@ type Location struct {
 
 // CartesianPosition is a point specified by its XYZ-coordinates.
 type CartesianPosition struct {
-	Type        string     `json:"type"` // "Point"
-	Coordinates [3]float64 `json:"coordinates"`
+	Type        string     `json:"type"`        // "Point"
+	Coordinates [3]float64 `json:"coordinates"` // The XYZ-coordinates.
 }
 
 // NewCartesianPosition inits a Cartesian Point Position.
