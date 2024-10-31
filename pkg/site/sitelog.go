@@ -359,10 +359,13 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 			switch key {
 			case "Satellite System":
 				//assertNotNull()
-				if recv.SatSystems, err = parseSatSystems(val); err != nil {
+				if recv.SatSystems, err = gnss.ParseSatSystems(val); err != nil {
 					return nil, parseError()
 				}
 			case "Serial Number":
+				if len(val) > 20 {
+					site.Warnings = append(site.Warnings, fmt.Errorf("%s too long: %q", "Rec Serial Number", val))
+				}
 				recv.SerialNum = val
 			case "Firmware Version":
 				recv.Firmware = val
@@ -413,6 +416,9 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 
 			switch key {
 			case "Serial Number":
+				if len(val) > 20 {
+					site.Warnings = append(site.Warnings, fmt.Errorf("%s too long: %q", "Ant Serial Number", val))
+				}
 				ant.SerialNum = val
 			case "Antenna Reference Point":
 				ant.ReferencePoint = val
@@ -1024,34 +1030,6 @@ func printSitelogDate(t time.Time) string {
 		return "(CCYY-MM-DD)"
 	}
 	return t.Format(time.DateOnly)
-}
-
-var sysPerAbbr = map[string]gnss.System{
-	"GPS":   gnss.SysGPS,
-	"GLO":   gnss.SysGLO,
-	"GAL":   gnss.SysGAL,
-	"QZSS":  gnss.SysQZSS,
-	"BDS":   gnss.SysBDS,
-	"IRNSS": gnss.SysNavIC,
-	"NavIC": gnss.SysNavIC,
-	"SBAS":  gnss.SysSBAS,
-}
-
-func parseSatSystems(s string) (gnss.Systems, error) {
-	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "IRNSS", "NavIC")
-	s = r.Replace(s)
-
-	systems := strings.Split(s, "+")
-	sysList := make([]gnss.System, 0, len(systems))
-	for _, sys := range systems {
-		if ms, exists := sysPerAbbr[sys]; exists {
-			sysList = append(sysList, ms)
-		} else {
-			return nil, fmt.Errorf("invalid satellite system: %q", sys)
-		}
-	}
-
-	return sysList, nil
 }
 
 // Notes often have multiple lines

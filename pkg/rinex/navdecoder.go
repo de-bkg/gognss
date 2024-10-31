@@ -119,7 +119,7 @@ readln:
 
 			// version >= 3:
 			s := strings.TrimSpace(val[40:41])
-			if sys, ok := sysPerAbbr[s]; ok {
+			if sys, ok := gnss.ByAbbr[s]; ok {
 				hdr.SatSystem = sys
 			} else {
 				return hdr, fmt.Errorf("read RINEX-3 header: invalid satellite system: %s", s)
@@ -228,7 +228,7 @@ func (dec *NavDecoder) nextEphemerisv3() bool {
 			continue
 		}
 
-		sys, ok := sysPerAbbr[line[:1]]
+		sys, ok := gnss.ByAbbr[line[:1]]
 		if !ok {
 			dec.setErr(fmt.Errorf("rinex: line %d: invalid satellite system: %q", dec.lineNum, line[:1]))
 			return false
@@ -268,7 +268,7 @@ func (dec *NavDecoder) nextEphemerisv4() bool {
 
 		rectyp := line[2:5]
 		if rectyp == string(NavRecordTypeEPH) {
-			sys, ok := sysPerAbbr[line[6:7]]
+			sys, ok := gnss.ByAbbr[line[6:7]]
 			if !ok {
 				dec.setErr(fmt.Errorf("rinex: invalid satellite system in: %q (line %d)", line, dec.lineNum))
 				return false

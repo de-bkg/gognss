@@ -78,7 +78,7 @@ readln:
 				return hdr, fmt.Errorf("parse RINEX VERSION: %v", err)
 			}
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
-			if sys, ok := sysPerAbbr[strings.TrimSpace(val[40:41])]; ok {
+			if sys, ok := gnss.ByAbbr[strings.TrimSpace(val[40:41])]; ok {
 				hdr.SatSystem = sys
 			} else {
 				return hdr, fmt.Errorf("read header: invalid satellite system in line %d: %s", dec.lineNum, line)
@@ -149,7 +149,7 @@ readln:
 				sys = rememberSys
 			} else {
 				ok := false
-				if sys, ok = sysPerAbbr[val[:1]]; !ok {
+				if sys, ok = gnss.ByAbbr[val[:1]]; !ok {
 					return hdr, fmt.Errorf("read header: invalid satellite system: %q: line %d", val[:1], dec.lineNum)
 				}
 				rememberSys = sys
@@ -469,7 +469,7 @@ readln:
 				continue
 			}
 
-			sys := sysPerAbbr[line[:1]]
+			sys := gnss.ByAbbr[line[:1]]
 			ntypes := len(dec.Header.ObsTypes[sys])
 			obsPerTyp := make(map[ObsCode]Obs, ntypes)
 			for ityp, typ := range dec.Header.ObsTypes[sys] {

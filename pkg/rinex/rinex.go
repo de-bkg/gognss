@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/de-bkg/gognss/pkg/gnss"
 )
 
 // The ContentType defines the content of a RINEX file.
@@ -115,17 +113,6 @@ var (
 
 	// Rnx3FileNamePattern is the regex for RINEX3 filenames.
 	Rnx3FileNamePattern = regexp.MustCompile(`(?i)((([A-Z0-9]{4})(\d)(\d)([A-Z]{3})_([RSU])_((\d{4})(\d{3})(\d{2})(\d{2}))_(\d{2}[A-Z])_?(\d{2}[CZSMHDU])?_([GREJCISM][MNO]))\.(rnx|crx))\.?([a-zA-Z0-9]+)?`)
-
-	sysPerAbbr = map[string]gnss.System{
-		"G": gnss.SysGPS,
-		"R": gnss.SysGLO,
-		"E": gnss.SysGAL,
-		"J": gnss.SysQZSS,
-		"C": gnss.SysBDS,
-		"I": gnss.SysNavIC,
-		"S": gnss.SysSBAS,
-		"M": gnss.SysMIXED,
-	}
 
 	// periodMap helps to get the FilePeriod.
 	periodMap = map[string]FilePeriod{

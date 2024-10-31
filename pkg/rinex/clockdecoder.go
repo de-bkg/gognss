@@ -109,7 +109,7 @@ func (dec *ClockDecoder) readHeaderVersion() (*ClockHeader, error) {
 	}
 
 	if sys != "" {
-		if s, ok := sysPerAbbr[sys]; ok {
+		if s, ok := gnss.ByAbbr[sys]; ok {
 			hdr.SatSystem = s
 		} else {
 			return nil, fmt.Errorf("read header: invalid satellite system: %q", sys)

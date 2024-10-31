@@ -50,16 +50,45 @@ func (syss Systems) String() string {
 	return strings.Join(str, "+")
 }
 
-// Lookup table to get the GNSS system by its 1-char abbreviation.
-var sysPerAbbr = map[string]System{
-	"G": SysGPS,
-	"R": SysGLO,
-	"E": SysGAL,
-	"J": SysQZSS,
-	"C": SysBDS,
-	"I": SysNavIC,
-	"S": SysSBAS,
-	"M": SysMIXED,
+// ByAbbr is a lookup table for satellite systems, with "GPS", "GLO", "G", "R" etc. as key.
+var ByAbbr = map[string]System{
+	"G":     SysGPS,
+	"R":     SysGLO,
+	"E":     SysGAL,
+	"J":     SysQZSS,
+	"C":     SysBDS,
+	"I":     SysNavIC,
+	"S":     SysSBAS,
+	"M":     SysMIXED,
+	"GPS":   SysGPS,
+	"GLO":   SysGLO,
+	"GAL":   SysGAL,
+	"QZSS":  SysQZSS,
+	"QZS":   SysQZSS,
+	"BDS":   SysBDS,
+	"IRNSS": SysNavIC,
+	"IRS":   SysNavIC,
+	"NavIC": SysNavIC,
+	"SBAS":  SysSBAS,
+}
+
+// ParseSatSystems parses a string with satellite systems in the form of "GPS+GLO+GAL+BDS+SBAS+IRNSS".
+func ParseSatSystems(s string) (Systems, error) {
+	r := strings.NewReplacer("/", "+", "GLONASS", "GLO", "GALILEO", "GAL", "BEIDOU", "BDS", "IRNSS", "NavIC")
+	s = r.Replace(s)
+
+	systems := strings.Split(s, "+")
+	sysList := make([]System, 0, len(systems))
+	for _, sys := range systems {
+		sys := strings.TrimSpace(sys)
+		if ms, exists := ByAbbr[sys]; exists {
+			sysList = append(sysList, ms)
+		} else {
+			return nil, fmt.Errorf("invalid satellite system: %q", sys)
+		}
+	}
+
+	return sysList, nil
 }
 
 // PRN specifies a GNSS satellite.
@@ -71,7 +100,7 @@ type PRN struct {
 
 // NewPRN returns a new PRN for the string prn that is e.g. G12.
 func NewPRN(prn string) (PRN, error) {
-	sys, ok := sysPerAbbr[prn[:1]]
+	sys, ok := ByAbbr[prn[:1]]
 	if !ok {
 		return PRN{}, fmt.Errorf("invalid satellite system: %q", prn)
 	}
