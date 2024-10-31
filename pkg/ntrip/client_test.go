@@ -24,7 +24,7 @@ func TestDownloadSourcetable(t *testing.T) {
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
-	st, err := c.GetSourcetable()
+	st, _, err := c.GetSourcetable()
 	assert.NoError(t, err)
 	if _, err := io.Copy(os.Stdout, st); err != nil {
 		t.Fatal(err)
