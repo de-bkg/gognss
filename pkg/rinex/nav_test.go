@@ -15,7 +15,7 @@ func TestNavFile_Rnx3Filename(t *testing.T) {
 		log.Fatalln(err)
 	}
 	file.CountryCode = "FRA"
-	file.DataSource = "R"
+	file.DataSource = DataSourceReceiver
 
 	rnx3name, err := file.Rnx3Filename()
 	if err != nil {

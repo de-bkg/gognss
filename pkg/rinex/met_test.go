@@ -66,7 +66,7 @@ func TestMeteoFile_ReadHeaderV2(t *testing.T) {
 func TestMeteoFile_Rnx3Filename(t *testing.T) {
 	assert := assert.New(t)
 
-	rnx := &MeteoFile{RnxFil: &RnxFil{StartTime: time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC), DataSource: "R",
+	rnx := &MeteoFile{RnxFil: &RnxFil{StartTime: time.Date(2018, 11, 6, 19, 0, 0, 0, time.UTC), DataSource: DataSourceReceiver,
 		FilePeriod: FilePeriodHourly, DataFreq: "10S", Format: "rnx"}}
 	assert.NotNil(rnx)
 

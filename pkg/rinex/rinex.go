@@ -33,6 +33,10 @@ const (
 	FilePeriodHourly      FilePeriod = "01H"
 	FilePeriodDaily       FilePeriod = "01D"
 	FilePeriodYearly      FilePeriod = "01Y"
+
+	DataSourceReceiver = "R" // Generated from receiver.
+	DataSourceStream   = "S" // Generated from data stream.
+	DataSourceUnknown  = "U"
 )
 
 // Duration returns the duration of the file period.
