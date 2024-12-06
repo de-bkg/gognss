@@ -7,13 +7,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var user, pass string = "", ""
-
 func TestGetStats(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -35,7 +33,7 @@ func TestGetListeners(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -61,7 +59,7 @@ func TestGetSources(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 
@@ -88,7 +86,7 @@ func TestGetConnections(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	c, err := NewClient(exAddr, Options{Username: user, Password: pass, UserAgent: "BKGGoClient"})
+	c, err := NewClient(exAddr, Options{UserAgent: "BKGGoClient"})
 	assert.NoError(t, err)
 	defer c.CloseIdleConnections()
 

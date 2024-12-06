@@ -73,10 +73,10 @@ type CasterConn struct {
 	ConnectedFor time.Duration
 }
 
-func (c *Client) sendRequest() (io.ReadCloser, error) {
+func (c *Client) sendRequest() (io.ReadCloser, http.Header, error) {
 	req, err := http.NewRequest("GET", c.URL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	req.Header.Set("User-Agent", c.Useragent)
@@ -93,7 +93,7 @@ func (c *Client) sendRequest() (io.ReadCloser, error) {
 
 	resp, err := c.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	//ntripcaster := resp.Header.Get("Server")
@@ -103,10 +103,10 @@ func (c *Client) sendRequest() (io.ReadCloser, error) {
 		respi, _ := httputil.DumpResponse(resp, false)
 		fmt.Print(string(respi))
 		resp.Body.Close()
-		return nil, fmt.Errorf("HTTP Request failed: %d (%s)", resp.StatusCode, resp.Status)
+		return nil, resp.Header, fmt.Errorf("HTTP Request failed: %d (%s)", resp.StatusCode, resp.Status)
 	}
 
-	return resp.Body, nil
+	return resp.Body, resp.Header, nil
 }
 
 // GetListeners fetches the currently connected listeners.
@@ -114,7 +114,7 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 	c.URL.Path = "admin"
 	c.URL.RawQuery = "mode=listeners"
 
-	reader, err := c.sendRequest()
+	reader, header, err := c.sendRequest()
 	if err != nil {
 		return nil, err
 	}
@@ -122,8 +122,31 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 
 	listeners := make([]CasterListener, 0, 1000)
 
+	ntripServer := header.Get("Server")
+	var decerr error
+	if strings.Contains(ntripServer, "NTRIP BKG Caster") {
+		decerr = c.decodeListenersBKG(reader, &listeners)
+	} else {
+		return nil, fmt.Errorf("unknown server: %q", ntripServer)
+	}
+	if decerr != nil {
+		return nil, decerr
+	}
+
+	if len(listeners) < 1 {
+		return nil, fmt.Errorf("no listeners found")
+	}
+
+	sort.Slice(listeners, func(i, j int) bool {
+		return listeners[i].User < listeners[j].User
+	})
+
+	return listeners, nil
+}
+
+func (c *Client) decodeListenersBKG(r io.ReadCloser, listeners *[]CasterListener) error {
 	li := CasterListener{}
-	scanner := bufio.NewScanner(reader)
+	scanner := bufio.NewScanner(r)
 	ln := ""
 	for scanner.Scan() {
 		ln = scanner.Text()
@@ -156,46 +179,40 @@ func (c *Client) GetListeners() ([]CasterListener, error) { // pruefen []*listen
 					if i, err := strconv.Atoi(val); err == nil {
 						li.ID = i
 					} else {
-						return nil, err
+						return err
 					}
 				case "Connected for":
 					if d, err := parseDuration(val); err == nil {
 						li.ConnectedFor = d
 					} else {
-						return nil, err
+						return err
 					}
 				case "Bytes written":
 					if i, err := strconv.Atoi(val); err == nil {
 						li.BytesWritten = i
 					} else {
-						return nil, err
+						return err
 					}
 				case "Errors":
 					if i, err := strconv.Atoi(val); err == nil {
 						li.Errors = i
 					} else {
-						return nil, err
+						return err
 					}
 				case "User agent":
 					li.UserAgent = val
 				case "Type":
 					li.Type = val // strings.TrimSuffix(val, "]")
 				default:
-					return nil, fmt.Errorf("unknown field: %q", key)
+					return fmt.Errorf("unknown field: %q", key)
 				}
-
 			}
 
-			listeners = append(listeners, li)
+			*listeners = append(*listeners, li)
 		}
-
 	}
 
-	sort.Slice(listeners, func(i, j int) bool {
-		return listeners[i].User < listeners[j].User
-	})
-
-	return listeners, nil
+	return nil
 }
 
 // GetSources fetches the current sources.
@@ -203,7 +220,7 @@ func (c *Client) GetSources() ([]CasterSource, error) {
 	c.URL.Path = "admin"
 	c.URL.RawQuery = "mode=sources"
 
-	reader, err := c.sendRequest()
+	reader, _, err := c.sendRequest()
 	if err != nil {
 		return nil, err
 	}
@@ -305,7 +322,7 @@ func (c *Client) GetConnections() ([]CasterConn, error) {
 	c.URL.Path = "admin"
 	c.URL.RawQuery = "mode=connections"
 
-	reader, err := c.sendRequest()
+	reader, _, err := c.sendRequest()
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +405,7 @@ func (c *Client) KickConnection(id int) error {
 	c.URL.Path = "admin"
 	c.URL.RawQuery = "mode=kick&argument=" + strconv.Itoa(id)
 
-	reader, err := c.sendRequest()
+	reader, _, err := c.sendRequest()
 	if err != nil {
 		return err
 	}
@@ -404,7 +421,7 @@ func (c *Client) GetStats() (*CasterStats, error) {
 
 	stats := &CasterStats{}
 
-	reader, err := c.sendRequest()
+	reader, _, err := c.sendRequest()
 	if err != nil {
 		return stats, err
 	}

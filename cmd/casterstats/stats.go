@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	version = "0.1"
+	version = "0.2"
 )
 
 var (
@@ -27,17 +27,17 @@ func main() {
 	opts := ntrip.Options{}
 	opts.UserAgent = "BKGStatsClient/" + version
 	fs := flag.NewFlagSet("BKGStatsClient/"+version, flag.ExitOnError)
-	fs.StringVar(&opts.Username, "username", "", "Operator username to connect to the caster.")
-	fs.StringVar(&opts.Password, "pw", "", "Operator Password.")
+	fs.StringVar(&opts.Username, "username", "", "Operator username to connect to the caster. Env 'CAS_USER'.")
+	fs.StringVar(&opts.Password, "pw", "", "Operator Password. Env 'CAS_PW'.")
 	fs.BoolVar(&opts.UnsafeSSL, "unsafeSSL", false, "If true, it will skip https certificate verification. Defaults to false.")
-	printListeners := fs.Bool("listeners", false, "Print the currently connected listeners.")
-	printSources := fs.Bool("sources", false, "Print the currently available Ntrip sources.")
+	printListenersFlg := fs.Bool("listeners", false, "Print the currently connected listeners.")
+	printSourcesFlg := fs.Bool("sources", false, "Print the currently available Ntrip sources.")
 	fs.StringVar(&outpFormat, "format", "column", "Format specifies the format of the output: column, json.")
 	fs.BoolVar(&printHeader, "H", false, "Print the header line. Defaults to false.")
 	//fs.StringVar(&conf.Proxy, "proxy", "", "the http proxy to use. Default: read the proxy settings from your environment.")
 
 	fs.Usage = func() {
-		fmt.Println(`casterstats - a tool to collect statistics from a BKG NtripCaster instance
+		fmt.Println(`casterstats - collect statistics from a BKG NtripCaster instance
 		
 Usage:
     casterstats [flags] <casterURL>
@@ -47,12 +47,12 @@ Flags:`)
 		fmt.Println(`
 Examples:
     # Get general statistics
-    $ casterstats -username=xxx -pw=xxx http://www.igs-ip.net:2101
+    $ casterstats -username=xxx -pw=xxx https://euref-ip.net
 	
     # Get sources in JSON format
-    $ casterstats -username=xxx -pw=xxx -sources -format=json http://www.igs-ip.net:2101`)
+    $ casterstats -username=xxx -pw=xxx -sources -format=json https://euref-ip.net`)
 		fmt.Printf("\nVersion: casterstats %s\n", version)
-		fmt.Printf("Author : %s\n", "Erwin Wiesensarter, BKG Frankfurt")
+		fmt.Printf("Author : %s\n", "erwiese, BKG Frankfurt")
 	}
 
 	fs.Parse(os.Args[1:])
@@ -74,8 +74,8 @@ Examples:
 	}
 	defer c.CloseIdleConnections()
 
-	if *printListeners {
-		if err := _printListeners(c); err != nil {
+	if *printListenersFlg {
+		if err := printListeners(c); err != nil {
 			log.Printf("E! %v", err)
 		}
 
@@ -88,24 +88,24 @@ Examples:
 		for user, nofConns := range connsPerUser {
 			fmt.Printf("%-15s: %d\n", user, nofConns)
 		} */
-	} else if *printSources {
-		if err := _printSources(c); err != nil {
+	} else if *printSourcesFlg {
+		if err := printSources(c); err != nil {
 			log.Printf("E! %v", err)
 		}
 	} else {
-		if err := _printStats(c); err != nil {
+		if err := printStats(c); err != nil {
 			log.Printf("E! %v", err)
 		}
 	}
 }
 
-func _printListeners(c *ntrip.Client) error {
+func printListeners(c *ntrip.Client) error {
 	listeners, err := c.GetListeners()
 	if err != nil {
 		return err
 	}
 
-	if outpFormat == "json" {
+	if strings.ToLower(outpFormat) == "json" {
 		return json.NewEncoder(os.Stdout).Encode(listeners)
 	}
 
@@ -120,7 +120,7 @@ func _printListeners(c *ntrip.Client) error {
 	return nil
 }
 
-func _printSources(c *ntrip.Client) error {
+func printSources(c *ntrip.Client) error {
 	sources, err := c.GetSources()
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func _printSources(c *ntrip.Client) error {
 	return nil
 }
 
-func _printStats(c *ntrip.Client) error {
+func printStats(c *ntrip.Client) error {
 	stats, err := c.GetStats()
 	if err != nil {
 		return err

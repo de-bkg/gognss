@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -36,10 +37,10 @@ import (
 
 // Options provides additional information for connecting to a Ntripcaster.
 type Options struct {
-	// Username is the Caster username
+	// Username is the Caster username. Env "CAS_USER".
 	Username string
 
-	// Password is the Caster password
+	// Password is the Caster password. Env "CAS_PW".
 	Password string
 
 	// Proxy configures the Proxy function on the HTTP client.
@@ -69,6 +70,20 @@ type Options struct {
 	//ErrorChan chan error //  errorChan := make(chan error)
 }
 
+func (opts *Options) getUsername() string {
+	if opts.Username != "" {
+		return opts.Username
+	}
+	return os.Getenv("CAS_USER")
+}
+
+func (opts *Options) getPW() string {
+	if opts.Password != "" {
+		return opts.Password
+	}
+	return os.Getenv("CAS_PW")
+}
+
 // Client is a caster client for http connections.
 // The http.Client's Transport typically has internal state (cached TCP connections), so Clients should be reused
 // instead of created as needed. Clients are safe for concurrent use by multiple goroutines.
@@ -88,8 +103,7 @@ type Client struct {
 
 // NewClient returns a new Ntrip Client with the given caster address and additional options.
 // The caster addr should have the form "http://host:port". It uses HTTP proxies
-// as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and
-// $no_proxy) environment variables.
+// as directed by the $HTTP_PROXY and $NO_PROXY (or $http_proxy and $no_proxy) environment variables.
 func NewClient(addr string, opts Options) (*Client, error) {
 	casterURL, err := url.Parse(addr)
 	if err != nil {
@@ -132,8 +146,8 @@ func NewClient(addr string, opts Options) (*Client, error) {
 			//Transport: tr, // see http DefaultTransport settings
 		},
 		URL:       casterURL,
-		Username:  opts.Username,
-		Password:  opts.Password,
+		Username:  opts.getUsername(),
+		Password:  opts.getPW(),
 		Useragent: opts.UserAgent,
 	}, nil
 }
@@ -151,7 +165,7 @@ func (c *Client) IsCasterAlive() bool {
 func (c *Client) GetSourcetable() (io.ReadCloser, http.Header, error) {
 	req, err := http.NewRequest("GET", c.URL.String(), nil)
 	if err != nil {
-		return nil, http.Header{}, err
+		return nil, nil, err
 	}
 
 	req.Header.Add("Ntrip-Version", "Ntrip/2.0")
@@ -160,7 +174,7 @@ func (c *Client) GetSourcetable() (io.ReadCloser, http.Header, error) {
 
 	resp, err := c.Do(req)
 	if err != nil {
-		return nil, http.Header{}, err
+		return nil, nil, err
 	}
 
 	// Debug
