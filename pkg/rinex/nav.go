@@ -206,7 +206,7 @@ type NavStats struct {
 	Satellites      []gnss.PRN   `json:"satellites"`      // The ephemeris' satellites.
 	EarliestEphTime time.Time    `json:"earliestEphTime"` // Time of the earliest ephemeris.
 	LatestEphTime   time.Time    `json:"latestEphTime"`   // Time of the latest ephemeris.
-	Errors          error
+	Errors          error        `json:"err"`             // Any errors that occur e.g. at decoding.
 }
 
 // A NavFile contains fields and methods for RINEX navigation files and includes common methods for
