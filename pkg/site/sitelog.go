@@ -223,7 +223,7 @@ func DecodeSitelog(r io.Reader) (*Site, error) {
 					ident.FourCharacterID = ident.NineCharacterID[:4]
 				}
 			case "Monument Inscription":
-				ident.MonumentDescription = val
+				ident.MonumentInscription = val
 			case "IERS DOMES Number":
 				if len(val) > 0 && len(val) != 9 {
 					site.Warnings = append(site.Warnings, fmt.Errorf("%q should be 9 character long: %q", key, val))
