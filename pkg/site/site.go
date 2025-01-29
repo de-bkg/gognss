@@ -64,7 +64,7 @@ type Identification struct {
 	NineCharacterID        string    `json:"nineCharacterId" validate:"omitempty,alphanum,len=9"` // or store singel fields? ID
 	MonumentInscription    string    `json:"monumentInscription"`                                 //
 	DOMESNumber            string    `json:"iersDOMESNumber"`                                     // IERS Domes number, A9
-	CDPNumber              string    `json:"cdpNumber"`                                           // whats that? A4
+	CDPNumber              string    `json:"cdpNumber"`                                           // From NASA Crustal Dynamics Project (CDP), see https://cddis.nasa.gov/Programs/Historical_Programs.html.
 	MonumentDescription    string    `json:"monumentDescription"`                                 // PILLAR/BRASS PLATE/STEEL MAST/etc
 	HeightOfMonument       float64   `json:"heightOfMonument"`                                    // in meter?
 	MonumentFoundation     string    `json:"monumentFoundation"`                                  // STEEL RODS, CONCRETE BLOCK, ROOF, etc
