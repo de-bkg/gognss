@@ -42,7 +42,6 @@ func main() {
 
 	// Get the header
 	hdr := dec.Header
-	fmt.Printf("%+v", hdr)
 
 	// Iterate over blocks.
 	for dec.NextBlock() {
@@ -51,7 +50,7 @@ func main() {
 		// Decode all SOLUTION/ESTIMATE records.
 		if name == sinex.BlockSolEstimate {
 			for dec.NextBlockLine() {
-				var est sinex.Estimate
+				var est Estimate
 				if err := dec.Decode(&est); err != nil {
 					log.Fatal(err)
 				}

@@ -35,7 +35,6 @@ const (
 	BlockSolMatrixEst      = "SOLUTION/MATRIX_ESTIMATE"        // The estimate matrix.
 	BlockSolMatrixApr      = "SOLUTION/MATRIX_APRIORI"         // The apriori matrix.
 	BlockSolNormalEquVec   = "SOLUTION/NORMAL_EQUATION_VECTOR" // Vector of the right hand side of the unconstrained (reduced) normal equation.
-	BlockSolDiscon         = "SOLUTION/DISCONTINUITY"          // Vector of the right hand side of the unconstrained (reduced) normal equation.
 )
 
 // SiteCode is the site identifier, usually the FourCharID.
@@ -63,15 +62,9 @@ func (techn ObservationTechnique) String() string {
 type ParameterType string
 
 const (
-	ParameterTypeSTAX       ParameterType = "STAX" // Station X coordinate in m.
-	ParameterTypeSTAY       ParameterType = "STAY" // Station Y coordinate in m.
-	ParameterTypeSTAZ       ParameterType = "STAZ" // Station Z coordinate in m.
-	ParameterTypePos        ParameterType = "P"    // discontinuity for position.
-	ParameterTypeVel        ParameterType = "V"    // discontinuity for velocity.
-	ParameterTypeAnnual     ParameterType = "A"    // discontinuity for annnual.
-	ParameterTypeSemiAnnual ParameterType = "S"    // discontinuity for semmi Annual.
-	ParameterTypeExpPSD     ParameterType = "E"    // discontinuity for Exponential Post-sesmic Relaxation.
-
+	ParameterTypeSTAX ParameterType = "STAX" // Station X coordinate in m.
+	ParameterTypeSTAY ParameterType = "STAY" // Station Y coordinate in m.
+	ParameterTypeSTAZ ParameterType = "STAZ" // Station Z coordinate in m.
 	// TODO: extend
 )
 
@@ -153,17 +146,4 @@ type Estimate struct {
 	ConstraintCode string        // Constraint code applied to the parameter.
 	Value          float64       // Estimated value of the parameter.
 	Stddev         float64       // Estimated standard deviation for the parameter.
-
-}
-
-// Estimate stores the estimated solution parameters.
-type Discon struct {
-	SiteCode  SiteCode      // 4-char site code, e.g. WTZR.
-	ParType   ParameterType // The type of the parameter.
-	Idx       int           // soln number, beginning with 1, not identical as soln in estimate.
-	DisType   ParameterType // discontinure type P for position, V for velocity.
-	SolID     string        // Solution ID at a Site/Point code for which the parameter is estimated.
-	StartTime time.Time     // Start time of the data.
-	EndTime   time.Time     // End time of the data.
-	Event     string        // Event explaination text, e.g. info for earth quake, equipment changes.
 }
