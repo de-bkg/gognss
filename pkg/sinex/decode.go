@@ -46,13 +46,11 @@ type Decoder struct {
 // It is the caller's responsibility to call Close on the underlying reader when done!
 func NewDecoder(r io.Reader) (*Decoder, error) {
 	dec := &Decoder{scan: bufio.NewScanner(r)}
+	dec.fileRef = &FileReference{}
 
-	// skip to allow SINEX without FILE/REFERENCE block, such as soln.snx
-	// dec.fileRef = &FileReference{}
-
-	// if err := dec.decodeHeader(); err != nil {
-	// 	return nil, err
-	// }
+	if err := dec.decodeHeader(); err != nil {
+		return nil, err
+	}
 
 	return dec, nil
 }
@@ -135,11 +133,10 @@ func (dec *Decoder) decodeHeader() error {
 		return fmt.Errorf("no blocks found")
 	}
 
-	// ease the requirement of the block FILE/REFERENCE for the first block
-	// name := dec.CurrentBlock()
-	// if name != BlockFileReference {
-	// 	return fmt.Errorf("is not the first block: %q", BlockFileReference)
-	// }
+	name := dec.CurrentBlock()
+	if name != BlockFileReference {
+		return fmt.Errorf("is not the first block: %q", BlockFileReference)
+	}
 
 	for dec.NextBlockLine() {
 		line := dec.Line()
@@ -397,65 +394,6 @@ func (est *Estimate) UnmarshalSINEX(in string) error {
 	if est.Stddev, err = strconv.ParseFloat(strings.TrimSpace(in[69:80]), 64); err != nil {
 		return fmt.Errorf("parse STD_DEV: %v", err)
 	}
-
-	return nil
-}
-
-// Unmarshall a SOLUTION/DISCONTINUITY record.
-// ZAN1  A    4 P 10:350:00000 12:365:00000 P - non-linearity
-// ZAN1  A    5 P 12:365:00000 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
-// type Discon struct {
-// 	SiteCode  SiteCode      // 4-char site code, e.g. WTZR.
-// 	ParType   ParameterType // The type of the parameter.
-// 	Idx       int           // soln number, beginning with 1, not identical as soln in estimate.
-// 	DisType   ParameterType // discontinure type P for position, V for velocity.
-// 	SolID     string        // Solution ID at a Site/Point code for which the parameter is estimated.
-// 	ValidTime [2]*time.Time // The validation time span [startTime, endTime].
-// 	EventStr  string        // Event explaination text, e.g. info for earth quake, equipment changes.
-
-// }
-func (disc *Discon) UnmarshalSINEX(in string) error {
-	var err error
-	// if the first line is * then ignore this line read the next line
-
-	if len(in) > 0 && in[0] == '*' {
-		return nil
-	}
-
-	if len(in) < 40 {
-		return nil
-	}
-
-	disc.SiteCode = SiteCode(cleanField(in[1:5]))
-
-	disc.ParType = ParameterType(strings.TrimSpace(in[7:8]))
-
-	if disc.Idx, err = strconv.Atoi(strings.TrimSpace(in[9:13])); err != nil {
-		return fmt.Errorf("parse Soln: %v", err)
-	}
-
-	disc.DisType = ParameterType(strings.TrimSpace(in[42:43]))
-
-	// if disc.DisType, err = strconv.Atoi(strings.TrimSpace(in[41:42])); err != nil {
-	// 	return fmt.Errorf("parse discontinuity type: %v", err)
-	// }
-
-	if ti, err := parseTime(in[16:28]); err == nil {
-		disc.StartTime = ti
-	} else {
-		return fmt.Errorf("parse TIME %q: %v", in[16:28], err)
-	}
-
-	if ti, err := parseTime(in[29:41]); err == nil {
-		disc.EndTime = ti
-	} else {
-		return fmt.Errorf("parse TIME %q: %v", in[28:41], err)
-	}
-
-	disc.Event = strings.TrimSpace(in[45:])
-	// if disc.EventStr, err = strconv.Atoi(strings.TrimSpace(in[44:])); err != nil {
-	// 	return fmt.Errorf("parse discontinuity type: %v", err)
-	// }
 
 	return nil
 }
