@@ -12,6 +12,8 @@ import (
 
 func main() {
 	r, err := os.Open("/home/lwang/sandbox/gognss/pkg/sinex/testdata/igs20P21161.snx")
+	// r, err := os.Open("/home/lwang/sandbox/gognss/pkg/sinex/testdata/soln.snx")
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,6 +42,20 @@ func main() {
 
 				// Do something with est.
 				fmt.Printf("%s: %.5f\n", est.SiteCode, est.Value)
+			}
+		}
+
+		// Decode all SOLUTION/ESTIMATE records.
+		if name == sinex.BlockSolDiscon {
+			for dec.NextBlockLine() {
+				var disc sinex.Discon
+				if err := dec.Decode(&disc); err != nil {
+					log.Fatal(err)
+				}
+
+				layout := "2006-01-02 15:04:05"
+				// Do something with est.
+				fmt.Printf("%s; %s; %s; %s; %v\n", disc.SiteCode, disc.StartTime.Format(layout), disc.EndTime.Format(layout), disc.DisType, disc.Event)
 			}
 		}
 	}
