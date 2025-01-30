@@ -46,6 +46,8 @@ type Decoder struct {
 // It is the caller's responsibility to call Close on the underlying reader when done!
 func NewDecoder(r io.Reader) (*Decoder, error) {
 	dec := &Decoder{scan: bufio.NewScanner(r)}
+
+	// skip to allow SINEX without FILE/REFERENCE block, such as soln.snx
 	// dec.fileRef = &FileReference{}
 
 	// if err := dec.decodeHeader(); err != nil {
