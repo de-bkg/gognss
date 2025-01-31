@@ -42,7 +42,6 @@ func main() {
 
 	// Get the header
 	hdr := dec.Header
-	fmt.Printf("%+v", hdr)
 
 	// Iterate over blocks.
 	for dec.NextBlock() {
