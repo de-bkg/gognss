@@ -1,8 +1,10 @@
 package sinex
 
 import (
+	"errors"
 	"log"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -94,6 +96,22 @@ func TestEstimate_UnmarshalSINEX(t *testing.T) {
 	err := esti.UnmarshalSINEX(str)
 	assert.NoError(t, err)
 	t.Logf("%+v", esti)
+}
+
+func TestDiscontinuity_UnmarshalSINEX(t *testing.T) {
+	assert := assert.New(t)
+	str := " AB02  A    2 P 11:175:11380 15:208:17386 P - EQ M6.9 - Fox Islands, Aleutian Islands, Alaska"
+	dis := &Discontinuity{}
+	err := dis.UnmarshalSINEX(str)
+	assert.NoError(err)
+	t.Logf("%+v", dis)
+	assert.Equal("AB02", string(dis.SiteCode), "sitecode")
+	assert.Equal("A", string(dis.ParType), "parameter type")
+	assert.Equal(2, dis.Idx, "Index")
+	assert.Equal("P", string(dis.Type), "disc type")
+	assert.Equal(time.Date(2011, 6, 24, 3, 9, 40, 0, time.UTC), dis.StartTime, "start time")
+	assert.Equal(time.Date(2015, 7, 27, 4, 49, 46, 0, time.UTC), dis.EndTime, "end time")
+	assert.Equal("EQ M6.9 - Fox Islands, Aleutian Islands, Alaska", dis.Event, "event")
 }
 
 func TestUnmarshal(t *testing.T) {
@@ -223,6 +241,56 @@ func TestDecoder_NextBlock(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestDecoder_Discontinuities(t *testing.T) {
+	assert := assert.New(t)
+
+	const data = `%=SNX 2.02 IGN 21:329:57332 IGN 94:002:00000 21:001:00000 P     0 1 X
+*-------------------------------------------------------------------------------
++SOLUTION/DISCONTINUITY
+ 00NA  A    1 P 00:000:00000 16:302:00000 P - antenna change
+ 00NA  A    2 P 16:302:00000 00:000:00000 P - 
+ 00NA  A    1 P 00:000:00000 00:000:00000 V - 
+*
+ 7601  A    1 P 00:000:00000 22:261:00000 P - unknown
+ 7601  A    2 P 22:261:00000 00:000:00000 P - 
+ 7601  A    1 P 00:000:00000 00:000:00000 V - 
+*
+ AB01  A    1 P 00:000:00000 11:245:39354 P - EQ M6.9 - 170 km E of Atka, Alaska
+ AB01  A    5 P 16:072:65205 21:210:22549 P - EQ M8.2 - 99 km SE of Perryville, Alaska
+ AB01  A    6 P 21:210:22549 00:000:00000 P - 
+ AB01  A    1 P 00:000:00000 13:242:59103 V - EQ M7.0 - 101 km SW of Atka, Alaska
+ AB01  A    2 P 13:242:59103 00:000:00000 V - 
+*
+ AB02  A    1 P 00:000:00000 11:175:11380 P - EQ M7.3 - Fox Islands, Aleutian Islands, Alaska
+ AB02  A    4 P 20:336:58960 22:011:41743 P - EQ M6.8 - 100 km SE of Nikolski, Alaska
+ AB02  A    5 P 22:011:41743 00:000:00000 P - 
+`
+
+	dec, err := NewDecoder(strings.NewReader(data))
+	if !errors.Is(err, ErrMandatoryBlockNotFound) {
+		t.Fatal(err)
+	}
+	assert.NotNil(dec)
+
+	numRecords := 0
+	err = dec.GoToBlock(BlockSolDiscontinuity) // Special as the input has no file/reference.
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for dec.NextBlockLine() {
+		numRecords++
+		var dis Discontinuity
+		err := dec.Decode(&dis)
+		if err != nil {
+			t.Fatal(err)
+		}
+		//t.Logf("%+v", dis)
+	}
+
+	assert.Equal(14, numRecords, "number of discontinuities")
 }
 
 func Test_parseTime(t *testing.T) {

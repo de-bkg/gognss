@@ -2,6 +2,7 @@ package sinex
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -15,6 +16,15 @@ import (
 const (
 	// dateFormat is the date part of a SINEX time string (15:243:02013 YY-year:DOY:sec of day).
 	dateFormat string = "06:002"
+)
+
+// General Static Errors.
+var (
+	// ErrNotfound is returned if the block was not found. See also ErrMandatoryBlockNotFound.
+	ErrNotfound = errors.New("not found")
+
+	// ErrMandatoryBlockNotFound is returned if a mandatory block is missing.
+	ErrMandatoryBlockNotFound = errors.New("mandatory block not found")
 )
 
 var (
@@ -47,14 +57,9 @@ type Decoder struct {
 func NewDecoder(r io.Reader) (*Decoder, error) {
 	dec := &Decoder{scan: bufio.NewScanner(r)}
 
-	// skip to allow SINEX without FILE/REFERENCE block, such as soln.snx
-	// dec.fileRef = &FileReference{}
-
-	// if err := dec.decodeHeader(); err != nil {
-	// 	return nil, err
-	// }
-
-	return dec, nil
+	dec.fileRef = &FileReference{}
+	err := dec.decodeHeader()
+	return dec, err
 }
 
 // Return the FILE/REFERENCE data.
@@ -76,6 +81,23 @@ func (dec *Decoder) NextBlock() bool {
 	}
 
 	return false
+}
+
+// GoToBlock keeps on reading until the wanted block is found or the reader is already in the wanted block.
+// In general prefer using dec.NextBlock().
+// ErrNotfound is returned in case of not being found.
+func (dec *Decoder) GoToBlock(name string) error {
+	if dec.CurrentBlock() == name {
+		return nil
+	}
+
+	for dec.NextBlock() {
+		if dec.CurrentBlock() == name {
+			return nil
+		}
+	}
+
+	return ErrNotfound
 }
 
 // NextBlockLine reports whether there is another data line in the current block and reads that line into the buffer.
@@ -136,10 +158,10 @@ func (dec *Decoder) decodeHeader() error {
 	}
 
 	// ease the requirement of the block FILE/REFERENCE for the first block
-	// name := dec.CurrentBlock()
-	// if name != BlockFileReference {
-	// 	return fmt.Errorf("is not the first block: %q", BlockFileReference)
-	// }
+	name := dec.CurrentBlock()
+	if name != BlockFileReference {
+		return ErrMandatoryBlockNotFound
+	}
 
 	for dec.NextBlockLine() {
 		line := dec.Line()
@@ -402,58 +424,41 @@ func (est *Estimate) UnmarshalSINEX(in string) error {
 }
 
 // Unmarshall a SOLUTION/DISCONTINUITY record.
-// ZAN1  A    4 P 10:350:00000 12:365:00000 P - non-linearity
-// ZAN1  A    5 P 12:365:00000 18:023:34301 P - EQ M7.9 - 261 km SE of Chiniak, Alaska
-// type Discon struct {
-// 	SiteCode  SiteCode      // 4-char site code, e.g. WTZR.
-// 	ParType   ParameterType // The type of the parameter.
-// 	Idx       int           // soln number, beginning with 1, not identical as soln in estimate.
-// 	DisType   ParameterType // discontinure type P for position, V for velocity.
-// 	SolID     string        // Solution ID at a Site/Point code for which the parameter is estimated.
-// 	ValidTime [2]*time.Time // The validation time span [startTime, endTime].
-// 	EventStr  string        // Event explaination text, e.g. info for earth quake, equipment changes.
-
-// }
-func (disc *Discon) UnmarshalSINEX(in string) error {
+func (dis *Discontinuity) UnmarshalSINEX(in string) error {
 	var err error
-	// if the first line is * then ignore this line read the next line
 
-	if len(in) > 0 && in[0] == '*' {
+	if len(in) < 47 {
 		return nil
 	}
 
-	if len(in) < 40 {
-		return nil
-	}
+	dis.SiteCode = SiteCode(cleanField(in[1:5]))
 
-	disc.SiteCode = SiteCode(cleanField(in[1:5]))
+	dis.ParType = ParameterType(strings.TrimSpace(in[7:8]))
 
-	disc.ParType = ParameterType(strings.TrimSpace(in[7:8]))
-
-	if disc.Idx, err = strconv.Atoi(strings.TrimSpace(in[9:13])); err != nil {
+	if dis.Idx, err = strconv.Atoi(strings.TrimSpace(in[9:13])); err != nil {
 		return fmt.Errorf("parse Soln: %v", err)
 	}
 
-	disc.DisType = ParameterType(strings.TrimSpace(in[42:43]))
+	dis.Type = DiscontinuityType(strings.TrimSpace(in[42:43]))
 
-	// if disc.DisType, err = strconv.Atoi(strings.TrimSpace(in[41:42])); err != nil {
+	// if dis.Type, err = strconv.Atoi(strings.TrimSpace(in[41:42])); err != nil {
 	// 	return fmt.Errorf("parse discontinuity type: %v", err)
 	// }
 
 	if ti, err := parseTime(in[16:28]); err == nil {
-		disc.StartTime = ti
+		dis.StartTime = ti
 	} else {
 		return fmt.Errorf("parse TIME %q: %v", in[16:28], err)
 	}
 
 	if ti, err := parseTime(in[29:41]); err == nil {
-		disc.EndTime = ti
+		dis.EndTime = ti
 	} else {
 		return fmt.Errorf("parse TIME %q: %v", in[28:41], err)
 	}
 
-	disc.Event = strings.TrimSpace(in[45:])
-	// if disc.EventStr, err = strconv.Atoi(strings.TrimSpace(in[44:])); err != nil {
+	dis.Event = strings.TrimSpace(in[45:])
+	// if dis.EventStr, err = strconv.Atoi(strings.TrimSpace(in[44:])); err != nil {
 	// 	return fmt.Errorf("parse discontinuity type: %v", err)
 	// }
 
