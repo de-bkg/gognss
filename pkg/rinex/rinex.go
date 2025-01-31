@@ -132,12 +132,8 @@ var (
 		"GN": "n", "RN": "g", "EN": "l", "JN": "q", "CN": "f", "SN": "h", "MN": "p", "MM": "m"}
 )
 
-// FilerHandler is the interface for RINEX files..
-type FilerHandler interface {
-	// Compress compresses the RINEX file dependend of its file type.
-	//Compress() error
-
-	// Rnx3Filename returns the filename following the RINEX3 convention.
+// FileNamer is implemented by the concrete RINEX types (obs, nav, met) and defines methods relatid to RINEX filenames.
+type FileNamer interface {
 	Rnx3Filename() (string, error)
 }
 
@@ -172,26 +168,23 @@ type RnxFil struct {
 	Warnings []string // List of warnings that might occur when reading the file.
 }
 
-// NewFile returns a new RINEX file object.
-func NewFile(filepath string) (FilerHandler, error) {
+// NewFile returns a new RINEX file object. The filename will be parsed implicitely.
+func NewFile(filepath string) (*RnxFil, error) {
 	rnx := &RnxFil{Path: filepath}
 	err := rnx.ParseFilename()
-	if err != nil {
-		return nil, err
-	}
+	return rnx, err
 
-	var f FilerHandler
-	if rnx.IsObsType() {
-		f = &ObsFile{RnxFil: rnx}
-	} else if rnx.IsNavType() {
-		f = &NavFile{RnxFil: rnx}
-	} else if rnx.IsMeteoType() {
-		f = &MeteoFile{RnxFil: rnx}
-	} else {
-		return nil, fmt.Errorf("no valid RINEX file: %s", filepath)
-	}
+	// var f FilerHandler
+	// if rnx.IsObsType() {
+	// 	f = &ObsFile{RnxFil: rnx}
+	// } else if rnx.IsNavType() {
+	// 	f = &NavFile{RnxFil: rnx}
+	// } else if rnx.IsMeteoType() {
+	// 	f = &MeteoFile{RnxFil: rnx}
+	// } else {
+	// 	return nil, fmt.Errorf("no valid RINEX file: %s", filepath)
+	// }
 
-	return f, nil
 }
 
 // SetStationName sets the station or project name.
@@ -367,6 +360,22 @@ func (f *RnxFil) ParseFilename() error {
 	}
 
 	return nil
+}
+
+// Rnx3Filename returns the filename following the RINEX3+ convention.
+func (f *RnxFil) Rnx3Filename() (string, error) {
+	if f.IsObsType() {
+		fo := &ObsFile{RnxFil: f}
+		return fo.Rnx3Filename()
+	} else if f.IsNavType() {
+		fn := &NavFile{RnxFil: f}
+		return fn.Rnx3Filename()
+	} else if f.IsMeteoType() {
+		fm := &MeteoFile{RnxFil: f}
+		return fm.Rnx3Filename()
+	}
+
+	return "", fmt.Errorf("unknown RINEX TYPE")
 }
 
 // Rnx2Filename returns the filename following the RINEX2 convention.
