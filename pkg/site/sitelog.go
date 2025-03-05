@@ -29,7 +29,7 @@ func IDByFilename(filename string) string {
 	}
 
 	res := siteNameRegex.FindStringSubmatch(filename)
-	if res == nil || len(res) < 1 {
+	if len(res) < 1 {
 		return ""
 	}
 	return strings.ToUpper(res[0])
