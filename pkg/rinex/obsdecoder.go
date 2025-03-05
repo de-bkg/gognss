@@ -77,9 +77,15 @@ readln:
 			} else {
 				return hdr, fmt.Errorf("parse RINEX VERSION: %v", err)
 			}
+
 			hdr.RINEXType = strings.TrimSpace(val[20:21])
-			if sys, ok := gnss.ByAbbr[strings.TrimSpace(val[40:41])]; ok {
-				hdr.SatSystem = sys
+
+			sys := strings.TrimSpace(val[40:41])
+			if sys == "" {
+				sys = "G"
+			}
+			if s, ok := gnss.ByAbbr[sys]; ok {
+				hdr.SatSystem = s
 			} else {
 				return hdr, fmt.Errorf("read header: invalid satellite system in line %d: %s", dec.lineNum, line)
 			}
@@ -183,13 +189,13 @@ readln:
 				hdr.Interval = f64
 			}
 		case "TIME OF FIRST OBS":
-			t, err := time.Parse(epochTimeFormat, strings.TrimSpace(val[:43]))
+			t, err := parseTimeFirstObs(strings.TrimSpace(val[:43]))
 			if err != nil {
 				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}
 			hdr.TimeOfFirstObs = t
 		case "TIME OF LAST OBS":
-			t, err := time.Parse(epochTimeFormat, strings.TrimSpace(val[:43]))
+			t, err := parseTimeFirstObs(strings.TrimSpace(val[:43]))
 			if err != nil {
 				return hdr, fmt.Errorf("parse %q: %v", key, err)
 			}

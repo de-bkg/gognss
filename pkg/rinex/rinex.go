@@ -524,6 +524,94 @@ func parseHeaderDate(date string) (time.Time, error) {
 	return ti, nil
 }
 
+// Parse datetime string in format of RINEX header TKME OF FIRST OBS.
+func parseTimeFirstObs(date string) (time.Time, error) {
+	if ti, err := time.Parse(epochTimeFormat, date); err == nil {
+		return ti, nil
+	}
+
+	if ti, err := time.Parse(epochTimeFormatv2, date); err == nil {
+		return ti, nil
+	}
+
+	return parseYmdHMS(date)
+}
+
+// Parse datetime string with year, month, day, hour, min, sec separated by one or more white spaces.
+func parseYmdHMS(in string) (ti time.Time, err error) {
+	f := strings.Fields(in)
+	if len(f) != 6 {
+		return ti, fmt.Errorf("no YmdHMS")
+	}
+
+	yr, err := strconv.Atoi(f[0])
+	if err != nil {
+		return ti, fmt.Errorf("parse year: %s", err)
+	}
+
+	var yyyy int
+	if yr >= 80 && yr <= 99 {
+		yyyy = yr + 1900
+	} else if yr < 80 {
+		yyyy = yr + 2000
+	} else {
+		yyyy = yr
+	}
+
+	month, err := strconv.Atoi(f[1])
+	if err != nil {
+		return ti, fmt.Errorf("parse month: %s", err)
+	}
+
+	day, err := strconv.Atoi(f[2])
+	if err != nil {
+		return ti, fmt.Errorf("parse day: %s", err)
+	}
+
+	hour, err := strconv.Atoi(f[3])
+	if err != nil {
+		return ti, fmt.Errorf("parse hour: %s", err)
+	}
+
+	min, err := strconv.Atoi(f[4])
+	if err != nil {
+		return ti, fmt.Errorf("parse min: %s", err)
+	}
+
+	secs, ns, err := parseSeconds(f[5])
+	if err != nil {
+		return ti, fmt.Errorf("parse secs: %q: %s", f[5], err)
+	}
+
+	ti = time.Date(yyyy, time.Month(month), day, hour, min, int(secs), int(ns), time.UTC)
+	return ti, nil
+}
+
+// Parse fractional second to second and nanoseconds.
+func parseSeconds(secs string) (int64, int64, error) {
+	if strings.HasPrefix(secs, ".") { // pad with zero
+		secs = "0" + secs
+	}
+	parts := strings.Split(secs, ".")
+	if len(parts) > 2 {
+		return 0, 0, errors.New("could not parse as seconds")
+	} else if len(parts) < 2 {
+		// no nanoseconds, just seconds
+		s, err := strconv.ParseInt(parts[0], 10, 64)
+		return s, 0, err
+	}
+
+	// convert the second's part
+	s, err := strconv.ParseInt(parts[0], 10, 64)
+	if nil != err {
+		return 0, 0, err
+	}
+
+	// get nanoseconds from fractional second
+	d, err := time.ParseDuration("0." + parts[1] + "s")
+	return s, d.Nanoseconds(), err
+}
+
 func getHourAsChar(hr int) string {
 	return string(rune(hr + 97))
 }

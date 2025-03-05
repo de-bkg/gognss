@@ -84,7 +84,7 @@ DBHZ                                                        SIGNAL STRENGTH UNIT
 	t.Logf("RINEX Header: %+v\n", dec)
 }
 
-func TestObsDecoder_readRINEXHeaderV2(t *testing.T) {
+func TestObsDecoder_readRINEXHeaderV211(t *testing.T) {
 	const header = `     2.11           OBSERVATION DATA    M (MIXED)           RINEX VERSION / TYPE
 teqc  2019Feb25     IGN-RGP             20200603 08:03:25UTCPGM / RUN BY / DATE
 Linux 2.6.32-573.12.1.x86_64|x86_64|gcc|Linux 64|=+         COMMENT
@@ -135,6 +135,41 @@ Forced Modulo Decimation to 30 seconds                      COMMENT
 	assert.Equal(obsCodesWanted, dec.Header.ObsTypes[dec.Header.SatSystem], "observation types")
 	assert.Equal([]gnss.System{gnss.SysMIXED}, dec.Header.SatSystems(), "used satellite systems")
 	assert.Equal(dec.Header.SatSystem, dec.Header.SatSystems()[0], "used satellite systems")
+	t.Logf("RINEX Header: %+v\n", dec.Header)
+}
+
+func TestObsDecoder_readRINEXHeaderV2(t *testing.T) {
+	const header = `1.0                 COMPACT RINEX FORMAT                    CRINEX VERS   / TYPE
+RNX2CRX ver.4.0.5                       10-Jan-14 08:05     CRINEX PROG / DATE
+     2              OBSERVATION DATA                        RINEX VERSION / TYPE
+HEADER CHANGED BY EPN CB ON 2014-01-10                      COMMENT
+TO BE CONFORM WITH THE INFORMATION IN                       COMMENT
+ftp://epncb.oma.be/pub/station/log/klop.log                 COMMENT
+                                                            COMMENT
+GN-RINEX 1.0        Geo-- GmbH          30-DEC-97 00:00     PGM / RUN BY / DATE
+KLOP                                                        MARKER NAME
+14214M002                                                   MARKER NUMBER
+Rebisel             BKA                                     OBSERVER / AGENCY
+3503A09375          TRIMBLE 4000SSI     7.12                REC # / TYPE / VERS
+0220010373          TRM22020.00+GP  DOME                    ANT # / TYPE
+  4041875.4584  0620655.1456  4878636.5342                  APPROX POSITION XYZ
+        0.0720        0.0000        0.0000                  ANTENNA: DELTA H/E/N
+     1     1                                                WAVELENGTH FACT L1/2
+     5    C1    L1    D1    P2    L2                        # / TYPES OF OBSERV
+    30                                                      INTERVAL
+    97    12    30     0     0    0.000000                  TIME OF FIRST OBS
+                                                            END OF HEADER
+`
+
+	assert := assert.New(t)
+	dec, err := NewObsDecoder(strings.NewReader(header))
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	assert.Equal("O", dec.Header.RINEXType, "RINEX Type")
+	assert.Equal(time.Date(1997, 12, 30, 0, 0, 0, 0, time.UTC), dec.Header.TimeOfFirstObs, "TimeOfFirstObs")
+	assert.Equal(30.000, dec.Header.Interval, "sampling interval")
+	assert.Equal([]gnss.System{gnss.SysGPS}, dec.Header.SatSystems(), "used satellite systems")
 	t.Logf("RINEX Header: %+v\n", dec.Header)
 }
 

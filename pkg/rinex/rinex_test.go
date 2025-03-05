@@ -3,6 +3,7 @@ package rinex
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"regexp"
 	"testing"
 	"time"
@@ -252,6 +253,88 @@ func TestFilePeriod_Duration(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.p.Duration(); got != tt.want {
 				t.Errorf("FilePeriod.Duration() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_parseSeconds(t *testing.T) {
+	tests := []struct {
+		name    string
+		secs    string
+		wantS   int64
+		wantNS  int64
+		wantErr bool
+	}{
+		{name: "t1", secs: "0.000000", wantS: 0, wantNS: 0, wantErr: false},
+		{name: "t2", secs: ".000000", wantS: 0, wantNS: 0, wantErr: false},
+		{name: "t3", secs: "5.000000", wantS: 5, wantNS: 0, wantErr: false},
+		{name: "t4", secs: "30.500000", wantS: 30, wantNS: 500000000, wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, got1, err := parseSeconds(tt.secs)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseSeconds() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.wantS {
+				t.Errorf("parseSeconds() got = %v, want %v", got, tt.wantS)
+			}
+			if got1 != tt.wantNS {
+				t.Errorf("parseNanoSeconds() got1 = %v, want %v", got1, tt.wantNS)
+			}
+		})
+	}
+}
+
+func Test_parseYmdHMS(t *testing.T) {
+	tests := []struct {
+		name    string
+		in      string
+		wantTi  time.Time
+		wantErr bool
+	}{
+		{name: "t1", in: "1997     5    25     0     0     .000000",
+			wantTi: time.Date(1997, 5, 25, 0, 0, 0, 0, time.UTC), wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotTi, err := parseYmdHMS(tt.in)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseYmdHMS() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotTi, tt.wantTi) {
+				t.Errorf("parseYmdHMS() = %v, want %v", gotTi, tt.wantTi)
+			}
+		})
+	}
+}
+
+func Test_parseTimeFirstObs(t *testing.T) {
+	tests := []struct {
+		name    string
+		date    string
+		want    time.Time
+		wantErr bool
+	}{
+		{name: "t1", date: "1997     5    25     0     0     .000000",
+			want: time.Date(1997, 5, 25, 0, 0, 0, 0, time.UTC), wantErr: false},
+		{name: "t2", date: "96     1    25     0     0     .000000",
+			want: time.Date(1996, 1, 25, 0, 0, 0, 0, time.UTC), wantErr: false},
+		{name: "t3", date: "10     1    25     0     0    1.000000",
+			want: time.Date(2010, 1, 25, 0, 0, 1, 0, time.UTC), wantErr: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseTimeFirstObs(tt.date)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseTimeFirstObs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("parseTimeFirstObs() = %v, want %v", got, tt.want)
 			}
 		})
 	}
