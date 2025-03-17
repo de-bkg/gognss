@@ -32,6 +32,7 @@ const (
 	FilePeriod15Min       FilePeriod = "15M" // 15 minutes, usually for high-rate 1Hz files.
 	FilePeriodHourly      FilePeriod = "01H"
 	FilePeriodDaily       FilePeriod = "01D"
+	FilePeriodWeekly      FilePeriod = "07D"
 	FilePeriodYearly      FilePeriod = "01Y"
 
 	DataSourceReceiver = "R" // Generated from receiver.
