@@ -44,21 +44,35 @@ func main() {
 	hdr := dec.Header
 
 	// Iterate over blocks.
-	for dec.NextBlock() {
-		name := dec.CurrentBlock()
+	var estimates []sinex.Estimate
+	for name, err := range dec.Blocks() {
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		// Decode all SOLUTION/ESTIMATE records.
+  	// Decode all SOLUTION/ESTIMATE records.
 		if name == sinex.BlockSolEstimate {
-			for dec.NextBlockLine() {
+			for _, err := range dec.BlockLines() { // Reads the next line into buffer.
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				var est sinex.Estimate
-				if err := dec.Decode(&est); err != nil {
+				err := dec.Decode(&est)
+				if err != nil {
 					log.Fatal(err)
 				}
 
 				// Do something with est.
 				fmt.Printf("%s: %.5f\n", est.SiteCode, est.Value)
+				estimates = append(estimates, est)
 			}
 		}
+	}
+
+	// Iterate over coordinates for each station and epoch, based on estimates.
+	for rec := range AllStationCoordinates(estimates) {
+		fmt.Printf("%v\n", rec)
 	}
 }
 ```

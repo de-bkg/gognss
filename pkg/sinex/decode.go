@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"iter"
 	"log"
 	"strconv"
 	"strings"
@@ -51,7 +52,8 @@ type Decoder struct {
 }
 
 // NewDecoder returns a new decoder that reads from r.
-// The header line and FILE/REFERENCE block will be read implicitely.
+// The header line and FILE/REFERENCE block will be read implicitely. If not existant,
+// ErrMandatoryBlockNotFound will be returned.
 //
 // It is the caller's responsibility to call Close on the underlying reader when done!
 func NewDecoder(r io.Reader) (*Decoder, error) {
@@ -67,58 +69,61 @@ func (dec *Decoder) GetFileReference() FileReference {
 	return *dec.fileRef
 }
 
-// NextBlock reports whether there is another block available and moves the reader to the begin of the this block.
-// Use CurrentBlock() to get the name of the current block.
-func (dec *Decoder) NextBlock() bool {
-	for dec.readLine() {
-		if dec.scan.Err() != nil {
-			return false
-		}
-
-		if dec.isBlockBegin() {
-			return true
+// Blocks returns an iterator over all blocks in the stream.
+// The underlying reader is at the begin of the block.
+// It returns a single-use iterator.
+func (dec *Decoder) Blocks() iter.Seq2[Blockname, error] {
+	return func(yield func(Blockname, error) bool) {
+		for dec.readLine() {
+			if dec.isBlockBegin() {
+				if !yield(dec.currBlock, dec.scan.Err()) {
+					return
+				}
+			}
 		}
 	}
+}
 
-	return false
+// BlockLines returns an iterator over all lines in the current block.
+// It reads the current line into the internal buffer.
+// It returns a single-use iterator.
+func (dec *Decoder) BlockLines() iter.Seq2[string, error] {
+	return func(yield func(string, error) bool) {
+		for dec.readLine() {
+			if dec.isCommentLine() {
+				continue
+			}
+
+			if dec.isDataLine() {
+				if !yield(dec.Line(), dec.scan.Err()) {
+					return
+				}
+			} else {
+				return
+			}
+		}
+	}
 }
 
 // GoToBlock keeps on reading until the wanted block is found or the reader is already in the wanted block.
 // In general prefer using dec.NextBlock().
 // ErrNotfound is returned in case of not being found.
-func (dec *Decoder) GoToBlock(name string) error {
+func (dec *Decoder) GoToBlock(name Blockname) error {
 	if dec.CurrentBlock() == name {
 		return nil
 	}
 
-	for dec.NextBlock() {
-		if dec.CurrentBlock() == name {
+	for currName, err := range dec.Blocks() {
+		if err != nil {
+			return err
+		}
+
+		if currName == name {
 			return nil
 		}
 	}
 
 	return ErrNotfound
-}
-
-// NextBlockLine reports whether there is another data line in the current block and reads that line into the buffer.
-// It returns false when reaching the end of the block.
-func (dec *Decoder) NextBlockLine() bool {
-	for dec.readLine() {
-		if dec.scan.Err() != nil {
-			return false
-		}
-
-		if dec.isCommentLine() {
-			continue
-		}
-
-		if dec.isDataLine() {
-			return true
-		}
-		return false
-	}
-
-	return false
 }
 
 // Returns the name of the current block.
@@ -145,6 +150,21 @@ func (dec *Decoder) isDataLine() bool {
 	return !strings.ContainsAny(line[:1], "-+*%")
 }
 
+// Go to the beginning of the next block.
+func (dec *Decoder) nextBlock() bool {
+	for dec.readLine() {
+		if dec.scan.Err() != nil {
+			return false
+		}
+
+		if dec.isBlockBegin() {
+			return true
+		}
+	}
+
+	return false
+}
+
 // decodeHeader decodes the first the header line as well as some mandatory first blocks like FILE/REFERENCE.
 func (dec *Decoder) decodeHeader() error {
 	err := dec.readHeaderLine()
@@ -153,7 +173,7 @@ func (dec *Decoder) decodeHeader() error {
 	}
 
 	// Parse FILE/REFERENCE that should be always the first block.
-	if ok := dec.NextBlock(); !ok {
+	if ok := dec.nextBlock(); !ok {
 		return fmt.Errorf("no blocks found")
 	}
 
@@ -163,8 +183,10 @@ func (dec *Decoder) decodeHeader() error {
 		return ErrMandatoryBlockNotFound
 	}
 
-	for dec.NextBlockLine() {
-		line := dec.Line()
+	for line, err := range dec.BlockLines() {
+		if err != nil {
+			return err
+		}
 		key := strings.TrimSpace(line[1:19])
 		val := strings.TrimSpace(line[20:])
 
@@ -237,7 +259,7 @@ type Unmarshaler interface {
 	UnmarshalSINEX(string) error
 }
 
-// Decode the current line into out.
+// Decode the current line in buffer into out.
 func (dec *Decoder) Decode(out Unmarshaler) error {
 	return out.UnmarshalSINEX(dec.Line())
 }

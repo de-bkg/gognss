@@ -2,6 +2,7 @@ package sinex
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -138,6 +139,29 @@ func TestUnmarshal(t *testing.T) {
 	}
 }
 
+func TestDecoder_Blocks(t *testing.T) {
+	assert := assert.New(t)
+	filepath := "testdata/igs20P21161.snx"
+	r, err := os.Open(filepath)
+	assert.NoError(err)
+	defer r.Close()
+
+	dec, err := NewDecoder(r)
+	assert.NoError(err)
+	assert.NotNil(dec)
+
+	numBlocks := 0
+	for name, err := range dec.Blocks() {
+		if err != nil {
+			t.Fatal(err)
+		}
+		numBlocks++
+		t.Logf("block: %s", name)
+	}
+
+	assert.Equal(13, numBlocks, "number of blocks") // with FILE/REFERENCE it would be 14
+}
+
 func TestDecoder_NextEstimate(t *testing.T) {
 	assert := assert.New(t)
 	filepath := "testdata/igs20P21161.snx"
@@ -149,12 +173,19 @@ func TestDecoder_NextEstimate(t *testing.T) {
 	assert.NoError(err)
 	assert.NotNil(dec)
 
-	for dec.NextBlock() {
-		name := dec.CurrentBlock()
+	for name, err := range dec.Blocks() {
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		//t.Logf("block: %s", name)
 		numRecords := 0
 		if name == BlockSolEstimate {
-			for dec.NextBlockLine() {
+			for _, err := range dec.BlockLines() {
+				if err != nil {
+					t.Fatal(err)
+				}
+
 				numRecords++
 				var est Estimate
 				err := dec.Decode(&est)
@@ -196,50 +227,33 @@ func ExampleDecoder_estimates() {
 		log.Fatal(err)
 	}
 
-	for dec.NextBlock() {
-		name := dec.CurrentBlock()
+	var estimates []Estimate
+	for name, err := range dec.Blocks() {
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		if name == BlockSolEstimate {
-			for dec.NextBlockLine() {
+			for _, err := range dec.BlockLines() { // Reads the next line into buffer.
+				if err != nil {
+					log.Fatal(err)
+				}
+
 				var est Estimate
 				err := dec.Decode(&est)
 				if err != nil {
 					log.Fatal(err)
 				}
+				estimates = append(estimates, est)
 
 				// Do something with est
-				//fmt.Printf("%s: %.5f\n", est.SiteCode, est.Value)
+				// fmt.Printf("%s: %.5f\n", est.SiteCode, est.Value)
 			}
 		}
 	}
-}
 
-func TestDecoder_NextBlock(t *testing.T) {
-	assert := assert.New(t)
-	filepath := "testdata/igs20P21161.snx"
-	r, err := os.Open(filepath)
-	assert.NoError(err)
-	defer r.Close()
-
-	dec, err := NewDecoder(r)
-	assert.NoError(err)
-	assert.NotNil(dec)
-
-	for dec.NextBlock() {
-		name := dec.CurrentBlock()
-		//t.Logf("block: %s", name)
-
-		// Read receiver records.
-		if name == BlockSiteReceiver {
-			for dec.NextBlockLine() {
-				var recv Receiver
-				err := dec.Decode(&recv)
-				if err != nil {
-					t.Fatal(err)
-				}
-
-				//fmt.Printf("%s: %s\n", recv.SiteCode, recv.Type)
-			}
-		}
+	for rec := range AllStationCoordinates(estimates) {
+		fmt.Printf("%v\n", rec)
 	}
 }
 
@@ -280,7 +294,10 @@ func TestDecoder_Discontinuities(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for dec.NextBlockLine() {
+	for _, err := range dec.BlockLines() {
+		if err != nil {
+			log.Fatal(err)
+		}
 		numRecords++
 		var dis Discontinuity
 		err := dec.Decode(&dis)
